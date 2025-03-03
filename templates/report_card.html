@@ -1,0 +1,17 @@
+!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulletin de notes</title>
+</head>
+<body>
+    <h1>Bulletin de notes</h1>
+    <h2>Notes:</h2>
+    {% include "performance_report.html"%}
+    <ul>
+        {% for subject,grade in report.grades.items() %}
+        <li>{{subject}}:{{grade}}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

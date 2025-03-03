@@ -1,0 +1,66 @@
+/* messages.css */
+
+/* Style pour le conteneur principal */
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Style pour le titre principal */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #343a40;
+}
+
+/* Styles pour le formulaire de filtrage */
+.form-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-inline .form-control {
+    margin: 5px;
+}
+
+.form-inline .btn-primary {
+    margin: 5px;
+}
+
+/* Style pour la liste des messages */
+.list-group-item {
+    margin-bottom: 15px;
+    padding: 20px;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+/* Style pour les titres des messages */
+.list-group-item strong {
+    font-size: 1.25rem;
+    color: #343a40;
+}
+
+/* Style pour les dates des messages */
+.list-group-item small {
+    display: block;
+    margin-top: 10px;
+    color: #6c757d;
+}
+
+/* Style pour la pagination */
+.pagination {
+    justify-content: center;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.pagination .page-link {
+    color: #007bff;
+}

@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier une note{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Modifier une note</h1>
+    <form method="POST" id="note-form">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.student_name.label(class="form-label") }}
+            {{ form.student_name(class="form-control", id="student_name", placeholder="Nom de l'étudiant") }}
+        </div>
+        <div class="form-group">
+            {{ form.score.label(class="form-label") }}
+            {{ form.score(class="form-control", id="score", placeholder="Note sur 100") }}
+        </div>
+        <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+        <div id="error-message" class="text-danger mt-2"></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block styles %}
+<!-- Inclusion du CSS de Toastr depuis le CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<!-- Votre fichier CSS personnalisé -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_note.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<!-- Inclusion de jQuery depuis le CDN -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Inclusion du JS de Toastr depuis le CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<!-- Votre fichier JavaScript personnalisé -->
+<script src="{{ url_for('static', filename='js/edit_note.js') }}"></script>
+{% endblock %}

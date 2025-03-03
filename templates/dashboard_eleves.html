@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord de l'élève{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Bienvenue, {{ current_user.first_name }} !</h2>
+
+    <!-- Annonces -->
+    <div class="alert alert-info">
+        <h4>Dernières Annonces</h4>
+        <ul>
+            <li>Révision des matières pour le prochain examen de maths.</li>
+            <li>Nouvelle date pour le devoir de physique : 10 mars.</li>
+        </ul>
+    </div>
+
+    <!-- Résultats et Performances -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Mes Résultats</h4>
+            <ul class="list-group">
+                <li class="list-group-item">Mathématiques : 16/20</li>
+                <li class="list-group-item">Français : 14/20</li>
+                <li class="list-group-item">Histoire : 18/20</li>
+            </ul>
+        </div>
+
+        <!-- Devoirs et Examens -->
+        <div class="col-md-6">
+            <h4>Mes Devoirs</h4>
+            <ul class="list-group">
+                <li class="list-group-item">Devoir de Mathématiques - Rendu pour le 15 mars</li>
+                <li class="list-group-item">Devoir de Physique - Rendu pour le 18 mars</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Examens -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4>Prochains Examens</h4>
+            <ul>
+                <li>Examen de Mathématiques - 12 mars</li>
+                <li>Examen de Physique - 18 mars</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

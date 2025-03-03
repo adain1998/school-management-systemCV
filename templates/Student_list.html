@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Liste des Étudiants</h1>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student_list.css') }}">
+
+    <!-- Messages Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Tableau des étudiants -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nom</th>
+                    <th>Prénom</th>
+                    <th>Email</th>
+                    <th>Classe</th>
+                    <th>Date de Naissance</th>
+                    <th>Numéro Matricule</th>
+                    <th>Paiement</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                    <tr>
+                        <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+                        <td>{{ student.nom }}</td>
+                        <td>{{ student.prenom }}</td>
+                        <td>{{ student.email }}</td>
+                        <td>{{ student.class_name }}</td>
+                        <td>{{ student.date_naissance.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ student.numero_matricule }}</td>
+                        <td>{{ student.paiement }} $</td>
+                        <td>
+                            <a href="{{ url_for('stud.view_student', student_id=student.id) }}" class="btn btn-info btn-sm">Voir</a>
+                            <a href="{{ url_for('stud.edit_student', student_id=student.id) }}" class="btn btn-warning btn-sm">Modifier</a>
+                            <a href="{{ url_for('stud.delete_student', student_id=student.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Voulez-vous vraiment supprimer cet étudiant ?');">Supprimer</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center">Aucun étudiant trouvé.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('stud.list_student', page=pagination.prev_num) }}">Précédent</a></li>
+            {% endif %}
+
+            {% for num in pagination.iter_pages() %}
+                {% if num %}
+                    <li class="page-item {% if num == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('stud.list_student', page=num) }}">{{ num }}</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+                <li class="page-item"><a class="page-link" href="{{ url_for('stud.list_student', page=pagination.next_num) }}">Suivant</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Bouton d'ajout -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('stud.add_student') }}" class="btn btn-primary">Ajouter un Étudiant</a>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/student_list.js') }}"></script>
+{% endblock %}

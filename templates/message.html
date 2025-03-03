@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-5">Messages Privés</h1>
+    <form action="{{ url_for('main.messages') }}" method="post">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.recipient.label(class="form-label") }}
+            {{ form.recipient(class="form-control", id="recipient") }}
+        </div>
+        <div class="form-group">
+            {{ form.body.label(class="form-label") }}
+            {{ form.body(class="form-control", id="body") }}
+        </div>
+        <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
+    </form>
+    <h2 class="mt-5">Messages Envoyés</h2>
+    <ul class="list-group">
+        {% for message in sent_messages %}
+        <li class="list-group-item">
+            <strong>À {{ message.recipient.username }} :</strong> {{ message.body }}
+            <small class="text-muted">{{ message.timestamp }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+    <h2 class="mt-5">Messages Reçus</h2>
+    <ul class="list-group">
+        {% for message in received_messages %}
+        <li class="list-group-item">
+            <strong>De {{ message.sender.username }} :</strong> {{ message.body }}
+            <small class="text-muted">{{ message.timestamp }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block styles %}
+<!-- Inclusion du CSS de Toastr depuis le CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<!-- Votre fichier CSS personnalisé -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/message.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<!-- Inclusion de jQuery depuis le CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Inclusion du JS de Toastr depuis le CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<!-- Votre fichier JavaScript personnalisé -->
+<script src="{{ url_for('static', filename='js/message.js') }}"></script>
+{% endblock %}

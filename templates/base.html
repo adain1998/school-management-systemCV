@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestion Scolaire{% endblock %}</title>
+
+    <!-- CSS Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student_list.css') }}">
+
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashoard_styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student_list.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/Student_details.css') }}">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.css" rel="stylesheet"/>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{{ url_for('index') }}">Gestion Scolaire</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('auth.logout') }}">Déconnexion</a>
+                     </li>
+                    {% else %}
+                    <li class="nav-item">
+            <a href="{{ url_for('tableau.dashboard') }}">Tableau de bord de Performances des élèves</a>
+        </li>
+        {% if current_user.is_admin %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('auth.manage_users') }}">Gestion des utilisateurs</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('auth.manage_visitors') }}">Gestion des visiteurs</a>
+                 </li>
+                   {% endif %}
+                    {% else %}
+                     <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('auth.login') }}">Se connecter</a>
+                    </li>
+                     <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('connex.signup') }}">S'inscrire</a>
+                     </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.login_parent') }}">Connexion des parents</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('auth.register_parent') }}">Inscription de parents</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stud.students') }}">Liste des étudiants</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('stud.add_student') }}">Ajouter un étudiant</a>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manage_students') }}">Étudiants</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_classes') }}">Classes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_options') }}">Options</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_fees') }}">Frais</a>
+                    </li>
+                         <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('schedul.view_schedules') }}">Voir les horaires</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('schedul.add_schedule') }}">Ajouter un horaire</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('schedul.view_calendar') }}">Calendrier</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('examen.view_exam') }}">Voir les examens</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('paiem.get_payments') }}">Paiements</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('examen.add_exam') }}">Ajouter un examen</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('sect.view_sections') }}">Voir les sections</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('sect.add_section') }}">Ajouter une section</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('sect.gestion_classes') }}">Gérer les classes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rapport.generate_report', report_type='daily') }}">Générer un Rapport</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('rapport.view_reports') }}">Voir les Rapports</a>
+                    </li>
+                    <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('application.performance') }}">Performance</a>
+                    </li>
+                    <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('mes.messages') }}">Messages</a>
+                    </li>
+                     <li class="nav-item">
+                     <a class="nav-link" href="{{ url_for('mes.info') }}">Informations</a>
+                    </li>
+                     <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('mes.forum') }}">Forum</a>
+                    </li>
+
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Messages Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="container mt-2">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </header>
+
+    <main role="main" class="container mt-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script src="htpps://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+
+    <!-- Autres liens CSS -->
+    <!-- Inclusion des bibliothèques JavaScript -->
+    <script src="{{ url_for('static', filename='js/jspdf.umd.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/jspdf.plugin.autotable.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/xlsx.full.min.js') }}"></script>
+    {% block scripts %}{% endblock %}
+
+    <!-- Inclusion de jsPDF-AutoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- Inclusion de XLSX -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Inclusion de jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Inclusion du JS de Toastr depuis le CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <!-- JavaScript personnalisé -->
+    <script>
+        $(document).ready(function() {
+            // Code JavaScript personnalisé ici si nécessaire
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
+        });
+    </script>
+<script>
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": true,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+    </script>
+</body>
+</html>
+

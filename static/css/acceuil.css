@@ -1,0 +1,42 @@
+/* acceuil.css */
+
+/* Style pour le conteneur principal */
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Style pour le titre principal */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #343a40;
+}
+
+/* Styles pour les boutons */
+.btn-primary, .btn-secondary {
+    display: block;
+    width: 200px;
+    margin: 10px auto;
+    padding: 10px;
+    font-size: 1.2rem;
+    text-align: center;
+    border-radius: 0.25rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+
+/* Effet au survol des boutons */
+.btn-primary:hover, .btn-secondary:hover {
+    opacity: 0.8;
+    text-decoration: none;
+}

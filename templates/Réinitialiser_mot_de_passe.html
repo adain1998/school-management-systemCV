@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Réinitialiser le Mot de passe</h1>
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul class="flashes">
+    {% for message in messages %}
+    <li class="alert alert-danger ">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
+<form method="post">
+    {{  form.hidden_tag() }}
+    <div class="form-group">
+        {{ form.email.label(class="form-label") }}
+        {{ form.email(class="form-control", placerholder="Votre Email", required=True)}}
+        {% if form.email.errors %}
+        <div class="alert alert-danger mt-2">
+            {% for error in form.email.errors %}
+        <P>{{ error }}</P>
+        {% endfor %}
+    </div>
+        {% endif %}
+
+    </div>
+    <button type="submit" class="btn btn-primary">Envoyer le Lien de Réinitialisation </button>
+</form>
+<p> Si cet email est associé à un compte , vous recevrez bientôt des instructions.</p>
+<P><a href="{{url_for('login') }}">Retour à la connexion</a></P>
+{% endblock %}

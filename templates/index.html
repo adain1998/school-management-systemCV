@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<html>
+<h1>Gestion des Étudiants</h1>
+
+<div id="student-form">
+    <h2>Ajouter un Élève</h2>
+    <form id="add-student">
+        <input type="text" placeholder="Nom" name="lastName" required>
+        <input type="text" placeholder="Prénom" name="firstName" required>
+        <input type="text" placeholder="Classe_id" name="class" required>
+        <input type="date" name="Date_nassaince" required>
+        <input type="date" name="registrationDate" required>
+        <input type="number" step="0.01" placeholder="Frais Payés" name="feesPaid" required>
+        <button type="submit">Ajouter Élève</button>
+    </form>
+</div>
+<head>
+    <meta charset="UTF-8">
+    <title>Étudiants</title>
+</head>
+<body>
+    <h1>Liste des Étudiants</h1>
+
+    <a href="{{ url_for('add_student') }}">Ajouter un Étudiant</a>
+    <ul>
+        {% for student in students %}
+            <li>{{ student.nom }} {{ student.prenom }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
+
+▎
+
+▎
+
+

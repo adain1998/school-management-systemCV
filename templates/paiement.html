@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>Formulaire de paiement</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Formulaire de paiement</h1>
+    <form method="POST" action="/paiements/add" onsubmit="return validateForm">
+        <label for="date">Date:</label>
+        <input type="text" id="date" name="date" class="form-control">
+        <span class="error-message"></span>
+        <button type="submit" class="btn btn-primary">soumettre</button>
+    </form>
+    <div class="student-info">
+
+    <p>date_naissance:{{student.date_naissance("d/m/y")}}</p>
+    <p>Email:{{student.email}}</p>
+    <p>nom:{{student.nom}}</p>
+    <p>prenom:{{student.prenom}}</p>
+    <p>paiement:{{student.paiement}} $</p>
+    </div>
+    <script>
+        function validateForm() {//... const  studentId = document.getElementById("student_id).value;
+        const fraisId = document.getElementById("fraisId").value;
+        const montant = document .getElementById("montant").value;
+        const dateInput = document.getElementById("date").value;
+        const datevalue = dateInput.value;
+        try {
+        if (!moment(datevalue, "DD/MM/YYYY").isValid()) {throw new Error("Veuillez saisir une date valide au format
+         JJ/MM/AAAA);} catch (error){dateInput.nextElementSibling;
+         errorMessage.textContent = error.message;
+        dateInput.classList.add("is-invalid");
+        return false; } //...// dateInput.classList.remove("is-invalid");
+        } // return true;
+    </script>
+
+        {{ form.student_id.label }}
+        {{ form.student_id(id="student_id") }}
+
+        {{ form.montant.label }}
+        {{ form.montant(id="montant") }}
+
+        {{ form.date.label }}
+        {{ form.date(id="date") }}
+
+</body>
+</html>

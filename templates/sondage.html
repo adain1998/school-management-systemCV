@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Créer un Sondage{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/sondage.css') }}">
+{% block content %}
+    <h1 class="mt-4">Créer un nouveau sondage</h1>
+    <form method="POST" action="{{ url_for('create_poll') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.question.label(class="form-label") }}
+            {{ form.question(class="form-control") }}
+        </div>
+        <div class="form-group">
+            {{ form.end_date.label(class="form-label") }}
+            {{ form.end_date(class="form-control") }}
+        </div>
+        <div class="form-group">
+            <label for="choices" class="form-label">Choix</label>
+            <div id="choices">
+                {% for choice in form.choices %}
+                    <div class="input-group mb-2">
+                        {{ choice.choice_text(class="form-control", placeholder="Entrez un choix") }}
+                        <button type="button" class="btn btn-danger" onclick="removeChoice(this)">Supprimer</button>
+                    </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn btn-secondary" id="add-choice-btn" onclick="addChoice()">Ajouter un choix</button>
+        </div>
+        <button type="submit" class="btn btn-primary">Créer le sondage</button>
+    </form>
+<script src="{{ url_for('static', filename='js/sondage.js') }}"></script>
+{% endblock %}

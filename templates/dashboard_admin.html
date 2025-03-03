@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord de l'administrateur{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Bienvenue, {{ current_user.first_name }} !</h2>
+
+    <!-- Annonces Globales -->
+    <div class="alert alert-info">
+        <h4>Dernières Annonces</h4>
+        <ul>
+            <li>Réunion avec les enseignants pour les résultats du premier trimestre.</li>
+            <li>Nouvelle politique d'évaluation pour l'année scolaire 2025.</li>
+        </ul>
+    </div>
+
+    <!-- Gestion des Utilisateurs -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Gestion des Utilisateurs</h4>
+            <button class="btn btn-primary">Ajouter un Enseignant</button>
+            <button class="btn btn-warning">Ajouter un Élève</button>
+            <button class="btn btn-info">Voir les Utilisateurs</button>
+        </div>
+
+        <!-- Gestion des Cours -->
+        <div class="col-md-6">
+            <h4>Gestion des Classes et Cours</h4>
+            <button class="btn btn-primary">Ajouter une Classe</button>
+            <button class="btn btn-info">Voir les Cours</button>
+        </div>
+    </div>
+
+    <!-- Suivi des Résultats -->
+    <div class="row">
+        <div class="col-md-12">
+            <h4>Suivi des Résultats Scolaires</h4>
+            <button class="btn btn-success">Voir les Résultats des Élèves</button>
+            <button class="btn btn-danger">Gestion des Examens</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

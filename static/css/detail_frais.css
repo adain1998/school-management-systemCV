@@ -1,0 +1,42 @@
+/* detail_frais.css */
+
+/* Table des paiements */
+table.table {
+    width: 100%;
+    margin-top: 20px;
+}
+
+table.table th,
+table.table td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+table.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}
+
+table.table-striped tbody tr:nth-of-type(even) {
+    background-color: #ffffff;
+}
+
+/* Calendrier */
+#calendar {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.fc-header-toolbar {
+    background-color: #007bff;
+    color: white;
+}
+
+.fc-daygrid-day-number {
+    font-weight: bold;
+}
+
+/* Message d'accès refusé */
+.text-center {
+    text-align: center;
+}

@@ -1,0 +1,60 @@
+/* Style global */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Conteneur du formulaire */
+.container {
+    margin-top: 50px;
+}
+
+/* Style des champs de formulaire */
+.form-control {
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    padding: 10px;
+    transition: border 0.3s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Style des boutons */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+    transition: background 0.3s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+/* Toastr notifications */
+#toast-container > .toast {
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.toast-success {
+    background-color: #28a745 !important;
+}
+
+.toast-error {
+    background-color: #dc3545 !important;
+}
+
+.toast-warning {
+    background-color: #ffc107 !important;
+}
+
+/* Centrage des messages d'erreur */
+.text-danger {
+    font-size: 14px;
+    font-weight: bold;
+}

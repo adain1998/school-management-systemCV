@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/Voir_exam.css') }}">
+    <div class="container mt-5">
+        <!-- Titre de la page -->
+        <h2 class="mb-4">Gestion des Examens</h2>
+
+        <!-- Formulaire de filtrage -->
+        <div class="mb-4">
+            <h4>Filtrer les Examens</h4>
+            <form method="POST" action="{{ url_for('examen.filter_and_search_exams') }}" class="form-inline">
+                <div class="form-group mr-3">
+                    <label for="subject">Matière</label>
+                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Matière" value="{{ request.form.get('subject') }}">
+                </div>
+                <div class="form-group mr-3">
+                    <label for="score">Note</label>
+                    <input type="text" class="form-control" id="score" name="score" placeholder="Note" value="{{ request.form.get('score') }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+            </form>
+        </div>
+
+        <!-- Affichage des erreurs -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="alert alert-dismissible fade show" role="alert">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} mt-2">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Table des examens -->
+        <div class="mb-4">
+            <h4>Liste des Examens</h4>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom de l'étudiant</th>
+                        <th>Matière</th>
+                        <th>Note</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if exams %}
+                        {% for exam in exams %}
+                            <tr>
+                                <td>{{ exam.id }}</td>
+                                <td>{{ exam.student_id }}</td>
+                                <td>{{ exam.subject }}</td>
+                                <td>{{ exam.score }}</td>
+                                <td>
+                                    <form action="{{ url_for('examen.delete_exam', exam_id=exam.id) }}" method="POST" class="d-inline">
+                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet examen ?')">Supprimer</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Aucun examen trouvé</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Lien vers la page d'ajout d'examen -->
+        <div class="text-center">
+            <a href="{{ url_for('examen.add_exam') }}" class="btn btn-success">Ajouter un Examen</a>
+        </div>
+    </div>
+<script src="{{ url_for('static', filename='js/Voir_exam.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base_info.html" %}
+
+{% block title %}Informations Scolaires{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Informations sur l'École</h1>
+    <form method="POST" action="{{ url_for('info') }}" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", placeholder="Entrez le titre") }}
+            <div class="invalid-feedback">Veuillez fournir un titre valide.</div>
+        </div>
+        <div class="mb-3">
+            {{ form.content.label(class="form-label") }}
+            {{ form.content(class="form-control", placeholder="Entrez le contenu") }}
+            <div class="invalid-feedback">Veuillez fournir un contenu valide.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Soumettre</button>
+    </form>
+    <hr>
+    <ul class="list-group">
+        {% for info in infos %}
+        <li class="list-group-item">
+            <h2>{{ info.title }}</h2>
+            <p>{{ info.content }}</p>
+            <a href="{{ url_for('edit_info', info_id=info.id) }}" class="btn btn-warning">Modifier</a>
+            <form method="POST" action="{{ url_for('delete_info', info_id=info.id) }}" style="display: inline;">
+                <button type="submit" class="btn btn-danger">Supprimer</button>
+            </form>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/info.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/info.js') }}"></script>
+{% endblock %}

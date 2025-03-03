@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Détails des Frais{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if utilisateur and utilisateur.est_admin %}
+        <h1>Détails des Frais</h1>
+
+        <h2>Frais ID: {{ frais.id }}</h2>
+        <p>Montant: {{ frais.montant }} €</p>
+
+        <h3>Détails de l'Utilisateur</h3>
+        <p>Nom: {{ utilisateur.nom }}</p>
+
+        <h3>Calendrier des Paiements</h3>
+        <div id="calendar"></div> <!-- Élément pour le calendrier -->
+
+        <h3>Paiements</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Mois</th>
+                    <th>Année</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for paiement in paiements %}
+                    <tr>
+                        <td>{{ paiement.mois }}</td>
+                        <td>{{ paiement.annee }}</td>
+                        <td>{{ paiement.statut }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucun paiement enregistré.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    {% else %}
+        <h1>Accès Refusé</h1>
+        <p>Vous devez être un administrateur pour accéder à cette page.</p>
+    {% endif %}
+</div>
+
+{% block styles %}
+<!-- Styles CSS personnalisés -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail_frais.css') }}">
+<!-- jQuery UI et FullCalendar -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.css') }}">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+<!-- Scripts JS personnalisés -->
+<script src="{{ url_for('static', filename='js/detail_frais.js') }}"></script>
+<!-- jQuery et jQuery UI -->
+<script src="{{ url_for('static', filename='js/jquery.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-ui.js') }}"></script>
+<!-- FullCalendar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.js"></script>
+{% endblock %}

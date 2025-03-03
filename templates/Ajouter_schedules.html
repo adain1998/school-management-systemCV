@@ -1,0 +1,31 @@
+!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Ajouter un Horaire</title>
+     <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap/min.css' rel='stylesheet'>
+</head>
+<body>
+<h1>Horaires</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+<li class="{{ category }}">{{ message }}
+</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+<a href="{{ url_for('add_schedules') }}">Ajouter un Horaire</a>
+<form method="post" action="{{ url_for('filter_schedules') }}">
+    <input type="number" name="class_id" placeholder="ID de la classe" required>
+    <input type="text" name="subject" placeholder="Matière" required>
+    <input type="text" name="time_slot" placeholder="Créneau horaire" required>
+    <button type="submit">Ajouter</button>
+</form>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<a href="{{ url_for('view_schedules' }}">Retourner aux Horaires</a>
+</body>
+</html>

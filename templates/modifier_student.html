@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mt-5">Modifier Étudiant</h1>
+<form action="{{ url_for('update_student', id=student.id) }}" method="post">
+    <!-- Le reste du formulaire est similaire au formulaire d'ajout -->
+    <button type="submit" class="btn btn-success">Enregistrer les modifications</button>
+</form>
+{% endblock %}

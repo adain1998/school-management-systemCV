@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Horaires</title>
+    <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap/min.css' rel='stylesheet'>
+</head>
+<body>
+<h1>Horaires</h1>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+<li class="{{ category }}">{{ message }}
+</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+<a href="{{ url_for('add_schedules') }}">Ajouter un Horaire</a>
+<form method="post" action="{{ url_for('filter_schedules') }}">
+    <input type="text" name="subject" placeholder="filtrer par matière">
+    <button type="submit">Filtrer</button>
+</form>
+
+<ul>
+    {% for schedules in schedules %}
+<li>{{ schedule.subject }} - {{ schedule.time_slot }}
+    <form method="post" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}">
+        <button type="submit" >Supprimer</button>
+    </form>
+</li>
+    {% endfor %}
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</ul>
+</body>
+</html>

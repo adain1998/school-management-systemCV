@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Modifier Utilisateur : {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Modifier Utilisateur : {{ user.username }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}" id="edit-user-form">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label(class="form-label") }}
+            {{ form.username(class="form-control", id="username") }}
+        </div>
+        <div class="form-group">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", id="email") }}
+        </div>
+        <div class="form-group form-check">
+            {{ form.admin(class="form-check-input", id="admin") }}
+            {{ form.admin.label(class="form-check-label") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Mettre à jour</button>
+    </form>
+    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary mt-3">Retour à la gestion des utilisateurs</a>
+</div>
+{% endblock %}
+
+{% block styles %}
+<!-- Inclusion du CSS de Bootstrap depuis le CDN -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!-- Inclusion du CSS de Toastr depuis le CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<!-- Votre fichier CSS personnalisé -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_user.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<!-- Inclusion de jQuery depuis le CDN -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<!-- Inclusion du JS de Bootstrap depuis le CDN -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- Inclusion du JS de Toastr depuis le CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<!-- Votre fichier JavaScript personnalisé -->
+<script src="{{ url_for('static', filename='js/edit_user.js') }}"></script>
+{% endblock %}

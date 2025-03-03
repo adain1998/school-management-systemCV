@@ -1,0 +1,15 @@
+body{ font-family: Arial, sans-serif;}
+.navbar { display: flex; justify-content:
+ space-between; align-items: center;
+ background-color: #333; padding: 10px 20px}
+.navbar-brand a { color: white; text-decoration: none;
+font-size: 24px}
+.navbar-menu{list-style_type: none; margin: 0; padding: 0;}
+.navbar-menu li{display: inline;}
+.navbar-menu li a{color: white; text-decoration: none;padding 10px 15px;}
+.navbar-menu li a:hover {background-color: #575757;}
+@media (max-width: 768px) {.navbar-menu{display: none; flex-direction: column;
+width: 100%; position: absolute; top: 60px; left: 0; background-color: #333;
+z-index: 1;}
+.navbar-menu li {display: block; text-align: center; width: 100%; }
+.navbar-toggle{display: block; cursor:pointer;}}

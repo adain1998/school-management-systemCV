@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %} Rapport Financier {% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Rapport_financier.css') }}">
+{% block content %}
+    <h2 class="text-center text-primary mb-4">📊 Rapport Financier</h2>
+
+    <div class="card">
+        <div class="card-header bg-primary text-white text-center">
+            <h5>Paiements par Mois</h5>
+        </div>
+        <div class="card-body">
+            {% if report_data %}
+                <table class="table table-striped table-bordered" id="reportTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Mois <button onclick="sortTable(0)">⬍</button></th>
+                            <th>Total des Paiements (USD) <button onclick="sortTable(1)">⬍</button></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mois, total in report_data.items() %}
+                            <tr>
+                                <td><strong>{{ mois }}</strong></td>
+                                <td>${{ total | round(2) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Boutons d'exportation -->
+                <div class="text-center mt-3">
+                    <button class="btn btn-success" onclick="exportToCSV()">📥 Exporter CSV</button>
+                    <button class="btn btn-info" onclick="exportToExcel()">📊 Exporter Excel</button>
+                    <button class="btn btn-danger" onclick="exportToPDF()">📄 Télécharger PDF</button>
+                </div>
+            {% else %}
+                <div class="alert alert-warning text-center">
+                    Aucun paiement enregistré pour cette période.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+<script src="{{ url_for('static', filename='js/Rapport_financier.js') }}"></script>
+{% endblock %}

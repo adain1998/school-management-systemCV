@@ -1,0 +1,44 @@
+
+{% extends "base.html %}
+{% block title %}Gestion des Utilisateurs {%endblock %}
+<h2>Gestion des utilisateurs</h2>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+    <li class="{{category}}">{{message}}</li>
+    {% endfor %}
+</ul>
+
+    {% endif %}
+        {% endwith %}
+    <title>Gestion des utilisateurs</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login_parent.css') }}">
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Nom d'utilisateurs</th>
+    <th>Email</th>
+    <th>Admin</th>
+    <th>Actions</th>
+    </tr>
+    </thead>
+<tbody>
+{% for user in users %}
+<tr>
+    <td> {{user.id }}</td>
+    <td>{{ user.username }}</td>
+    <td>{{ user.email }}</td>
+    <td>{{'Oui' if user.admin else 'Non'}}</td>
+    <td>
+        <a href="{{ url_for('admin_edit_user', user_id=user.id) }}" class="btn btn-warning">Modifier</a>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<a href="{{ url_for('logout') }}" class="btn btn-danger mt4">Déconnexion</a>
+{% endblock %}
+

@@ -1,0 +1,274 @@
+!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tableau de bord{% endblock %}</title>
+
+    <!-- CSS Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- CSS personnalisé -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashoard_styles.css') }}">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.css" rel="stylesheet"/>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <a class="navbar-brand" href="{{ url_for('dashbaord') }}">Gestion Scolaire</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    {% if current_user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('logout') }}">Déconnexion</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('login') }}">Connexion</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('register') }}">Enregistrement</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('home') }}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('schedules.calendar') }}">Horaires</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+{% extends "base.html" %}
+
+{% block title %}Tableau de Bord{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Tableau de Bord</h2>
+<div class="card mb-3 card-students">
+    <div class="card-header">Etudiants</div>
+    <div class="card-body">
+        <h5>{{ students_count }} Etudiants Enregistrés</h5>
+        <a href="{{ url_for('manage_students') }} " class="btn btn-light"> Gérer les étudiants</a>
+        <ul>
+            <li><a href="{{url_for('add_students')"> Ajouter un étudiant</a></li>
+            <li><a href="{{ url_for('list_students') }}">Liste des élèves</a></li>
+            <li><a href="{{ url_for('search_students') }}">Rechercher un élève</a></li>
+            <li><a href="{{ url_for('edit_students') }}">Modifier un élève</a></li>
+        </ul>
+    </div>
+</div>
+    <!-- Bouton pour ouvrir la modale -->
+    <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#addStudentModal">
+        Ajouter un Étudiant
+    </button>
+
+    <!-- Modale pour ajouter un étudiant -->
+    <div class="modal fade" id="addStudentModal" tabindex="-1" role="dialog" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStudentModalLabel">Ajouter un Étudiant</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form method="POST" action="{{ url_for('add_student') }}">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="studentLastName">Nom</label>
+                            <input type="text" class="form-control" id="studentLastName" name="last_name" required>
+                        </div>
+                        <div class="modal-body">
+                        <div class="form-group">
+                            <label for="studentFirstName">Prénom</label>
+                            <input type="text" class="form-control" id="studentFirstName" name="first_name" required>
+                        </div>
+                            <div class="modal-body">
+                        <div class="form-group">
+                            <label for="studentClasseName">Nom de la classe</label>
+                            <input type="text" class="form-control" id="studentClasseName" name="class_name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="studentDateNaissance">Date de naissance </label>
+                            <input type="date" class="form-control" id="studentDateNaissance"
+                                   name="date_naissance" required>
+                        </div>
+                        <div class="form-group ">
+                            <label for="studentRegistrationDate">Date d'inscription</label>
+                            <input type="date" class="form-control" id="studentRegistrationDate" name="registration_date" required>
+                        </div>
+                                <div class="form-group">
+                                    <label for="studentFeesPaid">Frais payés</label>
+                                    <select class="form-control" id="studentFeesPaid" name="fees_paid" required>
+                                        <option value="True">Oui</option>
+                                        <option value="False">Non </option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                            <label for="studentFeesAmount">Montant des Frais</label>
+                            <input type="number" step="0.01" class="form-control"
+                                   id="studentFeesAmount" name="fees_amount" required placeholder="Entrez le montant des frais">
+                        </div>
+
+                                <div class="form-group">
+                            <label for="studentMatricule">Numéro Matricule</label>
+                            <input type="text" class="form-control" id="studentMatricule" name="matricule" required>
+                        </div>
+                                </div>
+
+                                <div class="form-group">
+                            <label for="studentDebt">Dettes</label>
+                            <input type="number"  step="0.01" class="form-control" id="studentDebt" name="matricule" required>
+                        </div>
+                                </div>
+
+                                <div class="form-group">
+                            <label for="studentReligion">Religion</label>
+                            <input type="text" class="form-control" id="studentReligion" name="religion" required>
+                        </div>
+                        <!-- Ajoutez d'autres champs si nécessaire -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card for Students -->
+    <div class="card mb-3 card-student">
+        <div class="card-header">Étudiants</div>
+        <div class="card-body">
+            <h5>{{ students_count }} Étudiants enregistrés</h5>
+            <a href="{{ url_for('manage_students') }}" class="btn btn-primary">Gérer les Étudiants</a>
+        </div>
+    </div>
+
+    <!-- Card for Fees -->
+    <div class="card mb-3 card-fees">
+        <div class="card-header">Frais Scolaires</div>
+        <div class="card-body">
+            <h5>{{ fees_count }} Frais enregistrés</h5>
+            <a href="{{ url_for('view_fees') }}" class="btn btn-primary">Gérer les Frais</a>
+        </div>
+    </div>
+
+    <!-- Card for Classes -->
+    <div class="card mb-3 card-classe">
+        <div class="card-header">Classes</div>
+        <div class="card-body">
+            <h5>{{ classes_count }} Classes disponibles</h5>
+            <a href="{{ url_for('view_classes') }}" class="btn btn-primary">Gérer les Classes</a>
+        </div>
+    </div>
+
+    <!-- Card for Sections -->
+    <div class="card mb-3 card-sections">
+        <div class="card-header">Sections</div>
+        <div class="card-body">
+            <h5>{{ sections_count }} Sections disponibles</h5>
+            <a href="{{ url_for('view_sections') }}" class="btn btn-primary">Gérer les Sections</a>
+        </div>
+    </div>
+
+    <!-- Card for Options -->
+    <div class="card mb-3 card-Option">
+        <div class="card-header">Options</div>
+        <div class="card-body">
+            <h5>{{ options_count }} Options disponibles</h5>
+            <a href="{{ url_for('view_options') }}" class="btn btn-primary">Gérer les Options</a>
+        </div>
+    </div>
+    <div class="card mb-3 card-absences">
+        <div class="card-header">Absences</div>
+        <div class="card-body">
+            <h5>{{ absences_count }} Absences enregistrées </h5>
+            <a href="{{ url_for('view_absences') }}" class="btn btn-primary">Gérer les Absences </a>
+        </div>
+    </div>
+    <div class="card mb-3 card-reports">
+        <div class="card-header">Rapports</div>
+        <div class="card-body">
+            <h5>{{ report_count }} Rapports générés</h5>
+            <a href="{{ url_for('view_reports') }}" class="btn btn-primary">Gérer les Rapports</a>
+        </div>
+    </div>
+    <div class="card mb-3 card-matiere">
+        <div class="card-header">Matières</div>
+        <div class="card-body">
+            <h5>{{ matiere_count }} Matières disponibles</h5>
+            <a href="{{ url_for('view_matieres') }}" class="btn btn-primary">Gérer les matières </a>
+        </div>
+    </div>
+    <div class="card mb-3 card-notes">
+        <div class="card-header">Notes</div>
+        <div class="card-body">
+            <h5>{{ notes_count }} Notes enrégistrées </h5>
+            <a href="{{ url_for('manage_grade') }}" class="btn btn-primary">Gérer les Notes</a>
+        </div>
+    </div>
+    <div class="card mb-3 card_users">
+        <div class="card-header">Options</div>
+        <div class="card-body">
+            <h5>{{ users_count }} Utilisateurs enregistrés</h5>
+            <a href="{{ url_for('manage_users') }}" class="btn btn-primary">Gérer les Utilisateurs </a>
+        </div>
+    </div>
+    <div class="card mb-3 card-schedules">
+        <div class="card-header">Horaires</div>
+        <div class="card-body">
+            <h5> Voir les Horaires des classes </h5>
+            <a href="{{ url_for('schedules.calendar') }}" class="btn btn-primary">Calendrier des horaires </a>
+        </div>
+    </div>
+
+    <!-- Graphique des étudiants -->
+    <h3>Statistiques des Étudiants</h3>
+    <canvas id="studentChart" width="400" height="200"></canvas>
+
+    <!-- Script pour le graphique -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script> <!-- Ajoutez cette ligne si Chart.js n'est pas déjà inclus -->
+    <script>
+        const ctx = document.getElementById('studentChart').getContext('2d');
+        const studentChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Classe A', 'Classe B', 'Classe C'], // Remplacez par vos données
+                datasets: [{
+                    label: 'Nombre d\'Étudiants',
+                    data: [12, 19, 8], // Remplacez par vos données
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+    <script>document.addEventListener('DOMContentLoaded', function()
+    { const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    document.getElementById('studentRegistrationDate').value = today; // YYYY-MM-DD});></script>
+
+</div>
+
+{% endblock %}
+
+

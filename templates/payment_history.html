@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Paiements{% endblock %}
+
+{% block content %}
+    <title>Payment History</title>
+<body>
+    <h1>Payment History</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.user_id }}</td>
+                <td>{{ payment.amount }}</td>
+                <td>{{ payment.due_date }}</td>
+                <td>{{ payment.payment_status }}</td>
+                <td>
+                    {% if not payment.paid %}
+                    <a href="{{ url_for('make_payment', payment_id=payment.id) }}">Pay</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
+{% end %}
+

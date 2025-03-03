@@ -1,0 +1,34 @@
+!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/html">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Calendrier des Horaires </title>
+    <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap/min.css' rel='stylesheet'>
+    <link href="https://cdn.jsdeliver.net/npm/fullcalendar@5.10.2/main.min.css" rel="stylesheet"/>
+    <script src="https://cdn.jsdeliver.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+    <link rel="stylesheet" href="static/styles_calendar.css">
+</head>
+<body>
+<h1>Calendrier des Horaires</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+<li class="{{ category }}">{{ message }}
+</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+<div id="calendar"></div>
+<script>
+    document.addEventListener ('DOMContentLoaded', function() { var calendarE1 = document.getElementById(
+    'calendar'); var calendar = new FullCalendar.Calendar(calendarE1, { initialView:'dayGridMonth',
+    events = [{% for schedule in schedules %}{ title: '{{ schedule.subject }}', start:'{{ schedule.time_slot.isoformat
+     () }}', }, {% endfor %} ]}); calendar.render(); });
+</script>
+
+<a href="{{ url_for('view_exam' }}">Retourner aux examens </a>
+</body>
+</html>

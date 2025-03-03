@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Filtrer les Étudiants</h1>
+
+    <form method="GET" action="{{ url_for('filter_student') }}" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="filter_class_name" class="form-label">Classe :</label>
+                <input type="text" class="form-control" id="filter_class_name" name="filter_class_name" value="{{ filter_class_name }}">
+            </div>
+            <div class="col-md-4">
+                <label for="filter_religion" class="form-label">Religion :</label>
+                <input type="text" class="form-control" id="filter_religion" name="filter_religion" value="{{ filter_religion }}">
+            </div>
+            <div class="col-md-4">
+                <label for="filter_username" class="form-label">Nom d'utilisateur :</label>
+                <input type="text" class="form-control" id="filter_username" name="filter_username" value="{{ filter_username }}">
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label for="sort_by" class="form-label">Trier par :</label>
+                <select id="sort_by" name="sort_by" class="form-select">
+                    <option value="last_name" {%if sort_by =='last_name' %}selected{% elif not sort_by %}selected{% endif %}>Nom</option>
+                    <option value="first_name" {%if sort_by =='first_name' %}selected{% endif %}>Prénom</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="order" class="form-label">Ordre :</label>
+                <select id="order" name="order" class="form-select">
+                    <option value="asc" {%if order =='asc' or not order %}selected{% endif %}>Croissant</option>
+                    <option value="desc" {%if order =='desc' %}selected{% endif %}>Décroissant</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+        </div>
+    </form>
+
+    <h2 class="text-center mt-4">Étudiants Filtrés</h2>
+    {% if students_filtered %}
+        <ul class="list-group mt-3">
+            {% for student in students_filtered %}
+                <li class="list-group-item">
+                    <strong>Nom :</strong> {{ student.first_name }} {{ student.last_name }} -
+                    <strong>Classe :</strong> {{ student.class_name }} -
+                    <strong>Religion :</strong> {{ student.religion }} -
+                    <strong>Nom d'utilisateur :</strong> {{ student.username }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center text-muted mt-3">Aucun étudiant trouvé.</p>
+    {% endif %}
+</div>
+<link href="{{ url_for('static', filename='css/filter_student.css') }}" rel="stylesheet">
+
+<script src="{{ url_for('static', filename='filter_student.js') }}" defer></script>
+{% endblock %}

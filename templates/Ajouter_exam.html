@@ -1,0 +1,31 @@
+!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Ajouter un examen</title>
+    <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap/min.css' rel='stylesheet'>
+</head>
+<body>
+<h1>examen</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul class="flashes">
+    {% for category, message in messages %}
+<li class="{{ category }}">{{ message }}
+</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+<a href="{{ url_for('add_exam') }}">Ajouter un Examen</a>
+<form method="post" action="{{ url_for('filter_exam') }}">
+    <input type="number" name="student_id" placeholder="ID de l'etudiant" required>
+    <input type="text" name="subject" placeholder="Examen" required>
+    <input type="number" STEP="0.01" name="score" placeholder="Score de l'examen" required>
+    <button type="submit">Ajouter</button>
+</form>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<a href="{{ url_for('view_exam' }}">Retourner aux examens </a>
+</body>
+</html>

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Filtrer les Messages{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Filtrer les Messages</h1>
+
+    <!-- Formulaire de filtrage -->
+    <form method="GET" action="{{ url_for('filter_messages') }}" class="form-inline mb-4">
+        <label for="filter_by" class="mr-2">Filtrer par :</label>
+        <select name="filter_by" id="filter_by" class="form-control mr-2" required>
+            <option value="">--Sélectionnez un critère--</option>
+            <option value="timestamp">Date</option>
+            <option value="sender_id">Expéditeur</option>
+            <option value="body">Contenu du message</option>
+            <option value="recipient_id">Destinataire</option>
+        </select>
+
+        <label for="order" class="mr-2">Ordre :</label>
+        <select name="order" id="order" class="form-control mr-2" required>
+            <option value="">--Sélectionnez un ordre--</option>
+            <option value="asc">Ascendant</option>
+            <option value="desc">Descendant</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary">Filtrer</button>
+    </form>
+
+    <!-- Affichage des messages filtrés -->
+    {% if msgs %}
+        <ul class="list-group">
+            {% for msg in msgs %}
+                <li class="list-group-item">
+                    <strong>{{ msg.titre }}</strong><br>
+                    {{ msg.contenu }}<br>
+                    <small class="text-muted">Envoyé le {{ msg.date }} par {{ msg.auteur }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Pagination -->
+        <nav aria-label="Pagination">
+            <ul class="pagination mt-4">
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_num }}&filter_by={{ request.args.get('filter_by') }}&order={{ request.args.get('order') }}">{{ page_num }}</a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </nav>
+    {% else %}
+        <p>Aucun message trouvé.</p>
+    {% endif %}
+
+    <!-- Affichage des erreurs -->
+    {% if error %}
+        <div class="alert alert-danger mt-4">
+            <strong>Erreur :</strong> {{ error }}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block styles %}
+<!-- Lien vers le fichier CSS personnalisé -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/filter_message.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<!-- Lien vers le fichier JavaScript personnalisé -->
+<script src="{{ url_for('static', filename='js/filter_message.js') }}"></script>
+{% endblock %}

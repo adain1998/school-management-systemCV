@@ -1,0 +1,32 @@
+/* filter_paiement.css */
+
+/* Personnalisation des notifications Toastr */
+#toast-container .toast {
+    background-color: #333;
+    color: #fff;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#toast-container .toast-success {
+    background-color: #28a745;
+}
+
+#toast-container .toast-error {
+    background-color: #dc3545;
+}
+
+#toast-container .toast-warning {
+    background-color: #ffc107;
+}
+
+#toast-container .toast-info {
+    background-color: #17a2b8;
+}
+
+/* Positionnement en haut à droite */
+#toast-container {
+    top: 20px;
+    right: 20px;
+}

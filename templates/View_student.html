@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Vue de l'Étudiant</h1>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/student_list.css') }}">
+    <!-- Affichage des messages flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} mt-3">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Affichage des détails de l'étudiant -->
+    <div class="row">
+        <div class="col-md-6">
+            <p><strong>Nom :</strong> {{ student.nom }}</p>
+            <p><strong>Prénom :</strong> {{ student.prenom }}</p>
+            <p><strong>Email :</strong> {{ student.email }}</p>
+            <p><strong>Classe :</strong> {{ student.class_name }}</p>
+        </div>
+        <div class="col-md-6">
+            <p><strong>Date de Naissance :</strong> {{ student.date_naissance.strftime('%d/%m/%Y') }}</p>
+            <p><strong>Numéro Matricule :</strong> {{ student.numero_matricule }}</p>
+            <p><strong>Paiement :</strong> {{ student.paiement }} $</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('stud.list_student') }}" class="btn btn-secondary">Retour à la liste</a>
+        <a href="{{ url_for('stud.edit_student', student_id=student.id) }}" class="btn btn-warning">Modifier</a>
+        <a href="{{ url_for('stud.delete_student', student_id=student.id) }}" class="btn btn-danger" onclick="return confirm('Voulez-vous vraiment supprimer cet étudiant ?');">Supprimer</a>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/student_list.js') }}"></script>
+{% endblock %}

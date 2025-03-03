@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Filtrer les Notifications{% endblock %}
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/Notification.css') }}">
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Filtrer les Notifications</h1>
+    <form method="GET" action="{{ url_for('filter_notifications') }}" class="form-inline mb-4">
+        {{ form.hidden_tag() }}
+        <div class="form-group mr-2">
+            {{ form.filter_by.label(class="mr-2") }}
+            {{ form.filter_by(class="form-control mr-2") }}
+        </div>
+        <div class="form-group mr-2">
+            {{ form.order.label(class="mr-2") }}
+            {{ form.order(class="form-control mr-2") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Appliquer le Filtre</button>
+    </form>
+
+    {% if notifications %}
+        <ul class="list-group">
+            {% for notification in notifications %}
+                <li class="list-group-item">
+                    <h5>{{ notification.title }}</h5>
+                    <p>{{ notification.description }}</p>
+                    <small>Date d'échéance : {{ notification.due_date.strftime('%d/%m/%Y') }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+
+        <!-- Pagination -->
+        <nav aria-label="Pagination">
+            <ul class="pagination mt-4">
+                {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('filter_notifications', page=pagination.prev_num, filter_by=form.filter_by.data, order=form.order.data) }}">Précédent</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Précédent</span>
+                    </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('filter_notifications', page=page_num, filter_by=form.filter_by.data, order=form.order.data) }}">{{ page_num }}</a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">…</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('filter_notifications', page=pagination.next_num, filter_by=form.filter_by.data, order=form.order.data) }}">Suivant</a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Suivant</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <p>Aucune notification trouvée pour les critères sélectionnés.</p>
+    {% endif %}
+</div>
+<script src="{{ url_for('static', filename='js/Notification.js') }}"></script>
+{% endblock %}

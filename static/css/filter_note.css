@@ -1,0 +1,41 @@
+/* Exemple de styles personnalisés pour le formulaire de filtrage */
+.container {
+    max-width: 900px;
+    margin: auto;
+}
+
+h2 {
+    font-size: 24px;
+    color: #0056b3;
+}
+
+.form-label {
+    font-weight: bold;
+}
+
+.table {
+    margin-top: 20px;
+}
+
+.table th {
+    background-color: #f4f6f9;
+    color: #343a40;
+}
+
+/* Personnalisation des boutons */
+button[type="submit"] {
+    background-color: #0056b3;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button[type="submit"]:hover {
+    background-color: #004085;
+}
+
+/* Personnalisation des alertes Bootstrap */
+.alert-dismissible {
+    margin-top: 15px;
+}

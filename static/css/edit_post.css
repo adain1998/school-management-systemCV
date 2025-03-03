@@ -1,0 +1,45 @@
+/* edit_post.css */
+
+/* Style pour le conteneur principal */
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Style pour le titre principal */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+/* Styles pour les labels des champs de formulaire */
+.form-label {
+    font-weight: bold;
+    color: #34495e;
+}
+
+/* Styles pour les champs de formulaire */
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #bdc3c7;
+    padding: 10px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* Styles pour le bouton de soumission */
+.btn-primary {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #1f6391;
+    border-color: #1f6391;
+}

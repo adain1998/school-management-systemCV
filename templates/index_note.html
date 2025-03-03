@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}Vue de la Moyenne{% endblock %}
+
+{% block content %}
+
+    <title>Calcul de Moyenne</title>
+<body>
+    <h1>Calcul de Moyenne</h1>
+    <form action="/calculate" method="post">
+        <div>
+            <label for="names">Noms des élèves (séparés par des virgules):</label>
+            <input type="text" id="names" name="names" required>
+        </div>
+        <div>
+            <label for="grades">Notes (séparées par des virgules pour chaque élève):</label>
+            <input type="text" id="grades" name="grades" required>
+        </div>
+        <button type="submit">Calculer</button>
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul>
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+{% endblock %}

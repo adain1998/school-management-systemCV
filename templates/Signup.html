@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/Signup.css') }}">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h2 class="text-center my-4">Créer un compte</h2>
+
+            <!-- Affichage des messages flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="alert-container">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('connex.signup') }}">
+                {{ form.hidden_tag() }}
+
+                <div class="form-group">
+                    {{ form.username.label }}
+                    {{ form.username(class="form-control", placeholder="Nom d'utilisateur") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.email.label }}
+                    {{ form.email(class="form-control", placeholder="Email") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.password.label }}
+                    {{ form.password(class="form-control", placeholder="Mot de passe") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.confirm_password.label }}
+                    {{ form.confirm_password(class="form-control", placeholder="Confirmer le mot de passe") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.last_name.label }}
+                    {{ form.last_name(class="form-control", placeholder="Nom de famille") }}
+                </div>
+
+                <div class="form-group">
+                    {{ form.role.label }}
+                    {{ form.role(class="form-control", onchange="toggleFields()") }}
+                </div>
+
+                <div class="form-group" id="specialite_field" style="display: none;">
+                    {{ form.specialite.label }}
+                    {{ form.specialite(class="form control", placeholder="Spécialité de l'enseignant")}}
+                </div>
+
+                <div class="form-group" id="niveau_field" style="display: none;">
+                    {{ form.niveau.label }}
+                    {{ form.niveau(class="formcontrol", placeholder="Niveau de l'élève")}}
+                </div>
+
+                <div class="form-group" id="role_admin_field" style="display: none;">
+                    {{ form.role_admin.label }}
+                    {{ form.role_admin(class="formcontrol", placeholder="Rôle de l'administrateur") }}
+                </div>
+
+                <div class="form-group text-center">
+                    {{ form.submit(class="btn btn-primary btn-lg") }}
+                </div>
+            </form>
+
+            <p class="text-center my-4">Déjà un compte ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/Signup.js') }}"></script>
+<script>
+    function toggleFields() {
+        let role = document.getElementById("role").value;
+        document.getElementById("specialite_field").style.display = (role === "enseignant") ? "block" : "none" ;
+        document.getElementById("niveau_field").style.display = (role === "eleve") ? "block" : "none" ;
+        document.getElementById("role_admin_field").style.display = (role === "administrateur") ? "block" : "none" ;}
+
+    // Exécuter la fonction lors du chargement de la page pour afficher les champs corrects
+    window.onload = toggleFields;
+</script>
+
+{% endblock %}

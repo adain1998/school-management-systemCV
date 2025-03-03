@@ -1,0 +1,109 @@
+/* forum.css */
+
+/* Style pour le conteneur principal */
+.container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+}
+
+/* Style pour le titre principal */
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+}
+
+/* Styles pour les labels des champs de formulaire */
+.form-label {
+    font-weight: bold;
+    color: #34495e;
+}
+
+/* Styles pour les champs de formulaire */
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #bdc3c7;
+    padding: 10px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* Styles pour le bouton de soumission */
+.btn-primary {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #1f6391;
+    border-color: #1f6391;
+}
+
+/* Style pour la liste des posts */
+.list-group-item {
+    margin-bottom: 20px;
+    padding: 20px;
+    border: 1px solid #ecf0f1;
+    border-radius: 5px;
+    background-color: #ecf0f1;
+}
+
+/* Style pour les titres des posts */
+.list-group-item h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+/* Style pour les paragraphes des posts */
+.list-group-item p {
+    font-size: 1rem;
+    color: #7f8c8d;
+}
+
+/* Style pour les boutons d'action */
+.btn-warning, .btn-danger {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-warning {
+    background-color: #f39c12;
+    border-color: #f39c12;
+    color: #fff;
+}
+
+.btn-warning:hover {
+    background-color: #e67e22;
+    border-color: #e67e22;
+}
+
+.btn-danger {
+    background-color: #c0392b;
+    border-color: #c0392b;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #a93226;
+    border-color: #a93226;
+}
+
+/* Style pour les dates des posts */
+.list-group-item small {
+    display: block;
+    margin-bottom: 10px;
+    color: #95a5a6;
+}
+
+/* Style pour les formulaires imbriqués */
+.list-group-item form {
+    display: inline;
+}

@@ -1,0 +1,45 @@
+<!-- templates/admin/manage_visitors.html -->
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Visiteurs{% endblock %}
+{% block content %}
+<h1 xmlns="http://www.w3.org/1999/html">Gestion des Visiteurs</h1>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<table class="table table-striped">
+
+<thead>
+<tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Date de visite</th>
+        <th>Actions</th>
+        <!-- Ajoutez d'autres colonnes si nécessaire -->
+</tr>
+    </thead>
+<tbody>
+
+    {% for visitor in visitors %}
+    <tr>
+        <td>{{ visitor.id }}</td>
+        <td>{{ visitor.name }}</td>
+        <td>{{ visitor.email }}</td>
+        <td>{{ visitor.visit_date.strftime('%Y-%m-%d %H:%M:%S ') }}</td> <!-- formatage de la date -->
+        <!-- Ajoutez d'autres colonnes si nécessaire -->
+        <td>
+            <a href="{{url_for('admin.edit_visitor', visitor_id=visitor.id) }}" class="btn btn-warning">Modifier</a>
+        <a href="{{url_for('admin.delete_visitor', visitor_id=visitor.id) }}"
+           class="btn btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce visiteur?');">Supprimer</a>
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+
+<a href="{{ url_for('admin.admin_dashboard') }}">Retour au Tableau de Bord</a>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+{% endblock %}
+

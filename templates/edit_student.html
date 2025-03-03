@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="mt-5">Modifier l'Étudiant</h1>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/edit_student.css') }}">
+<form action="{{ url_for('edit_student', id=student.id) }}" method="post">
+    <div class="form-group">
+        <label for="last_name">Nom:</label>
+        <input type="text" class="form-control" id="last_name" name="last_name" value="{{ student.last_name }}" required>
+    </div>
+    <div class="form-group">
+        <label for="first_name">Prénom:</label>
+        <input type="text" class="form-control" id="first_name" name="first_name" value="{{ student.first_name }}" required>
+    </div>
+    <div class="form-group">
+        <label for="class_name">Classe:</label>
+        <input type="text" class="form-control" id="class_name" name="class_name" value="{{ student.class_name }}" required>
+    </div>
+    <div class="form-group">
+        <label for="date_naissance">Date de Naissance:</label>
+        <input type="date" class="form-control" id="date_naissance" name="date_naissance" value="{{ student.date_naissance }}" required>
+    </div>
+    <div class="form-group">
+        <label for="registration_date">Date d'Inscription:</label>
+        <input type="date" class="form-control" id="registration_date" name="registration_date" value="{{ student.registration_date }}" required>
+    </div>
+    <div class="form-group">
+        <label for="numero_matricule">Numéro matricule:</label>
+        <input type="number" class="form-control" id="numero_matricule" name="numero_matricule" value="{{ student.numero_matricule }}" required>
+    </div>
+    <div class="form-group">
+        <label for="fees_paid">Frais Payés:</label>
+        <input type="number" step="0.01" class="form-control" id="fees_paid" name="fees_paid" value="{{ student.fees_paid }}" required>
+    </div>
+    <div class="form-group">
+        <label for="class_id">ID de la Classe:</label>
+        <input type="number" class="form-control" id="class_id" name="class_id" value="{{ student.class_id }}" required>
+    </div>
+    <div class="form-group">
+        <label for="debt">Dette:</label>
+        <input type="number" step="0.01" class="form-control" id="debt" name="debt" value="{{ student.debt }}" required>
+    </div>
+    <div class="form-group">
+        <label for="religion">Religion:</label>
+        <input type="text" class="form-control" id="religion" name="religion" value="{{ student.religion }}">
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>
+<script src="{{ url_for('static', filename='js/edit_student.js') }}"></script>
+{% endblock %}

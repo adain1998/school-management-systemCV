@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>openSIS Student Information System</title>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link href="{{ url_for('static', filename='css/login.css') }}" rel="stylesheet" type="text/css">
+</head>
+<body>
+    <section class="login">
+        <div class="login-wrapper">
+            <div class="panel">
+                <div class="panel-heading">
+                    <div class="logo">
+                        <img src="{{ url_for('static', filename='images/opensis_logo.png') }}" alt="openSIS" />
+                    </div>
+                    <h3>Système d'information sur les étudiants</h3>
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            {% if form.errors %}
+                                <div class="alert alert-danger" role="alert">
+                                    <i aria-hidden="true" class="fa fa-exclamation-triangle"></i>
+                                    Identifiant invalide! Veuillez réessayer.
+                                </div>
+                            {% endif %}
+                            <form name="loginform" method="post" class="text-left" action="{{ url_for('login') }}">
+                                <div class="form-group">
+                                    {{ form.username(class="form-control username", placeholder="Saisissez votre nom d'utilisateur") }}
+                                </div>
+                                <div class="form-group">
+                                    {{ form.password(class="form-control password", placeholder="Entrer le mot de passe", autocomplete="off") }}
+                                </div>
+                                <div class="language-selection">
+                                    <i class="icon-earth"></i>
+                                    <select class="select-search" name="language" id="language" onchange="window.location = '{{ url_for('login') }}?language='+this.value">
+                                        <option value="en">English</option>
+                                        <option value="fr" selected>French</option>
+                                        <option value="es">Spanish</option>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group text-center">
+                                            <div class="checkbox checkbox-switch switch-success switch-sm">
+                                                <label>
+                                                    <input type="checkbox" name="remember" id="remember" /><span></span> Souviens-toi de moi
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12 text-center">
+                                        <p>
+                                            <a href="ForgotPass.php" id="forgotPass">Nom d'utilisateur / mot de passe oublié?</a>
+                                        </p>
+                                    </div>
+                                </div>
+                                {{ form.hidden_tag() }}
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        {{ form.submit(class="btn btn-success btn-lg btn-block", onMouseDown="set_ck(); Set_Cookie('dhtmlgoodies_tab_menu_tabIndex', '', -1)") }}
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <footer>
+                openSIS est un produit d'Open Solutions for Education, Inc. (<a href="http://www.os4ed.com">OS4ED</a>) et est sous <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">licence GPL</a>.
+            </footer>
+        </div>
+    </section>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

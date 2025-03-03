@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion de Classes{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Gestion_classe.css') }}">
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">Gestion de Classes</h2>
+
+    <h3>Classes</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom de la Classe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class in classes %}
+            <tr>
+                <td>{{ class.id }}</td>
+                <td>{{ class.name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Sections</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom de la Section</th>
+                <th>ID Classe</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for section in sections %}
+            <tr>
+                <td>{{ section.id }}</td>
+                <td>{{ section.name }}</td>
+                <td>{{ section.class_id }}</td> <!-- Affichez le nom de la classe si nécessaire -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Options</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom de l'Option</th>
+                <th>ID Section</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for option in options %}
+            <tr>
+                <td>{{ option.id }}</td>
+                <td>{{ option.name }}</td>
+                <td>{{ option.section_id }}</td> <!-- Affichez le nom de la section si nécessaire -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+  <script src="{{ url_for('static', filename='js/Gestion_classe.js') }}"></script>
+{% endblock %}

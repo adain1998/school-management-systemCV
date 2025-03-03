@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Connexion{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+{% block content %}
+<div class="container">
+    <div class="login-container">
+        <h2>Se connecter</h2>
+
+        <!-- Afficher les messages flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-message">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Formulaire de connexion -->
+        <form method="POST" action="{{ url_for('login') }}">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", placeholder="Email", required=True) }}
+            </div>
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control", placeholder="Mot de passe", required=True) }}
+            </div>
+            <div class="mb-3 form-check">
+                {{ form.remember_me() }}
+                {{ form.remember_me.label(class="form-check-label") }}
+            </div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Se connecter</button>
+            </div>
+        </form>
+
+        <div class="text-center">
+            <a href="{{ url_for('forgot_password') }}">Mot de passe oublié ?</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block head %}
+    <!-- Lien vers le CSS de Toastr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.css">
+{% endblock %}
+
+{% block content_footer %}
+    <!-- Lien vers le JS de Toastr -->
+    <script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+{% endblock %}

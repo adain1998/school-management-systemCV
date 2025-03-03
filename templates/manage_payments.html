@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Gérer les Paiements{% endblock %}
+
+{% block content %}
+
+{% block styles % }
+<link rel="stylesheet" href="{{ url_for('static', filename='css/manage_payment.css') }}">
+{% endblock % }
+<h1>Gérer les Paiements</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Montant</th>
+            <th>Statut</th>
+            <th>Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payment in payments %}
+        <tr>
+            <td>{{ payment.id }}</td>
+            <td>{{ payment.montant }}</td>
+            <td>{{ payment.statut }}</td>
+            <td>{{ payment.date }}</td>
+            <td>
+                <a href="{{ url_for('app.update_payment', payment_id=payment.id) }}" class="btn btn-primary">Mettre à Jour</a>
+                <a href="{{ url_for('app.payment_installments', payment_id=payment.id) }}" class="btn btn-secondary">Paiements Échelonnés</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a href="{{ url_for('app.add_payment') }}" class="btn btn-success mt-4">Ajouter un Paiement</a>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Exemple de code pour gérer les actions sur les paiements
+    const updateButtons = document.querySelectorAll('.btn-primary');
+    updateButtons.forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const paymentId = this.getAttribute('data-payment-id');
+        });
+    });
+    const installmentButtons = document.querySelectorAll('.btn-secondary');
+    installmentButtons.forEach(button =>{
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            const paymentId = this.getAttribute('data-payment-id');
+                   });
+    });
+});
+</script>
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <script src="{{ url_for('static', filename='js/manage_payment.js') }}"></script>
+{% endblock %}

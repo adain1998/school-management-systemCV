@@ -1,0 +1,63 @@
+<!-- templates/admin/dashboard.html -->
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de Bord Administrateur</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1>Tableau de Bord Administrateur</h1>
+    <p>Bienvenue dans le tableau de bord administrateur. Voici les statistiques et les informations importantes.</p>
+
+    <!-- Affichage des messages flash -->
+    {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}
+            <div class="alert alert-dismissible fade show" role="alert">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-header">Statistiques des Utilisateurs</div>
+                <div class="card-body">
+                    <h5 class="card-title">Nombre total d'utilisateurs :</h5>
+                    <p class="card-text">{{ total_users }}</p>
+                    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-light">Gérer les Utilisateurs</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">Statistiques des Visiteurs</div>
+                <div class="card-body">
+                    <h5 class="card-title">Nombre total de visiteurs :</h5>
+                    <p class="card-text">{{ total_visitors }}</p>
+                    <a href="{{ url_for('admin.manage_visitors') }}" class="btn btn-light">Gérer les Visiteurs</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ajouter d'autres sections si nécessaire -->
+
+    <a href="{{ url_for('logout') }}" class="btn btn-danger mt-4">Déconnexion</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+
+

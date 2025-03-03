@@ -1,0 +1,33 @@
+{% extends "base_performance.html" %}
+{% block content %}
+<h1>Performance de l'étudiant</h1>
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">{{ student.name }}</h5>
+        <p class="card-text">Moyenne des notes : {{ student.avg_grade }}</p>
+        <p class="card-text">Taux de présence : {{ student.attendance_rate }}</p>
+        <p class="card-text">Devoirs complétés : {{ student.completed_assignments }} / {{ student.total_assignments }}</p>
+    </div>
+</div>
+
+<h2>Notes</h2>
+<ul class="list-group">
+    {% for note in notes_performance %}
+    <li class="list-group-item">Matière : {{ note.subject }} - Note : {{ note.score }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Présences</h2>
+<ul class="list-group">
+    {% for attendance in attendances %}
+    <li class="list-group-item">{{ attendance.date }} - {{ attendance.status }}</li>
+    {% endfor %}
+</ul>
+
+<h2>Devoirs</h2>
+<ul class="list-group">
+    {% for assignment in assignments_performance %}
+    <li class="list-group-item">{{ assignment.title }} - Status : {{ assignment.status }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

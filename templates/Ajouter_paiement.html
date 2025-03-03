@@ -1,0 +1,97 @@
+
+<!-- templates/add_payment.html -->
+
+<h1>Ajouter un Paiement</h1>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<form method="POST" action="{{ url_for('app.add_payment') }}">
+    {{ form.hidden_tag() }}
+
+    <div class="form-group">
+        {{ form.student_id.label(class='form-label') }}
+        {{ form.student_id(class='form-control') }}
+    </div>
+
+    <div class="form-group">
+        {{ form.frais_id.label(class='form-label') }}
+        {{ form.frais_id(class='form-control') }}
+    </div>
+
+    <div class="form-group">
+        {{ form.montant.label(class='form-label') }}
+        {{ form.montant(class='form-control') }}
+        <small class="form-text text-muted">Montant en euros.</small>
+    </div>
+
+    <div class="form-group">
+        {{ form.date.label(class='form-label') }}
+        {{ form.date(class='form-control') }}
+    </div>
+    <div class="form-group">
+        {{ form.timestamp.label(class='form-label') }}
+        {{ form.timestamp(class='form-control') }}
+    </div>
+    <div class="form-group">
+        {{ form.mois.label(class='form-label') }}
+        {{ form.mois(class='form-control') }}
+    </div>
+    <div class="form-group">
+        {{ form.annee.label(class='form-label') }}
+        {{ form.annee(class='form-control') }}
+    </div>
+    <div class="form-group">
+        {{ form.statut.label(class='form-label') }}
+        {{ form.statut(class='form-control') }}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Ajouter Paiement</button>
+</form>
+
+<a href="{{ url_for('app.manage_payments') }}" class="btn btn-secondary mt-4">Retour</a>
+<script>
+        function updateMontant() {
+            var select = document.getElementById("frais-select");
+            var montantField = document.getElementById("montant");
+            var selectedMontant = select.options[select.selectedIndex].getAttribute("data-montant");
+            if (isNaN(selectedMontant) || selectedMontant <=0){alert("le montant   doit être un nombre positif merci!");
+            return; montantField.value = selectedMontant;}
+            montantField.value = selectedMontant;
+        }
+    </script>
+ <script>
+        function validateForm() {//... const  studentId = document.getElementById("student_id).value;
+        const fraisId = document.getElementById("fraisId").value;
+        const montant = document .getElementById("montant").value;
+        const dateInput = document.getElementById("date").value;
+        const datevalue = dateInput.value;
+        try {
+        if (!moment(datevalue, "DD/MM/YYYY").isValid()) {throw new Error("Veuillez saisir une date valide au format
+         JJ/MM/AAAA);} catch (error){dateInput.nextElementSibling;
+         errorMessage.textContent = error.message;
+        dateInput.classList.add("is-invalid");
+        return false; } //...// dateInput.classList.remove("is-invalid");
+        } // return true;
+    </script>
+<script>
+    $(document).ready(function() {
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    toastr.{{ category }}("{{ message }}");
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    });
+</script>
+<script>
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "5000"
+    };
+</script>
+{% block Scripts %}
+<script src="{{ url_for('static', filename='js/Ajouter_paiement.js') }}"></script>
+{% endblock %}

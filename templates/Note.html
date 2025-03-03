@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Application de Gestion des Notes</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Application de Gestion des Notes</h1>
+
+    <!-- Formulaire d'Inscription -->
+    <h2>Inscription</h2>
+    <form method="POST" action="{{ url_for('signup') }}">
+        <div class="form-group">
+            <label for="username">Nom d'utilisateur</label>
+            <input type="text" id="username" name="username" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Mot de passe</label>
+            <input type="password" id="password" name="password" class="form-control" required>
+        </div>
+        <div class="form-group">
+            <label for="children_ids">Sélectionnez vos enfants</label>
+            <select id="children_ids" name="children_ids" class="form-control" multiple required>
+                {% for student in students %}
+                <option value="{{ student.id }}">{{ student.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">S'inscrire</button>
+    </form>
+
+    <!-- Formulaire de Gestion des Notes -->
+    <h2 class="mt-5">Gestion des Notes</h2>
+    <form method="POST" id="note-form" action="{{ url_for('notes') }}">
+        {{ form.hidden_tag() }}
+        <fieldset>
+            <legend>Informations sur la note</legend>
+            <div class="form-group">
+                <label for="student_id">ID de l'étudiant</label>
+                <input type="text" id="student_id" name="student_id" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="assignment_id">ID du devoir</label>
+                <input type="text" id="assignment_id" name="assignment_id" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="score">Note</label>
+                <input type="number" id="score" name="score" class="form-control" min="0" max="100" required>
+            </div>
+        </fieldset>
+        <button type="submit" class="btn btn-primary">Ajouter</button>
+    </form>
+
+    <div id="error-message" class="text-danger"></div>
+
+    <h2 class="mt-5">Liste des Notes</h2>
+    <form method="POST" action="{{ url_for('search') }}">
+        <input type="text" name="search_query" placeholder="Rechercher...">
+        <button type="submit">Rechercher</button>
+    </form>
+    <form method="GET" action="{{ url_for('download') }}">
+        <button type="submit">Télécharger</button>
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Étudiant</th>
+                <th>Devoir</th>
+                <th>Note</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for note in notes %}
+            <tr>
+                <td>{{ note.student_id }}</td>
+                <td>{{ note.assignment_id }}</td>
+                <td>{{ note.score }}</td>
+                <td>
+                    <a href="{{ url_for('edit_grade', id=note.id) }}" class="btn btn-warning btn-sm">Modifier</a>
+                    <form method="POST" action="{{ url_for('delete_grade', id=note.id) }}" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm">Supprimer</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Ajout du graphique de performance -->
+    <h2 class="mt-5">Graphique de Performance</h2>
+    <canvas id="performanceChart"></canvas>
+
+    <script>
+        $(document).ready(function() {
+            function validateScore(score) {
+                return !isNaN(score) && score >= 0 && score <= 100;
+            }
+
+            $('#note-form').submit(function(event) {
+                var score = $('#score').val();
+                if (!validateScore(score)) {
+                    $('#error-message').text('La note doit être un nombre entre 0 et 100.');
+                    event.preventDefault();
+                }
+            });
+
+            // Récupération des données pour le graphique
+            $.getJSON("{{ url_for('performance') }}", function(data) {
+                var ctx = document.getElementById('performanceChart').getContext('2d');
+                var performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.student_ids,
+                        datasets: [{
+                            label: 'Performance des étudiants',
+                            data: data.scores,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    <a href="{{ url_for('logout') }}" class="btn btn-secondary">Déconnexion</a>
+</body>
+</html>
+
+

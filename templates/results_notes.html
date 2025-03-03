@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Vue de la Moyenne{% endblock %}
+
+{% block content %}
+    <title>Résultats de Moyenne</title>
+{{hidden.tag}}
+<body>
+    <h1>Résultats de Moyenne</h1>
+    <ul>
+        {% for name, avg in zip(names, individual_averages) %}
+            <li>{{ name }}: {{ avg }}</li>
+        {% endfor %}
+    </ul>
+    <h2>Moyenne Générale : {{general_average}}</h2>
+    <a href="/">Retour</a>
+</body>
+{% endblock %}

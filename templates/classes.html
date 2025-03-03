@@ -1,0 +1,27 @@
+
+{% extends "base.html" %}
+
+{% block title %}Gestion des Classes{% endblock %}
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/classe.css') }}">
+{% block content %}
+<div class="container">
+    <h1 class="mt-4">Liste des Classes</h1>
+    <ul class="list-group mb-4">
+        {% for classe in classes %}
+            <li class="list-group-item">{{ classe.nom_classe }}</li>
+        {% endfor %}
+    </ul>
+
+    <div id="student-list">
+        <h2>Liste des Élèves</h2>
+        <ul class="list-group" id="students">
+            {% for student in students %}
+                <li class="list-group-item">
+                    {{ student.first_name }} {{ student.last_name }} - Classe: {{ student.class_name }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/classe.js') }}"></script>
+{% endblock %}

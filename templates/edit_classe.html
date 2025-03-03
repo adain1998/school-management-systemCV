@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier la Classe{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_classe.css') }}">
+{% block content %}
+<div class="container">
+    <h2 class="mt-4">Modifier la Classe</h2>
+
+    <form method="POST" id="editClassForm">
+        <div class="form-group">
+            <label for="name">Nom de la Classe</label>
+            <input type="text" class="form-control" id="name" name="name" value="{{ class_.name }}" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+        <a href="{{ url_for('view_classes') }}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/edit_classe.js') }}"></script>
+{% endblock %}

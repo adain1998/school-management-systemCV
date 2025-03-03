@@ -1,0 +1,39 @@
+/* payment_form.css */
+
+/* Styles pour le formulaire de paiement */
+.container {
+    max-width: 600px;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.btn-primary {
+    width: 100%;
+}
+
+/* Styles pour les notifications Toastr */
+#toast-container .toast {
+    opacity: 0.9;
+}
+
+#toast-container .toast-success {
+    background-color: #51A351;
+}
+
+#toast-container .toast-error {
+    background-color: #BD362F;
+}
+
+#toast-container .toast-info {
+    background-color: #2F96B4;
+}
+
+#toast-container .toast-warning {
+    background-color: #F89406;
+}

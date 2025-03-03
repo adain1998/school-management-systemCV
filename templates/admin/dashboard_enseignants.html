@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord de l'enseignant{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Bienvenue, {{ current_user.first_name }} !</h2>
+
+    <!-- Annonces -->
+    <div class="alert alert-info">
+        <h4>Dernières Annonces</h4>
+        <ul>
+            <li>Correction des devoirs pour la semaine prochaine.</li>
+            <li>Réunion des enseignants vendredi prochain à 10h.</li>
+        </ul>
+    </div>
+
+    <!-- Gestion des Cours -->
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Mes Cours</h4>
+            <ul class="list-group">
+                <li class="list-group-item">Mathématiques - 1ère <a href="{{ url_for('enseignant.view_course', course_id=1) }}" class="btn btn-info btn-sm">Voir</a></li>
+                <li class="list-group-item">Physique - Terminale <a href="{{ url_for('enseignant.view_course', course_id=2) }}" class="btn btn-info btn-sm">Voir</a></li>
+            </ul>
+            <button class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createCourseModal">Ajouter un Cours</button>
+        </div>
+
+        <!-- Suivi des Performances des Élèves -->
+        <div class="col-md-6">
+            <h4>Suivi des Élèves</h4>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#viewStudentsModal">Voir les Performances</button>
+        </div>
+    </div>
+
+    <!-- Devoirs et Examens -->
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <h4>Devoirs et Examens</h4>
+            <button class="btn btn-success">Attribuer un Devoir</button>
+            <button class="btn btn-warning">Planifier un Examen</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter un Cours -->
+<div class="modal fade" id="createCourseModal" tabindex="-1" aria-labelledby="createCourseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createCourseModalLabel">Ajouter un Cours</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="{{ url_for('enseignant.create_course') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="courseName" class="form-label">Nom du Cours</label>
+                        <input type="text" class="form-control" id="courseName" name="course_name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Créer le Cours</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Voir les Performances des Élèves -->
+<div class="modal fade" id="viewStudentsModal" tabindex="-1" aria-labelledby="viewStudentsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewStudentsModalLabel">Performances des Élèves</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="list-group">
+                    <li class="list-group-item">Élève 1 - 15/20</li>
+                    <li class="list-group-item">Élève 2 - 12/20</li>
+                    <li class="list-group-item">Élève 3 - 18/20</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

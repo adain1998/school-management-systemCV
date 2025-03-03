@@ -1,0 +1,131 @@
+/* voir_exam.css */
+
+/* Corps de la page */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Styles pour les alertes */
+.alert-dismissible {
+    margin-top: 15px;
+    padding: 10px;
+    font-size: 1.1rem;
+}
+
+/* Table des examens */
+.table {
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: center;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    color: #343a40;
+}
+
+.table td {
+    background-color: #ffffff;
+}
+
+.table tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Formulaire de filtrage */
+.form-inline {
+    margin-top: 20px;
+}
+
+.form-group label {
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 200px;
+    margin-right: 10px;
+}
+
+.form-group button {
+    margin-top: 20px;
+}
+
+/* Boutons d'action */
+.btn {
+    font-size: 1rem;
+    padding: 8px 15px;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Modal de confirmation (si nécessaire pour actions) */
+.modal-content {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #ddd;
+}
+
+.modal-header, .modal-body {
+    padding: 15px;
+}
+
+.modal-header {
+    border-bottom: 1px solid #ddd;
+}
+
+.modal-footer {
+    text-align: right;
+    padding-top: 10px;
+}
+
+/* S'ajuste à la taille de l'écran */
+@media (max-width: 768px) {
+    .table th, .table td {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    .form-group input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}

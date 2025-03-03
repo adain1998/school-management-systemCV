@@ -1,0 +1,27 @@
+<!-- templates/update_payment.html -->
+
+{% extends 'base.html' %}
+
+{% block title %}Mettre à Jour le Statut du Paiement{% endblock %}
+
+{% block content %}
+<h1>Mettre à Jour le Statut du Paiement</h1>
+
+<form method="POST" action="{{ url_for('app.update_payment', payment_id=payment.id) }}">
+    <div class="form-group">
+        <label for="statut">Statut:</label>
+        <select name="statut" id="statut" class="form-control">
+            {% for statut in ['En attente', 'Complété', 'Échoué'] %}
+                {% set selected = 'selected' if payment.statut == statut else '' %}
+                <option value="{{ statut }}" {{ selected }}>{{ statut }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Mettre à Jour</button>
+</form>
+
+<a href="{{ url_for('app.manage_payments') }}" class="btn btn-secondary mt-4">Retour</a>
+
+{% endblock %}
+

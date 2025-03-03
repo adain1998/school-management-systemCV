@@ -1,0 +1,33 @@
+{% extends 'base_post.html' %}
+
+{% block title %}Modifier la Publication{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Modifier la Publication</h1>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.title.label(class="form-label") }}
+            {{ form.title(class="form-control", id="title") }}
+        </div>
+        <div class="form-group">
+            {{ form.body.label(class="form-label") }}
+            {{ form.body(class="form-control", id="body") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Mettre à Jour</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_post.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<!-- Inclusion de jQuery depuis un CDN -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Inclusion du plugin jQuery Validation depuis un CDN -->
+<script src="https://cdn.jsdelivr.net/jquery.validation/1.19.3/jquery.validate.min.js"></script>
+<script src="{{ url_for('static', filename='js/edit_post.js') }}"></script>
+{% endblock %}

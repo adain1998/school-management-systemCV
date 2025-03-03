@@ -1,0 +1,24 @@
+/* styles.css */
+
+/* Personnalisation des titres */
+h1, h2 {
+    color: #343a40;
+}
+
+/* Marges pour les titres */
+h1.mt-4 {
+    margin-top: 1.5rem;
+}
+
+/* Styles pour la liste des groupes */
+.list-group-item {
+    font-size: 1.1rem;
+    padding: 10px 15px;
+}
+
+/* Conteneur principal */
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}

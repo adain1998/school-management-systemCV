@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+
+{% block content %}
+  <div class="container">
+    <h2>Liste des étudiants</h2>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/Rechercher_student.css') }}">
+    <!-- Formulaire de recherche -->
+    <form method="GET" action="{{ url_for('stud.rechercher_eleves') }}">
+      <div class="form-group">
+        <label for="nom">Nom :</label>
+        <input type="text" class="form-control" id="nom" name="nom" value="{{ nom }}" placeholder="Entrez le nom de l'étudiant">
+      </div>
+      <div class="form-group">
+        <label for="prenom">Prénom :</label>
+        <input type="text" class="form-control" id="prenom" name="prenom" value="{{ prenom }}" placeholder="Entrez le prénom de l'étudiant">
+      </div>
+      <button type="submit" class="btn btn-primary">Rechercher</button>
+    </form>
+
+    <!-- Affichage des messages flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert alert-info mt-3">
+          {% for category, message in messages %}
+            <p>{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Tableau des étudiants -->
+    {% if students.items %}
+      <table class="table table-bordered mt-3">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for student in students.items %}
+            <tr>
+              <td>{{ student.nom }}</td>
+              <td>{{ student.prenom }}</td>
+              <td>
+                <a href="{{ url_for('stud.edit_student', student_id=student.id) }}" class="btn btn-warning btn-sm">Modifier</a>
+                <a href="{{ url_for('stud.delete_student', student_id=student.id) }}" class="btn btn-danger btn-sm">Supprimer</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination">
+        {% if students.has_prev %}
+          <a href="{{ url_for('stud.rechercher_eleves', nom=nom, prenom=prenom, page=students.prev_num) }}" class="btn btn-secondary btn-sm">&laquo; Précédent</a>
+        {% endif %}
+
+        <span>Page {{ students.page }} sur {{ students.pages }}</span>
+
+        {% if students.has_next %}
+          <a href="{{ url_for('stud.rechercher_eleves', nom=nom, prenom=prenom, page=students.next_num) }}" class="btn btn-secondary btn-sm">Suivant &raquo;</a>
+        {% endif %}
+      </div>
+    {% else %}
+      <p>Aucun étudiant trouvé avec ces critères.</p>
+    {% endif %}
+  </div>
+{% endblock %}
