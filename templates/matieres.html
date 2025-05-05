@@ -1,42 +1,55 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title> Performance des Matières</title>
-    <link rel="stylesheet" href="styele_matieres.css">
-</head>
-<body >
-<h1>Performance des Matières</h1>
-<form method="GET">
-    <label for="filter">Filtrer par matière:</label>
-    <input type="text" name="filter" id="filter" value="{{request.args.get('filter')}}">
-    <button type="submit">Filtrer</button>
-</form>
-{% if erreurs %}
-<div class="error">
-    {% for erreur in erreurs %}
-    <p>{{ erreur }}</p>
-    {% endfor %}
-</div>
-{% endif %}
-<h2> Moyennes par Matière</h2>
-<table>
-    <thead>
-    <tr>
-        <th>Matière</th>
-        <th>Moyenne</th>
-    </tr>
-    </thead>>
-<tbody>
-{% for  matiere, moyenne in moyennes_generales.items()%}
-<tr>
-    <td>{{ matiere }} </td>
-    <td>{{ moyenne | round(2) }}</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
-<h2>Moyenne Générale</h2>
-<p>{{ moyenne_generale | round(2) }}</p>
-</body>
-</html>
+{% extends 'base.html' %}
 
+{% block title %}Moyennes par Matière{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="text-center">Calcul des Moyennes</h1>
+
+        {% if erreurs %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for erreur in erreurs %}
+                        <li>{{ erreur }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col-12">
+                <h3>Moyennes par matière</h3>
+                {% if moyennes_par_matiere %}
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Matière</th>
+                                <th scope="col">Moyenne</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for matiere, notes in moyennes_par_matiere.items() %}
+                                <tr>
+                                    <td>{{ matiere }}</td>
+                                    <td>{{ moyennes_generales[matiere]|round(2) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p>Aucune donnée à afficher.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <h3>Moyenne générale</h3>
+                <p><strong>Moyenne générale de l'élève : </strong>{{moyenne_generale|round(2) }}</p>
+            </div>
+        </div>
+
+    </div>
+<link href="{{ url_for('static', filename='css/matières.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/matières.js') }}"></script>
+{% endblock %}

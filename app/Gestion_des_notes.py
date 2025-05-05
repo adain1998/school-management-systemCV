@@ -1,11 +1,14 @@
 from flask import Blueprint, render_template, request, redirect, flash, url_for, abort, jsonify
-from forms import NoteForm, AssignmentForm, NoteFilterForm
-from models import db, Note, Student, Matiere, Assignment, Attendance
+from app.forms import NoteForm, AssignmentForm, NoteFilterForm
+from sqlalchemy.exc import SQLAlchemyError
+from app.models import db, Note, Student, Matiere, Assignment, Attendance, Classe
 from flask_login import login_required, current_user
 from sqlalchemy.orm import Query
 import statistics
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import csv
 from datetime import datetime
 from werkzeug.exceptions import HTTPException
 
@@ -75,17 +78,6 @@ def delete_note():
     db.session.commit()
     flash('Note deleted successfully!', 'success')
     return redirect(url_for('view_notes'))
-
-
-"""def filter_and_sort(model, filter_by: str, filter_value: str, order: str) -> Query:
-    query = model.query
-    if filter_by in ['valeur', 'Student_id', 'note', 'date']:
-        query = query.filter(getattr(model, filter_by) == filter_value)
-        if order == 'asc':
-            query = query.order_by(getattr(model, filter_by).asc())
-        elif order == 'desc':
-            query = query.order_by(getattr(model, filter_by).desc())
-        return query.all()"""
 
 
 
@@ -225,63 +217,168 @@ def validate_grades(grades):
     return True
 
 
+
 @resultat.route('/')
 def index_note():
     try:
+        # Récupération des notes et matières
         notes_with_matieres = db.session.query(Note, Matiere).join(Matiere).all()
-        moyennes_par_matiere = {}
-        for note, matiere in notes_with_matieres:
-            if matiere.nom not in moyennes_par_matiere:
-                moyennes_par_matiere[matiere.nom] = []
-            moyennes_par_matiere[matiere.nom].append(note.valeur)
-        moyennes_generales = {matiere: sum(notes) / len(notes) if notes else 0
-                              for matiere, notes in moyennes_par_matiere.items()}
-        moyenne_generale = sum(moyennes_generales.values()) / len(moyennes_generales) if moyennes_generales else 0
+        moyennes_par_matiere = calculer_moyennes_par_matiere(notes_with_matieres)
+        moyennes_generales = calculer_moyennes_generales(moyennes_par_matiere)
+        moyenne_generale = calculer_moyenne_generale(moyennes_generales)
+
     except Exception as e:
-        flash(f"Moyenne ajoutée avec succes.{e}", "succes")
+        # Gestion des erreurs
+        flash(f"Une erreur est survenue lors du calcul des moyennes: {e}", "danger")
         return render_template('matieres.html', erreurs=[str(e)])
+
+    # Affichage des résultats
     return render_template('matieres.html', matieres=moyennes_par_matiere,
                            moyennes_generales=moyennes_generales, moyenne_generale=moyenne_generale)
 
 
+def calculer_moyennes_par_matiere(notes_with_matieres: list) -> dict:
+    """
+    Calculer les moyennes par matière en regroupant les notes par matière.
+    """
+    moyennes_par_matiere = {}
+
+    # Regrouper les notes par matière
+    for note, matiere in notes_with_matieres:
+        if matiere.nom not in moyennes_par_matiere:
+            moyennes_par_matiere[matiere.nom] = []
+        moyennes_par_matiere[matiere.nom].append(note.valeur)
+
+    return moyennes_par_matiere
+
+
+def calculer_moyennes_generales(moyennes_par_matiere: dict) -> dict:
+    """
+    Calculer la moyenne générale pour chaque matière.
+    """
+    moyennes_generales = {}
+
+    for matiere, liste_notes in moyennes_par_matiere.items():
+        moyennes_generales[matiere] = sum(liste_notes) / len(liste_notes) if liste_notes else 0
+
+    return moyennes_generales
+
+
+def calculer_moyenne_generale(moyennes_generales: dict) -> float:
+    """
+    Calculer la moyenne générale globale basée sur les moyennes des matières.
+    """
+    total_moyenne = sum(moyennes_generales.values())
+    total_matieres = len(moyennes_generales)
+
+    return total_moyenne / total_matieres if total_matieres else 0
+
+
+
 @resultat.route('/', methods=['GET', 'POST'])
-def results(plt=None):
+def results():
+    # Récupération des paramètres de requête avec gestion des valeurs par défaut
     page = request.args.get('page', 1, type=int)
     per_page = 15
     sort_by = request.args.get('sort_by', 'nom')
     order = request.args.get('order', 'asc')
     filter_value = request.args.get('filter')
+
     try:
-        query = Matiere.query.join(Note, Matiere.id == Note.matiere_id).add_columns(db.func.avg(Note.valeur).label
-                                                                                    ('moyenne')).group_by(Matiere.id)
+        # Construction de la requête SQLAlchemy avec jointure pour calculer les moyennes
+        query = Matiere.query.join(Note, Matiere.id == Note.matiere_id).add_columns(
+            db.func.avg(Note.valeur).label('moyenne')).group_by(Matiere.id)
+
+        # Application du filtre pour les moyennes supérieures ou inférieures à
         if filter_value == 'sup':
-            if filter_value == 'inf':
-                query = query.having(db.func.avg(Note.valeur) <= 5)
-            elif filter_value == 'sup':
-                query = query.having(db.func.avg(Note.valeur) >= 5)
-        if sort_by:
-            if sort_by == 'moyenne':
-                column = db.func.avg(Note.valeur)
-            else:
-                column = getattr(Matiere, sort_by)
-                query = query.order_by(getattr(column, order))
+            query = query.having(db.func.avg(Note.valeur) >= 5)
+        elif filter_value == 'inf':
+            query = query.having(db.func.avg(Note.valeur) <= 5)
+
+        # Application du tri dynamique
+        query = apply_sorting(query, sort_by, order)
+
+        # Récupération des résultats paginés
         matieres = query.paginate(page=page, per_page=per_page)
-        df = pd.read_csv("bureau_student.csv")
-        print(df.head(5))
-        df['moyenne'] = df.groupby('student_id')['Note'].transform('mean')
-        x = np.linspace(0, 10, 100)
-        y = np.sin(x)
-        plt.plot(x, y, color='red', linewidth=2, linestyle="--")
-        plt.show()
-        plt.scatter(x, y, color='green', marker='o', s=50)
-        plt.show()
-        plt.hist(df['moyenne'], bins=10)
-        plt.xlabel('moyenne')
-        plt.savefig('moyenne_student.png')
+
+        # Traitement des données avec Pandas
+        df = process_student_data("bureau_student.csv")
+
+        # Génération des graphiques avec Matplotlib
+        generate_charts(df)
+
+    except SQLAlchemyError as e:
+        flash(f"Erreur de base de données : {str(e)}", "danger")
+        return render_template('error_performance.html', error="Problème avec la base de données")
     except Exception as e:
-        return render_template('error.html', error=str(e))
+        flash(f"Erreur : {str(e)}", "danger")
+        return render_template('error_performance.html', error="Une erreur inconnue est survenue")
+
     return render_template('performance_report.html', matieres=matieres, page=page, per_page=per_page,
                            sort_by=sort_by, order=order, filter_value=filter_value)
+
+
+
+def apply_sorting(query, sort_by, order):
+    """Applique le tri dynamique à la requête"""
+    if sort_by == 'moyenne':
+        column = db.func.avg(Note.valeur)
+    else:
+        column = getattr(Matiere, sort_by)
+
+    # Tri croissant ou décroissant
+    return query.order_by(column.asc() if order == 'asc' else column.desc())
+
+
+def process_student_data(file_path):
+    """Charge les données des étudiants depuis un fichier CSV et calcule les moyennes"""
+    try:
+        # Chargement du fichier CSV dans un DataFrame pandas
+        df = pd.read_csv(file_path)
+
+        # Calcul de la moyenne par étudiant
+        df['moyenne'] = df.groupby('student_id')['Note'].transform('mean')
+
+        return df  # Retourne le DataFrame avec les moyennes calculées
+
+    except Exception as e:
+        # Gestion des erreurs, affichage d'un message via flash
+        flash(f"Erreur lors du traitement des données : {str(e)}", "danger")
+        raise  # Relève l'exception pour la gestion ultérieure
+
+
+
+def generate_charts(df):
+    """Génère et sauvegarde les graphiques pour l'affichage"""
+    try:
+        # Génération des graphiques avec matplotlib
+        x = np.linspace(0, 10, 100)
+        y = np.sin(x)
+
+        plt.figure(figsize=(8, 4))
+        plt.plot(x, y, color='red', linewidth=2, linestyle="--")
+        plt.title("Courbe Sinusoïdale")
+        plt.savefig('static/images/sinus_plot.png')
+        plt.close()
+
+        plt.figure(figsize=(8, 4))
+        plt.scatter(x, y, color='green', marker='o', s=50)
+        plt.title("Points Dispersés")
+        plt.savefig('static/images/scatter_plot.png')
+        plt.close()
+
+        plt.figure(figsize=(8, 4))
+        plt.hist(df['moyenne'], bins=10, color='blue', alpha=0.7)
+        plt.xlabel('Moyenne')
+        plt.ylabel('Nombre d\'étudiants')
+        plt.title("Distribution des Moyennes")
+        plt.savefig('static/images/moyenne_student.png')
+        plt.close()
+
+    except Exception as e:
+        flash(f"Erreur lors de la génération des graphiques : {str(e)}", "danger")
+        raise
+
 
 
 # Affichage de notes qui seront visibles par les parents
@@ -350,6 +447,7 @@ def edit_assignment(assignment_id):
     return render_template('edit_assignment.html', form=form, assignment=assignment)
 
 
+
 @resultat.route('/assignments/delete/<int:assignment_id>', methods=['POST'])
 @login_required
 def delete_assignment(assignment_id):
@@ -367,27 +465,38 @@ def handle_exception(e):
     return render_template('error_assignment.html', error=e), e.code
 
 
+
 @resultat.route('/performance', methods=['GET'])
 @login_required
 def performance():
-    children_ids = current_user.children_ids.split(',')
-    notes_student = Note.query.filter(Note.student_id.in_(children_ids)).all()
-    students = Student.query.filter(Student.id.in_(children_ids)).all()
-    data = {
-        "students": [
-            {
-                "student_id": student.id,
-                "name": student.name,
-                "avg_grade":
-                    sum(note.score for note in notes_student if note.student_id == student.id) / len(notes_student),
-                "attendance_rate": student.attendance_rate,
-                "completed_assignments": student.completed_assignments,
-                "total_assignments": student.total_assignments
-            }
-            for student in students
-        ]
-    }
-    return jsonify(data)
+    try:
+        # Récupération des identifiants des enfants liés à l'utilisateur actuel
+        children_ids = current_user.children_ids.split(',')
+
+        # Récupération des notes des étudiants en fonction des enfants de l'utilisateur
+        notes_student = Note.query.filter(Note.student_id.in_(children_ids)).all()
+        students = Student.query.filter(Student.id.in_(children_ids)).all()
+
+        # Calcul des données de performance
+        performance_data = {
+            "students": [
+                {
+                    "student_id": student.id,
+                    "name": student.name,
+                    "avg_grade": sum(note.score for note in notes_student if note.student_id == student.id) / len([note for note in notes_student if note.student_id == student.id]),
+                    "attendance_rate": student.attendance_rate,
+                    "completed_assignments": student.completed_assignments,
+                    "total_assignments": student.total_assignments
+                }
+                for student in students
+            ]
+        }
+
+        return jsonify(performance_data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 
 @resultat.route('/student/<int:student_id>', methods=['GET'])
@@ -402,40 +511,43 @@ def student_performance(student_id):
                            assignments_performance=assignments_performance)
 
 
+
 @resultat.errorhandler(HTTPException)
 def handle_exception(e):
     return render_template('error_performance.html', error=e), e.code
 
 
-import csv
 
+def get_data_from_csv(file_path):
+        report_data = {}  # Dictionnaire pour stocker les données
 
-def get_data_from_csv(filename):
-    report = {}  # Dictionnaire pour stocker les données
+        try:
+            # Ouvrir le fichier CSV en mode lecture
+            with open(file_path, 'r') as csvfile:
+                reader = csv.DictReader(csvfile)
 
-    try:
-        # Ouvrir le fichier CSV en mode lecture
-        with open(filename, 'r') as csvfile:
-            reader = csv.DictReader(csvfile)
+                for row in reader:
+                    subject = row['subject']
 
-            for row in reader:
-                subject = row['subject']
+                    # Si la matière n'est pas dans le rapport, l'ajouter
+                    if subject not in report_data:
+                        report_data[subject] = []
 
-                # Si la matière n'est pas dans le rapport, l'ajouter
-                if subject not in report:
-                    report[subject] = []
+                    # Ajouter les données de l'étudiant pour cette matière
+                    report_data[subject].append({
+                        'nom': row['nom'],
+                        'prenom': row['prenom'],
+                        'note': row['note']
+                    })
 
-                # Ajouter les données de l'étudiant pour cette matière
-                report[subject].append({
-                    'nom': row['nom'],
-                    'prenom': row['prenom'],
-                    'note': row['note']
-                })
+        except FileNotFoundError:
+            print("Fichier introuvable. Veuillez vérifier le nom du fichier et réessayer.")
 
-    except FileNotFoundError:
-        print("Fichier introuvable. Veuillez vérifier le nom du fichier et réessayer.")
+        except Exception as e:
+            print(f"Une erreur s'est produite: {e}")
 
-    return report
+        return report_data
+
 
 
 # Exemple d'utilisation
@@ -443,22 +555,52 @@ filename = 'data.csv'
 data = get_data_from_csv(filename)
 print(data)
 
+# Affichage de la moyenne par classe
 
-# note filtrer
-"""@resultat.route('/notes/filter', methods=['GET', 'POST'])
-@login_required
-def filter_notes():
-    form = NoteForm()
-    notes_filter = []
-    filter_value = []
-    if request.method == 'POST':
-        filter_by = request.form.get('filter_by')
-        filter_value = request.form.get('filter_value')
-        allowed_filter = ["valeur", "Student_id", "note", "date", "commentaire", "subject"]
-        if filter_by not in allowed_filter:
-            return 'colonne de filtre invalide merci!', 500
-        order = request.args.get('order', 'asc')
-        notes_filter = filter_and_sort(Note, filter_by, filter_value, order)
-    return render_template('grades.html', form=form, notes_filter=notes_filter, filter_value=filter_value)"""
+def calcul_moyennes_par_classe(classe_id):
+    try:
+        # Vérifier si la classe existe
+        classe = Classe.query.get(classe_id)
+        if not classe:
+            flash("Classe non trouvée.", "danger")
+            return None
+
+        # Récupérer tous les élèves de la classe
+        eleves = Student.query.filter_by(classe_id=classe_id).all()
+
+        # Stocker les moyennes par élève et matière
+        moyennes_par_classe = {}
+
+        for eleve in eleves:
+            moyennes_par_classe[eleve.nom] = {}
+
+            # Récupérer toutes les matières de la classe
+            matieres = Matiere.query.filter_by(classe_id=classe_id).all()
+
+            for matiere in matieres:
+                # Récupérer les notes de l'élève pour cette matière
+                notes_classe = Note.query.filter_by(etudiant_id=eleve.id, matiere_id=matiere.id).all()
+                valeurs_notes = [note.valeur for note in notes_classe]
+
+                # Calcul de la moyenne
+                moyenne = sum(valeurs_notes) / len(valeurs_notes) if valeurs_notes else 0
+                moyennes_par_classe[eleve.nom][matiere.nom] = moyenne
+
+        return {"classe": classe.nom, "moyennes": moyennes_par_classe}
+
+    except SQLAlchemyError as e:
+        flash(f"Erreur de base de données : {e}", "danger")
+        return None
 
 
+
+
+resultat = Blueprint('resultat', __name__)
+
+@resultat.route('/moyennes/<int:classe_id>')
+def afficher_moyennes(classe_id):
+    resultats = calcul_moyennes_par_classe(classe_id)
+    if resultats:
+        return render_template("moyennes_classes.html", resultats=resultats)
+    else:
+        return render_template("moyennes_classes.html", erreurs=["Aucune donnée disponible."])

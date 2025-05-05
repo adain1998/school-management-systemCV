@@ -1,5 +1,5 @@
 from flask import render_template, request, redirect, url_for, flash, Blueprint
-from models import db, Schedule
+from app.models import db, Schedule
 
 schedul = Blueprint('schedul', __name__)
 

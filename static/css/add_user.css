@@ -1,0 +1,88 @@
+/* Formulaire d'ajout d'utilisateur */
+form {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 1.8em;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+/* Style pour les messages flash */
+.alert {
+    margin-top: 20px;
+    border-radius: 8px;
+}
+
+/* Style pour les champs de formulaire */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+input[type="text"], input[type="email"], input[type="password"], select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+label {
+    font-weight: bold;
+}
+
+/* Boutons */
+button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px;
+    width: 100%;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+button[type="submit"]:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+/* Styles pour le lien "Retour" */
+a.btn-secondary {
+    margin-top: 15px;
+    display: inline-block;
+    text-decoration: none;
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+a.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Messages Toastr personnalisés */
+.toastr-info {
+    background-color: #17a2b8;
+}
+
+.toastr-warning {
+    background-color: #ffc107;
+}
+
+.toastr-error {
+    background-color: #dc3545;
+}

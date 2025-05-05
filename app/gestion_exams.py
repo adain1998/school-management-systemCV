@@ -1,5 +1,5 @@
 from flask import render_template, redirect, url_for, request, Blueprint, flash
-from models import db, Exam, Schedule
+from app.models import db, Exam
 
 
 examen = Blueprint('examen', __name__)
@@ -61,23 +61,23 @@ def filter_and_search_exams():
                 filters.append(Exam.score == score_value)
             except ValueError:
                 flash('Veuillez entrer une note valide.', 'error')
-            if filters:
-                exams = Exam.query.filter(*filters).all()
-
-            else:
-                flash('Veuillez entrer au moins un critère de filtrage', 'error')
+        if filters:
+            exams = Exam.query.filter(*filters).all()
+        else:
+            flash('Veuillez entrer au moins un critère de filtrage', 'error')
     else:
-        exams = Schedule.query.all()
+        exams = Exam.query.all()  # Charger tous les examens si pas de filtrage
     return render_template('voir_exam.html', exams=exams)
+
 
 
 # SUPPRIMER LES EXAMENS
 @examen.route('/exams/delete/<int:exam_id>', methods=['POST'])
 def delete_exam(exam_id):
     try:
-        exams = Exam.query.get(exam_id)
-        if exams:
-            db.session.delete(exams)
+        exam = Exam.query.get(exam_id)
+        if exam:
+            db.session.delete(exam)
             db.session.commit()
             flash('Examen supprimé avec succès', 'success')
         else:
@@ -85,5 +85,4 @@ def delete_exam(exam_id):
     except Exception as e:
         db.session.rollback()
         flash(f"Erreur lors de la suppression de l'examen: {str(e)}", 'error')
-    return redirect(url_for('filter_and_search_exams'))
-
+    return redirect(url_for('examen.filter_and_search_exams'))

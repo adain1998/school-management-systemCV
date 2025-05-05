@@ -1,20 +1,22 @@
+from datetime import date
 from flask_wtf import FlaskForm
 from wtforms import (FloatField,
                      DateField, SelectField, IntegerField,
                      TextAreaField, BooleanField, StringField,
-                     PasswordField, SubmitField, DateTimeField, FieldList, FormField)
+                     PasswordField, SubmitField, FieldList, FormField)
 from wtforms.validators import NumberRange, Length, EqualTo, ValidationError, DataRequired, Email, Optional
-from models import db, User, Frais, Parent
-from datetime import date
+from app.models import User, Frais, Parent, Student
+from wtforms.fields import DateTimeField
 
 
+current_year = date.today().year
 
 class PaymentForm(FlaskForm):
     student_id = SelectField('Étudiant', coerce=int, validators=[DataRequired()])
     frais_id = SelectField('Type de Frais', coerce=int, validators=[DataRequired(message='Saisissez le type de frais')])
     montant = FloatField('Montant Payé', validators=[
         DataRequired(message="Veuillez saisir un montant"),
-        NumberRange(min=0.01, message='Le montant doit être supérieur à zéro.')
+        NumberRange(min=1900, max=int(date.today().year), message="Veuillez saisir une année valide.")
     ])
     date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired("Veuillez saisir une date")])
     statut = SelectField('Statut', choices=[
@@ -27,17 +29,26 @@ class PaymentForm(FlaskForm):
         DataRequired(),
         NumberRange(min=1, max=12, message="Le mois doit être compris entre 1 et 12.")
     ])
+
+    # Correction : stocker l'année actuelle avant l'utilisation
+
     annee = IntegerField('Année', validators=[
         DataRequired(),
-        NumberRange(min=1900, max=date.today().year, message="Veuillez saisir une année valide.")
+        NumberRange(min=1900, max=current_year, message="Veuillez saisir une année valide.")
     ])
+
     submit = SubmitField('Ajouter le paiement')
 
     def __init__(self, *args, **kwargs):
         super(PaymentForm, self).__init__(*args, **kwargs)
-        self.frais_id.choices = [(frais.id, frais.description) for frais in db.session.query(Frais).all()]
+
+        # Remplir la liste des frais à partir de la base de données
+        self.frais_id.choices = [(frais.id, frais.description) for frais in Frais.query.all()]
+        self.student_id.choices = [(student.id, f"{student.first_name} {student.last_name}") for student in
+                                   Student.query.all()]
 
     def validate_date(self, field):
+        """Valide que la date ne soit pas dans le futur."""
         if field.data > date.today():
             raise ValidationError("La date ne peut pas être dans le futur.")
 
@@ -60,7 +71,7 @@ class studentForm(FlaskForm):
     prenom = StringField('prenom', validators=[DataRequired()])
     date_naissaince = DateField('Date de naissance', format='%Y-%m-%d', validators=[DataRequired()])
     classe_id = IntegerField('Classe', validators=[DataRequired()])
-    registration_date = DateField("Date d'inscription ", format='%Y-%m-%d', validators=[DataRequired()])
+    registration_date = DateTimeField("Date d'inscription", format='%Y-%m-%d %H:%M:%S', validators=[DataRequired()])
     fees_paid = FloatField('Frais Payés', default=0.0)
     numero_matricule = StringField('Numéro Matricule', validators=[DataRequired()])
     religion = StringField("Religion")
@@ -72,7 +83,7 @@ class studentForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Mot de passe", validators=[DataRequired()])
-    remember_me = BooleanField("Se souvenir de moi")
+    remember = BooleanField("Se souvenir de moi")
     submit = SubmitField("Se connecter")
 
 
@@ -352,6 +363,9 @@ class NotificationForm(FlaskForm):
     order = SelectField('Ordre', choices=[('asc', 'Ascendant'), ('desc', 'Descendant')])
     submit = SubmitField('Appliquer le Filtre')
 
+
+class OptionForm(FlaskForm):
+    name = StringField('Option Name', validators=[DataRequired(), Length(min=3, max=100)])
 # signup
 
 """class SignupForm(FlaskForm):

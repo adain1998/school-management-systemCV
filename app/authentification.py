@@ -1,17 +1,18 @@
 
-from flask import render_template, redirect, url_for, flash, Blueprint, request
+from flask import render_template, redirect, url_for, flash, Blueprint, request, jsonify
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 import secrets
 import hashlib
 import pytz
-import uuid
-from datetime import datetime, timedelta
-from flask_limiter import Limiter
-from forms import SignupForm, ParentLoginForm, LoginForm, ResetPasswordRequestForm, ResetPasswordForm, RegistrationForm
-from models import db, Parent, User, Visitor, User_Parent
-from flask_mail import Message, mail
-from admin_decorateur import admin_required
+from datetime import datetime, timedelta,timezone
+from werkzeug.security import generate_password_hash
+from app.__init__ import limiter
+from app.forms import SignupForm, ParentLoginForm, LoginForm, ResetPasswordRequestForm, RegistrationForm
+from app.models import db, Parent, User, Visitor, User_Parent
+from flask_mail import Message
+from app.admin_decorateur import admin_required
+from app import mail
 
 
 
@@ -19,7 +20,7 @@ auth = Blueprint('auth', __name__)
 
 
 @auth.route('/signup', methods=['GET', 'POST'])
-@Limiter.limit('5 per minute')
+@limiter.limit('5 per minute')
 def signup():
     form = SignupForm()
     if form.validate_on_submit():
@@ -50,7 +51,7 @@ def signup():
 
 
 @auth.route('/login_parent', methods=['GET', 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 def login_parent():
     if current_user.is_authenticated:
         return redirect(url_for('tableau.dashboard'))
@@ -65,8 +66,9 @@ def login_parent():
     return render_template('Login_parents.html', form=form)
 
 
+
 @auth.route('/reset_password', methods=['GET', 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 def reset_password_request():
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
@@ -87,7 +89,7 @@ def reset_password_request():
 
 
 @auth.route('/register', methods=['GET', 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 def register_parent():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -112,8 +114,9 @@ def register_parent():
     return render_template('register.html', form=form)
 
 
+
 @auth.route('/login', methods=['GET', 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
@@ -137,6 +140,7 @@ def login():
 
 
 @auth.route('/admin/users')
+@login_required
 @admin_required
 def manage_users():
     users = User.query.all()
@@ -144,18 +148,115 @@ def manage_users():
 
 
 
+@auth.route('/admin/visitors', methods=['GET'])
+@login_required
+@admin_required
+def manage_visitors():
+    visitors = Visitor.query.all()
+    return render_template('admin/manage_visitors.html', visitors=visitors)
+
+
+
+@auth.route('/users')
+@login_required
+@admin_required  # Ajout pour sécuriser cette route
+def user_list():
+    users = User.query.all()
+    return render_template('admin/users_list.html', users=users)
+
+
+
+@auth.route('/admin/user/add', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def add_user():
+    """Ajoute un nouvel utilisateur."""
+    if request.method == 'POST':
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')  # Le mot de passe est obligatoire.
+        last_name = request.form.get('last_name')
+        role = request.form.get('role', 'user')  # Défaut à "user" si non spécifié
+        is_admin = request.form.get('admin') == 'on'  # Convertir en booléen
+
+        # Vérification des champs obligatoires
+        if not username or not email or not password or not last_name:
+            flash("Tous les champs sont requis.", 'danger')
+            return redirect(url_for('auth.add_user'))
+
+        # Vérification si l'utilisateur existe déjà
+        existing_user = User.query.filter_by(email=email).first()
+        if existing_user:
+            flash("Cet email est déjà utilisé.", 'warning')
+            return redirect(url_for('auth.add_user'))
+
+        try:
+            # Création d'un nouvel utilisateur
+            new_user = User(
+                username=username,
+                email=email,
+                last_name=last_name,
+                role=role,
+                admin=is_admin,
+                password_hash=generate_password_hash(password),
+                created_at=datetime.now(timezone.utc)
+            )
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            flash(f"Utilisateur {username} ajouté avec succès.", 'success')
+            return redirect(url_for('auth.manage_users'))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Erreur lors de l'ajout : {str(e)}", 'danger')
+
+    return render_template('admin/add_user.html')
+
+
+
+@auth.route('/admin/users/json')
+@login_required
+@admin_required
+def get_users_json():
+    """Retourne la liste des utilisateurs en JSON pour des appels AJAX."""
+    users = User.query.all()
+    users_data = [{"id": user.id, "username": user.username, "email": user.email, "admin": user.admin} for user in users]
+    return jsonify(users_data)
+
+
+
 @auth.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 @admin_required
 def edit_user(user_id):
-    user = User.query.get_or_404(user_id)
+    user = User.query.get_or_404(user_id)  # Récupère l'utilisateur par ID
+
     if request.method == 'POST':
-        user.username = request.form['username']
-        user.email = request.form['email']
-        db.session.commit()
-        flash('Utilisateur mis à jour.', 'success')
-        return redirect(url_for('auth.manage_users'))
-    return render_template('admin/edit_user.html', user=user)
+        # Validation des données envoyées
+        username = request.form.get('username')
+        email = request.form.get('email')
+
+        # Vérification de la présence des champs nécessaires
+        if not username or not email:
+            flash('Le nom d\'utilisateur et l\'email sont requis.', 'danger')
+            return render_template('admin/edit_user.html', user=user)
+
+        # Mise à jour des champs de l'utilisateur
+        user.username = username
+        user.email = email
+
+        try:
+            db.session.commit()
+            flash('Utilisateur mis à jour avec succès.', 'success')
+            return redirect(url_for('auth.manage_users'))  # Redirige vers la gestion des utilisateurs
+        except Exception as e:
+            db.session.rollback()  # En cas d'erreur, annule les changements
+            flash(f'Erreur lors de la mise à jour de l\'utilisateur: {str(e)}', 'danger')
+
+    return render_template('admin/edit_user.html', user=user)  # Affiche le formulaire d'édition
+
 
 
 
@@ -190,7 +291,7 @@ def confirm_email(token):
 
 
 @auth.route('/admin/visitor/<int:visitor_id>/edit', methods=[ 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 @admin_required
 def delete_visitor(visitor_id):
     visitor = Visitor.query.get_or_404(visitor_id)
@@ -206,7 +307,7 @@ def delete_visitor(visitor_id):
 
 
 @auth.route('/admin/visitor/<int:visitor_id>/edit', methods=[ 'POST'])
-@Limiter.limit("5 per minute")
+@limiter.limit("5 per minute")
 @admin_required
 def edit_visitor(visitor_id):
     visitor = Visitor.query.get_or_404(visitor_id)
@@ -222,18 +323,10 @@ def edit_visitor(visitor_id):
     return render_template('admin/edit_visitors.html', visitor=visitor)
 
 
-
-
-@auth.route('/logout')
+@auth.route('/logout', methods=['POST'])
 @login_required
 def logout():
+    """Déconnecte l'utilisateur de manière sécurisée"""
     logout_user()
+    flash("Vous avez été déconnecté avec succès.", "success")
     return redirect(url_for('auth.login'))
-
-
-
-@auth.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
-@Limiter.limit("5 per minute")
-@admin_required
-def edit_user(use_id: int):
-    use: User = User.query.get_or_404(use_id)

@@ -1,6 +1,6 @@
 from flask import render_template, request, redirect, flash, url_for, Blueprint, abort
-from models import db, Frais, Payment, User, Finance
-from admin_decorateur import admin_required
+from app.models import db, Frais, Payment, User, Finance
+from app.admin_decorateur import admin_required
 paie = Blueprint('paie', __name__)
 
 
@@ -10,9 +10,9 @@ def view_fees():
     return render_template('fee.html', frais=frais)
 
 
-@paie.route('/add_fee', methods=['POST'])
+@paie.route('/add_fee', methods=['POST'], endpoint='add_fee_post')
 @admin_required
-def add_fee():
+def add_fee_post():
     student_nom = request.form['student_nom']
     montant = request.form['montant']
     status = request.form['status']
@@ -24,9 +24,10 @@ def add_fee():
     return redirect(url_for('view_fees'))
 
 
-@paie.route("/add_fee", methods=['GET', 'POST'])
+
+@paie.route("/add_fee", methods=['GET', 'POST'], endpoint='add_fee_form')
 @admin_required
-def add_fee():
+def add_fee_form():
     if request.method == 'POST':
         fee_type = request.form['fee_type']
         amount = float(request.form['amount'])
@@ -35,8 +36,9 @@ def add_fee():
         db.session.add(fee)
         db.session.commit()
         flash('Fee added successfully!', 'success')
-        return redirect(url_for('add_fee'))
+        return redirect(url_for('add_fee_form'))
     return render_template('add_fee.html')
+
 
 
 @paie.route('/edit_fee/<int:id>', methods=['GET', 'POST'])
@@ -53,7 +55,7 @@ def edit_fee():
     return render_template('edit_fee.html', frais=frais)
 
 
-@paie.route('/delete_fee/<int:id>')
+@paie.route('/delete_fee/<int:id>',  methods=['POST'])
 @admin_required
 def delete_fee():
     frais = Frais.query.get_or_404(id)

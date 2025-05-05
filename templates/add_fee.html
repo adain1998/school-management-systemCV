@@ -5,7 +5,7 @@
 {% block content %}
 <div class="container mt-5">
     <h1>Ajouter des Frais</h1>
-    <form method="POST" id="add-fee-form">
+    <form method="POST" action="{{ url_for('paie.add_fee_form') }}" id="add-fee-form">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.fee_type.label(class="form-label") }}

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, flash, url_for, request, abort
 from flask_login import login_required, current_user
-from forms import MessageForm, SchoolInfoForm, EditInfoForm, ForumPostForm
-from models import db, Message, User, SchoolInfo, ForumPost
+from app.forms import MessageForm, SchoolInfoForm, EditInfoForm, ForumPostForm
+from app.models import db, Message, User, SchoolInfo, ForumPost
 from werkzeug.exceptions import HTTPException
 
 mes = Blueprint('mes', __name__)

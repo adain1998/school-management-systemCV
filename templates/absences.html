@@ -1,59 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Gestion des Absences{% endblock %}
+
+{% block styles %}
+    <!-- Inclusion du CSS personnalisé -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/absence.css') }}">
+{% endblock %}
+
 {% block content %}
-<h1>Gestion des Absences pour {{ student.name }}</h1>
-<link rel="stylesheet" type="text/css" href="absences.css">
-<link rel="">
-<form method="POST">
-  {{ form.hidden_tag() }}
-  <div class="form-group">
-      {{ form.date.label(class="form-label") }}
-      {{ form.date(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
-  </div>
-  <div class="form-group">
-      {{ form.reason.label(class="form-label") }}
-      {{ form.reason(class="form-control", placeholder="Raison") }}
-      <span class="text-danger">{{form.reason.errors }}</span>
-  </div>
-  <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
-</form>
+<div class="container mt-5">
+    <h1>Gestion des Absences de {{ student.nom }}</h1>
 
-<h2>Liste des Absences</h2>
+    <!-- Formulaire d'ajout d'absence -->
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.date.label(class="form-label") }}
+            {{ form.date(class="form-control", id="date") }}
+        </div>
+        <div class="form-group">
+            {{ form.reason.label(class="form-label") }}
+            {{ form.reason(class="form-control", id="reason") }}
+        </div>
+        <button type="submit" class="btn btn-primary">Ajouter une Absence</button>
+    </form>
 
-<form method="GET" class="mb-3">
-  <input type="text" name="filter_reason" placeholder="Filtrer par raison" class="form-control mb-2" value="{{ request.args.get('filter_reason') }}">
-  <select name="sort_by_date" class="form-control mb-2">
-      <option value="">Trier par date</option>
-      <option value="asc" {% if request.args.get('sort_by_date') == 'asc' %}selected{% endif %}>Ascendant</option>
-      <option value="desc" {% if request.args.get('sort_by_date') == 'desc' %}selected{% endif %}">Descendant</option>
-  </select>
-  <button type="submit" class="btn btn-secondary">Appliquer</button>
-</form>
+    <div class="mt-4">
+        <h3>Liste des Absences</h3>
 
-<table class="table">
-  <thead>
-      <tr>
-          <th>Date</th>
-          <th>Raison</th>
-          <th>Actions</th>
-      </tr>
-  </thead>
-  <tbody>
-      {% for absence in absences %}
-      <tr>
-          <td>{{ absence.date.strftime('%Y-%m-%d %H:%M') }}</td>
-          <td>{{ absence.reason }}</td>
-          <td>
-              <a href="{{ url_for('edit_absence', absence_id=absence.id) }}" class="btn btn-warning">Modifier</a>
-              <form action="{{ url_for('delete_absence', absence_id=absence.id) }}" method="POST" style="display:inline;">
-                  {{ form.hidden_tag() }}
-                  <button type="submit" class="btn btn-danger">Supprimer</button>
-              </form>
-          </td>
-      </tr>
-      {% endfor %}
-  </tbody>
-</table>
-<script src="absence.js"></script>
+        <!-- Filtrage et Tri -->
+        <form method="GET" class="form-inline mb-4">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="filter_reason" class="form-label">Motif:</label>
+                    <input type="text" class="form-control" id="filter_reason" name="filter_reason" placeholder="Rechercher un motif" value="{{ request.args.get('filter_reason', '') }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="sort_by_date" class="form-label">Trier par date:</label>
+                    <select class="form-select" id="sort_by_date" name="sort_by_date">
+                        <option value="asc" {%if request.args.get('sort_by_date') == 'asc' %}selected{% endif %}>Ascendant</option>
+                        <option value="desc" {%if request.args.get('sort_by_date') == 'desc' %}selected{% endif %}>Descendant</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="d-flex justify-content-end align-items-center">
+                        <button type="submit" class="btn btn-secondary">Filtrer</button>
+                    </div>
+                </div>
+            </div>
+        </form>
 
+        <!-- Tableau des Absences -->
+        <table class="table table-striped mt-4">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Motif</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for absence in absences %}
+                    <tr>
+                        <td>{{ absence.date }}</td>
+                        <td>{{ absence.reason }}</td>
+                        <td>
+                            <a href="#" class="btn btn-danger btn-sm" onclick="deleteAbsence({{ absence.id }})">Supprimer</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
 
-<p><a href="{{ url_for('login') }}">Retour à la connexion</a></p>
+{% block scripts %}
+    <!-- Inclusion du JS personnalisé -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/absence.js') }}"></script>
 {% endblock %}

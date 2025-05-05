@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, flash, redirect, url_for, request
-from models import db, ForumPost, Notification, Poll, Choice
+from app.models import db, ForumPost, Notification, Poll, Choice
 from flask_login import current_user, login_required
-from forms import ForumPostForm, NotificationForm, PollForm
+from app.forms import ForumPostForm, NotificationForm, PollForm
 from datetime import datetime
 from sqlalchemy import desc
 

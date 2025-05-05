@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint
 from flask_login import login_required, current_user
-from models import Note, Exam, Absence, Attendance, Assignment
+from app.models import Note, Exam, Absence, Attendance, Assignment
 
 application = Blueprint("application", __name__)
 

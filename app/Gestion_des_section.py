@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, flash, url_for
-from models import db, Sections, Classe, Option
+from app.models import db, Sections, Classe, Option
 
 
 sect = Blueprint('sect', __name__)
@@ -34,7 +34,7 @@ def edit_section():
     return render_template('edit_section.html', section=section)
 
 
-@sect.route('/delete_section/<int:id>')
+@sect.route('/delete_section/<int:id>', methods=['POST'])
 def delete_section():
     section = Sections.query.get_or_404(id)
     db.session.delete(section)

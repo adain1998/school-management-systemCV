@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Utilisateurs{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Gestion des utilisateurs</h2>
+
+    <!-- Affichage des messages flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            {% for category, message in messages %}
+                toastr["{{ category }}"]("{{ message }}");
+            {% endfor %}
+        });
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    <table class="table table-striped table-hover" id="usersTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Nom d'utilisateur</th>
+                <th>Email</th>
+                <th>Admin</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr id="user-{{ user.id }}">
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ 'Oui' if user.admin else 'Non' }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm edit-user" data-id="{{ user.id }}">Modifier</button>
+                    <button class="btn btn-danger btn-sm delete-user" data-id="{{ user.id }}">Supprimer</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Formulaire sécurisé pour la déconnexion -->
+    <form id="logout-form" action="{{ url_for('auth.logout') }}" method="POST" style="display: inline;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger mt-4">Déconnexion</button>
+    </form>
+</div>
+
+<!-- Inclusion du fichier CSS personnalisé -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/users_list.css') }}">
+
+<!-- Inclusion du fichier JS -->
+<script src="{{ url_for('static', filename='js/users_list.js') }}"></script>
+{% endblock %}

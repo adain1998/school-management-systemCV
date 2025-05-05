@@ -4,10 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Title{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Custom Styles for better UX -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            color: #495057;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        .alert-custom {
+            margin-top: 15px;
+        }
+    </style>
+
+    <!-- Bootstrap JS and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('form');
@@ -15,18 +52,50 @@
                 const title = document.querySelector('#title').value;
                 const description = document.querySelector('#description').value;
                 const due_date = document.querySelector('#due_date').value;
+
                 if (!title || !description || !due_date) {
                     event.preventDefault();
-                    alert('All fields must be filled out');
+                    showError('All fields must be filled out');
                 }
             });
         });
+
+        function showError(message) {
+            const alertContainer = document.createElement('div');
+            alertContainer.classList.add('alert', 'alert-danger', 'alert-custom');
+            alertContainer.innerText = message;
+            document.body.prepend(alertContainer);
+
+            // Hide the alert after 5 seconds
+            setTimeout(function() {
+                alertContainer.style.display = 'none';
+            }, 5000);
+        }
     </script>
 </head>
 <body>
-    <div class="container">
-        {% block content %}{% endblock %}
+    <div class="container mt-5">
+        <div class="form-container">
+            <h1 class="form-title">Create New Task</h1>
+            <form>
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input type="text" id="title" class="form-control" placeholder="Enter task title" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" class="form-control" rows="4" placeholder="Describe the task" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="due_date">Due Date</label>
+                    <input type="date" id="due_date" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Create Task</button>
+            </form>
+        </div>
     </div>
+
+    {% block content %}{% endblock %}
     {{ script }}
 </body>
 </html>

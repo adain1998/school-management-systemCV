@@ -4,7 +4,9 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1>Modifier Utilisateur : {{ user.username }}</h1>
+    <h1>Modifier Utilisateur : {{user.username}}</h1>
+
+    <!-- Affichage des messages flash -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             {% for category, message in messages %}
@@ -17,23 +19,31 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}" id="edit-user-form">
+
+    <!-- Formulaire de modification -->
+    <form method="POST" action="{{ url_for('auth.edit_user', user_id=user.id) }}" id="edit-user-form">
         {{ form.hidden_tag() }}
+
         <div class="form-group">
             {{ form.username.label(class="form-label") }}
-            {{ form.username(class="form-control", id="username") }}
+            {{ form.username(class="form-control", id="username", value=user.username) }}
         </div>
+
         <div class="form-group">
             {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control", id="email") }}
+            {{ form.email(class="form-control", id="email", value=user.email) }}
         </div>
+
         <div class="form-group form-check">
-            {{ form.admin(class="form-check-input", id="admin") }}
+            {{ form.admin(class="form-check-input", id="admin", checked=user.admin) }}
             {{ form.admin.label(class="form-check-label") }}
         </div>
+
         <button type="submit" class="btn btn-primary">Mettre à jour</button>
     </form>
-    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary mt-3">Retour à la gestion des utilisateurs</a>
+
+    <!-- Retour à la gestion des utilisateurs -->
+    <a href="{{ url_for('auth.manage_users') }}" class="btn btn-secondary mt-3">Retour à la gestion des utilisateurs</a>
 </div>
 {% endblock %}
 

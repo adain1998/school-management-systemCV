@@ -1,0 +1,101 @@
+/* manager_visitor.css */
+
+/* Base styling */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+/* Table styling */
+.table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #343a40;
+    color: white;
+}
+
+.table tbody tr:nth-child(odd) {
+    background-color: #f8f9fa;
+}
+
+.table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    color: white;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.btn-warning:hover, .btn-danger:hover {
+    opacity: 0.8;
+}
+
+/* Notification styling (Toast messages) */
+.toast-success {
+    background-color: #28a745;
+}
+
+.toast-danger {
+    background-color: #dc3545;
+}
+
+.toast-warning {
+    background-color: #ffc107;
+}
+
+/* Confirmation buttons and hover states */
+a.btn {
+    margin-right: 10px;
+    text-decoration: none;
+}
+
+a.btn-danger {
+    margin-left: 10px;
+}
+
+a.btn:hover {
+    text-decoration: none;
+}
+
+/* Styling for the "Retour au Tableau de Bord" button */
+a.btn-back {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 20px;
+}
+
+a.btn-back:hover {
+    background-color: #0056b3;
+}
+
+/* General Margin and Padding Adjustments */
+.container {
+    margin-top: 20px;
+}

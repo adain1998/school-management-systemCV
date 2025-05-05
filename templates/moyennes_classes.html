@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Moyennes des élèves{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Moyennes des élèves - Classe {{resultats.classe }}</h1>
+
+    {% if erreurs %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for erreur in erreurs %}
+                    <li>{{ erreur }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Élève</th>
+                        {% for matiere in resultats.moyennes.values()|first %}
+                            <th>{{ matiere }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for eleve, matieres in resultats.moyennes.items() %}
+                        <tr>
+                            <td class="fw-bold">{{ eleve }}</td>
+                            {% for moyenne in matieres.values() %}
+                                <td class="text-center">{{ moyenne|round(2) }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Boutons d'action -->
+<div class="d-flex flex-column flex-md-row justify-content-between mt-4 gap-2">
+    <button id="refresh-btn" onclick="rafraichirPage()" class="btn btn-success">
+        🔄 Rafraîchir la page
+    </button>
+
+    <button id="export-csv" class="btn btn-warning" data-classe-id="{{ resultats.classe_id }}">
+        📥 Exporter en CSV
+    </button>
+</div>
+
+<!-- Inclusion des fichiers CSS et JS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/moyennes_classe.css') }}">
+<script src="{{ url_for('static', filename='js/moyennes_classe.js') }}"></script>
+
+{% endblock %}

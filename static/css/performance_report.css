@@ -1,0 +1,78 @@
+/* Styling for the performance report page */
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Table Styling */
+.table {
+    width: 100%;
+    margin-bottom: 20px;
+    border-collapse: collapse;
+}
+
+.table th, .table td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.table th {
+    background-color: #f8f9fa;
+}
+
+.table-striped tbody tr:nth-child(odd) {
+    background-color: #f2f2f2;
+}
+
+/* Pagination Styling */
+.d-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Graph Image Styling */
+.row.mt-4 img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: contain;
+}
+
+/* Toast Styling */
+.toastr-container {
+    z-index: 1050 !important;
+}
+
+.toastr-info {
+    background-color: #17a2b8 !important;
+}
+
+.toastr-success {
+    background-color: #28a745 !important;
+}
+
+.toastr-danger {
+    background-color: #dc3545 !important;
+}
+
+.toastr-warning {
+    background-color: #ffc107 !important;
+}

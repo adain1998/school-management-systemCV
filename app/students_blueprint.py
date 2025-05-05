@@ -1,9 +1,11 @@
 from flask import render_template, request, url_for, redirect, flash, Blueprint, jsonify
-from sqlalchemy import desc, asc
-from flask_login import login_required
-from models import db, Student, Payment, Classe, Sections, Option, Parent
+# from sqlalchemy import desc, asc
+# from flask_login import login_required
+from app.models import db, Student, Classe, Sections, Option, Parent
 from datetime import datetime
-import pytz
+import random
+import string
+
 
 
 stud = Blueprint('stud', __name__)
@@ -231,12 +233,20 @@ def list_student():
 
 
 
-@stud.route('/all_students')
+"""@stud.route('/all_students')
 def all_students():
     student = Student.query.all()  # Vous récupérez tous les étudiants
-    return render_template('add_student.html', student=student)
+    return render_template('add_student.html', student=student)"""
 
 
+
+
+def generate_matricule(length=8):
+    """
+    Génère un numéro de matricule alphanumérique de longueur 'length'.
+    """
+    characters = string.ascii_uppercase + string.digits
+    return ''.join(random.choices(characters, k=length))
 
 @stud.route('/add_student', methods=['POST'])
 def add_student():
@@ -244,50 +254,43 @@ def add_student():
         # Récupération et validation des champs
         last_name = request.form.get('last_name')
         first_name = request.form.get('first_name')
-        class_name = request.form.get('class_name')
         date_naissance = request.form.get('date_naissance')
-        registration_date = request.form.get('registration_date',
-                                             datetime.now(pytz.utc))  # Utilise la date actuelle si non spécifiée
-        # date sous forme de chaîne
-        numero_matricule = request.form.get('numero_matricule')
-        fees_paid = float(request.form.get('fees_paid', 0))  # Par défaut à 0 si non fourni
+        # registration_date n'est pas récupéré, car il est géré par défaut dans le modèle
+        numero_matricule = generate_matricule()  # Numéro de matricule généré automatiquement
+        fees_paid = float(request.form.get('fees_paid', 0))
         class_id = request.form.get('class_id')
-        debt = float(request.form.get('debt', 0))  # Valeur par défaut 0 si non fournie
-        religion = request.form.get('religion', 'N/A')  # Valeur par défaut si non fournie
-        parent_id = request.form.get('parent_id')  # ID du parent
+        debt = float(request.form.get('debt', 0))
+        religion = request.form.get('religion', 'N/A')
+        parent_id = request.form.get('parent_id')
 
         # Validation des champs obligatoires
-        if not last_name or not first_name or not class_name or not date_naissance or not registration_date or not numero_matricule or not class_id or not parent_id:
+        if not all([last_name, first_name, date_naissance, class_id, parent_id]):
             flash("Tous les champs obligatoires doivent être remplis!", "danger")
             return redirect(url_for('stud.add_student'))
 
-        # Conversion de la date de naissance et de la date d'enregistrement
+        # Conversion de la date de naissance
         try:
-            date_naissance = datetime.strptime(date_naissance, "%Y-%m-%d")  # Format YYYY-MM-DD
-            registration_date = datetime.strptime(registration_date, "%Y-%m-%d").date()  # Conversion en date (sans l'heure)
+            date_naissance = datetime.strptime(date_naissance, "%Y-%m-%d")
         except ValueError:
-            flash("Le format des dates est invalide. Utilisez le format YYYY-MM-DD.", "danger")
+            flash("Le format de la date de naissance est invalide. Utilisez le format YYYY-MM-DD.", "danger")
             return redirect(url_for('stud.add_student'))
 
         # Vérification de l'existence du parent et de la classe
-        parents = Parent.query.all()  # Récupérer tous les parents
+        parents = Parent.query.all()
         classe = Classe.query.get(class_id)
 
         if not parents:
             flash("Le parent spécifié n'existe pas.", "danger")
             return redirect(url_for('stud.add_student'))
-
         if not classe:
             flash("La classe spécifiée n'existe pas.", "danger")
             return redirect(url_for('stud.add_student'))
 
-        # Création du nouvel étudiant
+        # Création du nouvel étudiant (registration_date est géré par le modèle)
         new_student = Student(
             last_name=last_name,
             first_name=first_name,
-            class_name=class_name,
             date_naissance=date_naissance,
-            registration_date=registration_date,  # Date correcte
             numero_matricule=numero_matricule,
             fees_paid=fees_paid,
             class_id=class_id,
@@ -297,261 +300,24 @@ def add_student():
         )
 
         # Ajouter les relations avec les classes, sections et options
-        selected_classes = request.form.getlist('classes')  # Liste des classes supplémentaires
+        selected_classes = request.form.getlist('classes')  # Liste des classes supplémentaires (identifiants ou objets)
         selected_sections = request.form.getlist('sections')  # Liste des sections supplémentaires
-        selected_options = request.form.getlist('options')  # Liste des options supplémentaires
+        selected_options = request.form.getlist('options')    # Liste des options supplémentaires
 
-        # Vérifier que les options et sections existent
         options = Option.query.filter(Option.id.in_(selected_options)).all()
         sections = Sections.query.filter(Sections.id.in_(selected_sections)).all()
 
-        # Ajouter les relations
-        new_student.classes.extend(classe for classe in selected_classes if classe)
+        new_student.classes.extend(selected_classes)
         new_student.sections.extend(sections)
         new_student.options.extend(options)
 
-        # Sauvegarde dans la base de données
         db.session.add(new_student)
         db.session.commit()
 
-        flash('L\'étudiant a été ajouté avec succès!', 'success')
-        return redirect(url_for('stud.all_students'))  # Redirection vers la liste des étudiants
+        flash("L'étudiant a été ajouté avec succès!", "success")
+        return redirect(url_for('stud.all_students'))
 
     except Exception as e:
-        db.session.rollback()  # Annuler la transaction en cas d'erreur
+        db.session.rollback()
         flash(f"Erreur lors de l'ajout de l'étudiant : {e}", "danger")
         return redirect(url_for('stud.add_student'))
-
-
-
-
-# Ajout des élèves code mis en reserve
-
-"""@stud.route('/add_student', methods=['POST'])
-def add_student():
-    last_name = request.form['last_name']
-    first_name = request.form['first_name']
-    class_name = request.form['class_name']
-    date_naissance = request.form['date_naissance']
-    registration_date = request.form['registration_date']
-    numero_matricule = request.form['numero_matricule']
-    fees_paid = request.form['fees_paid']
-    class_id = request.form['class_id']
-    debt = float(request.form['debt'])
-    religion = request.form['religion']
-    notes = 0
-    absences = int(request.form.get('absences', 0))
-    presences = int(request.form.get('presences', "T"))
-    classes = request.form.getlist('classes')
-    sections = request.form.getlist('sections')
-    options = request.form.get('options', {})
-    parent = None
-    parent_id = request.form.get('parent_id')
-    new_student = Student(first_name=first_name,
-                          last_name=last_name,
-                          classe_name=class_name,
-                          date_naissance=date_naissance,
-                          registration_date=registration_date,
-                          numero_matricule=numero_matricule,
-                          fees_paid=fees_paid,
-                          class_id=class_id,
-                          debt=debt,
-                          religion=religion,
-                          notes=notes,
-                          absences=absences,
-                          presences=presences,
-                          classes=classes,
-                          sections=sections,
-                          options=options,
-                          parent=parent,
-                          parent_id=parent_id)
-    db.session.add(new_student)
-    db.session.commit()
-    flash('Student added successfully!', 'success')
-    return redirect(url_for('eleves_tout.html'))
-@stud.route('/add_student', methods=['POST'])
-def add_student():
-    try:
-        # Récupération et validation des champs
-        last_name = request.form.get('last_name')
-        first_name = request.form.get('first_name')
-        class_name = request.form.get('class_name')
-        date_naissance = request.form.get('date_naissance')
-        registration_date = request.form.get('registration_date')
-        numero_matricule = request.form.get('numero_matricule')
-        fees_paid = request.form.get('fees_paid', 0)  # Par défaut à 0 si non fourni
-        class_id = request.form.get('class_id')
-        debt = float(request.form.get('debt', 0))  # Valeur par défaut 0 si non fournie
-        religion = request.form.get('religion', 'N/A')  # Valeur par défaut si non fournie
-        absences = int(request.form.get('absences', 0))  # Valeur par défaut 0
-        presences = int(request.form.get('presences', 0))  # Valeur par défaut 0
-        classes = request.form.getlist('classes')  # Liste de classes
-        sections = request.form.getlist('sections')  # Liste de sections
-        options = request.form.get('options', {})  # Options par défaut à un dictionnaire vide
-        parent_id = request.form.get('parent_id', None)  # Parent optionnel
-
-        # Validation des champs requis
-        if not last_name or not first_name or not class_name or not date_naissance or not registration_date or not numero_matricule:
-            flash("Tous les champs obligatoires doivent être remplis!", "danger")
-            return redirect(url_for('stud.add_student'))
-
-        # Conversion des dates en format datetime (validation basique)
-        try:
-            date_naissance = datetime.strptime(date_naissance, "%Y-%m-%d")  # Exemple de format : 2025-02-25
-            registration_date = datetime.strptime(registration_date, "%Y-%m-%d")
-        except ValueError:
-            flash("Le format de la date est invalide. Utilisez le format YYYY-MM-DD.", "danger")
-            return redirect(url_for('stud.add_student'))
-
-        # Création du nouvel étudiant
-        new_student = Student(
-            first_name=first_name,
-            last_name=last_name,
-            classe_name=class_name,
-            date_naissance=date_naissance,
-            registration_date=registration_date,
-            numero_matricule=numero_matricule,
-            fees_paid=fees_paid,
-            class_id=class_id,
-            debt=debt,
-            religion=religion,
-            notes=0,  # Par défaut
-            absences=absences,
-            presences=presences,
-            classes=classes,
-            sections=sections,
-            options=options,
-            parent_id=parent_id
-        )
-
-        # Ajout dans la base de données
-        db.session.add(new_student)
-        db.session.commit()
-
-        flash('L\'étudiant a été ajouté avec succès!', 'success')
-        # Vérifier que la route existe bien sous ce nom
-        return redirect(url_for('stud.all_students'))  # Redirection vers la liste des étudiants
-
-    except Exception as e:
-        db.session.rollback()  # Annuler la transaction en cas d'erreur
-        flash(f"Erreur lors de l'ajout de l'étudiant : {e}", "danger")
-        return redirect(url_for('stud.add_student'))
-# recherche des étudiants 
-
-@stud.route('/student/rechercher', methods=['GET'])
-def rechercher_eleves():
-    try:
-        # Récupération des paramètres 'nom' et 'prenom' de la requête GET
-        nom = request.args.get('nom', '')
-        prenom = request.args.get('prenom', '')
-
-        # Recherche des étudiants en filtrant par 'nom' et 'prenom'
-        student = Student.query.filter(
-            Student.nom.ilike(f'%{nom}%'),  # Utilisation de ilike pour une recherche insensible à la casse
-            Student.prenom.ilike(f'%{prenom}%')
-        ).all()
-
-        if not students:
-            flash('Aucun étudiant trouvé avec ces critères', 'info')
-
-        return render_template('student_list.html', student=student)
-
-    except Exception as e:
-        flash(f"Erreur lors de la recherche: {str(e)}", 'error')
-        return redirect(url_for('stud.all_students'))  # Redirection vers la page des étudiants en cas d'erreur
-
-
-@stud.route('/all_students')
-def all_students():
-    try:
-        # Récupération de tous les étudiants de la base de données
-        stude = Student.query.all()
-
-        if not students:
-            flash('Aucun étudiant trouvé.', 'info')
-
-        return render_template('add_student.html', stude=stude)
-
-    except Exception as e:
-        flash(f"Erreur lors de la récupération des étudiants: {str(e)}", 'error')
-        return redirect(url_for('stud.rechercher_eleves'))  # Redirection en cas d'erreur
-
-
-@stud.route('/students', methods=['GET'])
-def search_students():
-    search_query = request.args.get('search', '')
-    page = request.args.get('page', 1, type=int)
-    students_query = Student.query.filter(Student.nom.like(f'%{search_query}%')).paginate(page=page, per_page=10)
-    return render_template('Rechercher_student.html', students=students_query, search=search_query)
-
-# filter les informations 
-
-
-@stud.route('/filter/<int:id>', methods=['GET', 'POST'])
-@login_required
-def filter_student():
-    filter_class_name = request.args.get('filter_class_name', default='', type=str)
-    filter_religion = request.args.get('filter_religion', default='', type=str)
-    filter_username = request.args.get('username', default='', type=str)
-    sort_by = request.args.get('sort_by', 'last_name', type=str)
-    order = request.args.get('order', 'asc', type=str)
-
-    query = Student.query
-
-    if filter_class_name:
-        query = query.filter(Student.class_name.ilike(f'%{filter_class_name}%'))
-    if filter_religion:
-        query = query.filter(Student.religion.ilike(f'%{filter_religion}%'))
-    if filter_username:
-        query = query.filter(Student.username.ilike(f'%{filter_username}%'))
-
-    if order == 'asc':
-        query = query.order_by(asc(sort_by))
-    else:
-        query = query.order_by(desc(sort_by))
-
-    student_filtrer = query.all()
-
-    return render_template('Filtrer_student.html', student_filtrer=student_filtrer)
-
-
-# liste etudiant 
-
-@stud.route('/student')
-def list_student():
-    student = Student.query.all()
-    return render_template('Student_list.html', student=student)
-    
-    
-@stud.route('/student')
-def list_student():
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    student = Student.query.order_by(Student.nom).paginate(page, per_page, error_out=False)
-    return render_template('student_list.html', stutents=students.items, pagination=students, student=student)
-    
-    # supprimer etudiant 
-    @stud.route('/student/supprimer/<int:student_id>', methods=['POST'])
-def supprimer_eleve(student_id):
-    student = Student.query.get_or_404(student_id)
-    db.session.delete(student)
-    db.session.commit()
-    return redirect(url_for('liste_student'))
-    
-    
-    
-@stud.route('/delete_student/<int:id>', methods=['POST'])
-def delete_student():
-    student = Student.query.get_or_404(id)
-    db.session.delete(student)
-    db.session.commit()
-    flash('Étudiant supprimé avec succès !', 'success')
-    return redirect(url_for('student_list'))
-    #  details etudiant 
-    
-@stud.route('/students/<int:student_id>')
-def student_details(student_id):
-    student = Student.query.get_or_404(student_id)
-    paiements = Payment.query.filter_by(etudiant_id=student.id).all()
-    return render_template('student_detail.html', student=student, paiements=paiements)"""
-

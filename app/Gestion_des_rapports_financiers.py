@@ -10,9 +10,9 @@ from io import BytesIO
 import base64
 
 # Imports locaux
-from models import db, Finance, Report
-from admin_decorateur import admin_required
-from forms import ReportForm, ReportFilterForm
+from app.models import db, Finance, Report
+from app.admin_decorateur import admin_required
+from app.forms import ReportForm, ReportFilterForm
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io

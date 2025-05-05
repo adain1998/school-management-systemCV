@@ -1,5 +1,5 @@
 from flask import render_template, Blueprint, url_for, redirect, flash
-from models import Student, Note, Absence, Teacher, Report, Attendance, Message, Poll, ForumPost, SchoolInfo
+from app.models import Student, Note, Absence, Teacher, Report, Attendance, Message, Poll, ForumPost, SchoolInfo
 from flask_login import current_user, login_required
 tableau = Blueprint('tableau', __name__)
 
@@ -29,6 +29,7 @@ def enseignant_dashboard():
         return redirect(url_for('index'))  # Redirige vers la page d'accueil si l'utilisateur n'est pas enseignant
     return render_template('dashboard_enseignants.html')  # Affiche le tableau de bord de l'enseignant
 
+
 #tableau de bord eleve
 @tableau.route('/eleve/dashboard')
 @login_required
@@ -56,7 +57,7 @@ def index():
 
 
 @tableau.route('/')
-def dashboard():
+def dashboard_generale():
     students_count = Student.query.count()
     note_count = Note.query.count()
     teachers_count = Teacher.query.count()

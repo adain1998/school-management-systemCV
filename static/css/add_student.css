@@ -1,0 +1,37 @@
+/* Personnalisation de Toastr */
+.toast {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.toast-success {
+  background-color: #28a745; /* Vert pour le succès */
+}
+
+.toast-error {
+  background-color: #dc3545; /* Rouge pour l'erreur */
+}
+
+.toast-warning {
+  background-color: #ffc107; /* Jaune pour l'avertissement */
+}
+
+/* Styles pour les champs invalides */
+.is-invalid {
+  border-color: #dc3545 !important;
+}
+
+.is-invalid:focus {
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Espacement entre les éléments du formulaire */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+/* Alignement du bouton */
+button[type="submit"] {
+  width: 100%;
+  padding: 10px;
+}

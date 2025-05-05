@@ -3,9 +3,9 @@ from datetime import datetime, timedelta
 from pytz import timezone
 import pytz
 from flask_login import login_required
-from forms import PaymentForm
-from models import db, Student, Payment, Frais
-from Gestion_des_notes import filter_and_sort
+from app.forms import PaymentForm
+from app.models import db, Student, Payment, Frais
+from app.Gestion_des_notes import filter_and_sort
 from sqlalchemy import func
 
 paiem = Blueprint('paiem', __name__)
@@ -22,6 +22,7 @@ def new_payment():
     form = PaymentForm()
     return render_template('payment_form.html', form=form)
 
+
 # Filtrer le paiement par classe
 @paiem.route('/paiement/class/<int:class_id>', methods=['GET'])
 @login_required
@@ -33,6 +34,7 @@ def payment_by_class(class_id):
     except Exception as e:
         flash(f"Erreur lors de la récupération des paiements: {str(e)}", "danger")
         return redirect(url_for('paiem.index'))
+
 
 
 @paiem.route('/payments', methods=['GET'])
@@ -66,6 +68,7 @@ def get_payments():
     except Exception as e:
         flash(f"Erreur lors de la récupération des paiements: {str(e)}", "danger")
         return redirect(url_for('paiem.index'))
+
 
 
 @paiem.route('/payment', methods=['POST'])
@@ -110,6 +113,7 @@ def create_payment():
     return redirect(url_for('paiem.get_payments'))
 
 
+
 @paiem.route('/paiement/add', methods=['GET', 'POST'])
 @login_required
 def add_paiement(students):
@@ -142,11 +146,13 @@ def add_paiement(students):
     return render_template('Ajouter_paiement.html', form=form, students=students)
 
 
+
 @paiem.route('/paiements/manage', methods=['GET'])
 @login_required
 def manage_payments():
     payments = Payment.query.all()
     return render_template('manage_payments.html', payments=payments)
+
 
 
 @paiem.route('/paiements/overdue', methods=['GET'])
@@ -197,6 +203,7 @@ def financial_report():
     return render_template('Rapport_financier.html', report_data=formatted_report_data)
 
 
+
 @paiem.route('/paiements/installments/<int:payment_id>', methods=['GET', 'POST'])
 @login_required
 def payment_installments(payment_id):
@@ -236,6 +243,7 @@ def payment_history():
     return render_template('payment_history.html', payments=payments)
 
 
+
 @paiem.route('/make_payment/<int:payment_id>', methods=['GET', 'POST'])
 @login_required
 def make_payment(payment_id):
@@ -248,6 +256,7 @@ def make_payment(payment_id):
         db.session.commit()
         return redirect(url_for('paiem.payment_history'))
     return render_template('make_payment.html', payment=payment)
+
 
 
 def check_overdue_payments():
@@ -285,5 +294,3 @@ def filter_payment():
         payments = []
 
     return render_template('finance.html', form=form, payments=payments)
-
-

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Routes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/routes.css') }}" rel="stylesheet"> <!-- Lien vers ton fichier CSS personnalisé -->
+</head>
+<body>
+    <h1>Liste des Routes de l'Application</h1>
+    <ul>
+        {% for route in routes %}
+            <li class="route-item">{{ route }}</li>
+        {% endfor %}
+    </ul>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="{{ url_for('static', filename='js/routes.js') }}"></script> <!-- Lien vers ton fichier JS personnalisé -->
+</body>
+</html>

@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, url_for, Blueprint
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash  # Import de la fonction pour le hashage du mot de passe
-from models import db, User, Enseignant, Eleve, Administrateur
-from forms import SignupForm, LoginForm
+from app.models import db, User, Enseignant, Eleve, Administrateur
+from app.forms import SignupForm, LoginForm
 
 connex = Blueprint('connex', __name__)
 
@@ -78,7 +78,7 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
 
         if user and check_password_hash(user.password, form.password.data):
-            remember = form.remember_me.data  # Récupérer la valeur de "Se souvenir de moi"
+            remember = form.remember.data  # Récupérer la valeur de "Se souvenir de moi"
             login_user(user, remember=remember)  # Passer la valeur à login_user
             flash("Connexion réussie !", "success")
 
