@@ -1,0 +1,80 @@
+/* login.css */
+
+body {
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-wrapper {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+}
+
+.logo img {
+    max-height: 60px;
+    margin-bottom: 20px;
+}
+
+.panel-heading h3 {
+    font-weight: 600;
+    color: #333333;
+    margin-bottom: 20px;
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    border-color: #2575fc;
+    box-shadow: none;
+}
+
+.btn-success {
+    background-color: #2575fc;
+    border-color: #2575fc;
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 600;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.btn-success:hover {
+    background-color: #1a5edb;
+    border-color: #1a5edb;
+}
+
+.form-check-label {
+    margin-left: 8px;
+    font-size: 0.9rem;
+    color: #555555;
+}
+
+.language-selection {
+    margin-bottom: 20px;
+}
+
+.select2-container .select2-selection--single {
+    height: 38px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 5px 10px;
+}
+
+footer {
+    margin-top: 30px;
+    font-size: 0.85rem;
+    color: #f1f1f1;
+    text-align: center;
+}

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, flash, url_for
-from app.models import db, Classe, Sections, Option
+from app.models import db, Classe, Sections, Option, Student
 from werkzeug.exceptions import NotFound, BadRequest
 
 # Initialisation du Blueprint
@@ -10,14 +10,24 @@ niveau = Blueprint('niveau', __name__)
 @niveau.route('/classes')
 def view_classes():
     try:
-        classes = Classe.query.all()
-        return render_template('classe.html', classes=classes)
+        # Pagination des classes (ex. 10 classes par page)
+        page = int(request.args.get('page', 1))
+        per_page = 10
+        classes = Classe.query.paginate(page, per_page, False)
+
+        # Récupérer la liste des élèves (facultatif, avec pagination côté serveur pour les élèves)
+        student_page = int(request.args.get('student_page', 1))
+        students_per_page = 10
+        students = Student.query.paginate(student_page, students_per_page, False)
+
+        # Passer les données à la vue
+        return render_template('classe.html', classes=classes.items, students=students.items,
+                               classes_page=classes.page, students_page=students.page)
     except Exception as e:
         flash(f"Une erreur s'est produite lors de la récupération des classes : {str(e)}", 'danger')
         return redirect(url_for('index'))  # Redirection vers la page d'accueil en cas d'erreur
-
-
 # View pour ajouter une classe
+
 @niveau.route('/add_class', methods=['POST'])
 def add_class():
     try:

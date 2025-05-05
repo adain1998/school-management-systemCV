@@ -1,24 +1,131 @@
-/* styles.css */
-
-/* Personnalisation des titres */
-h1, h2 {
-    color: #343a40;
+/* Définir des variables pour les couleurs */
+:root {
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --hover-color: #0056b3;
+    --btn-bg-color: #f8f9fa;
+    --alert-color: #f8d7da;
 }
 
-/* Marges pour les titres */
-h1.mt-4 {
-    margin-top: 1.5rem;
-}
-
-/* Styles pour la liste des groupes */
-.list-group-item {
-    font-size: 1.1rem;
-    padding: 10px 15px;
+/* Corps principal */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+    margin: 0;
+    padding: 0;
 }
 
 /* Conteneur principal */
 .container {
-    max-width: 800px;
-    margin: auto;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
+}
+
+/* Titre principal */
+h1, h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+/* Liste des classes et élèves */
+ul.list-group {
+    list-style: none;
+    padding: 0;
+}
+
+.list-group-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Effet de survol pour les éléments de liste */
+.list-group-item:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-5px);
+}
+
+/* Badges pour afficher le nombre d'élèves */
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+    border-radius: 50px;
+}
+
+/* Classe 'primary' pour les badges */
+.badge.bg-primary {
+    background-color: var(--primary-color);
+}
+
+/* Classes pour les alertes */
+.alert {
+    background-color: var(--alert-color);
+    color: #721c24;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Boutons de pagination */
+.btn {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    background-color: var(--secondary-color);
+    transition: background-color 0.3s;
+    font-size: 1rem;
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn:disabled {
+    background-color: #ccc;
+    color: #999;
+}
+
+/* Style pour le bouton "Charger plus d'élèves" */
+#load-more-btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+}
+
+#load-more-btn:hover {
+    background-color: var(--hover-color);
+}
+
+/* Animation AOS */
+[data-aos="fade-up"] {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s, transform 0.6s;
+}
+
+[data-aos="fade-up"].aos-animate {
+    opacity: 1;
+    transform: translateY(0);
 }

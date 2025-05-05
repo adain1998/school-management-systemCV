@@ -1,27 +1,110 @@
-
 {% extends "base.html" %}
 
 {% block title %}Gestion des Classes{% endblock %}
- <link rel="stylesheet" href="{{ url_for('static', filename='css/classe.css') }}">
-{% block content %}
-<div class="container">
-    <h1 class="mt-4">Liste des Classes</h1>
-    <ul class="list-group mb-4">
-        {% for classe in classes %}
-            <li class="list-group-item">{{ classe.nom_classe }}</li>
-        {% endfor %}
-    </ul>
 
-    <div id="student-list">
-        <h2>Liste des Élèves</h2>
-        <ul class="list-group" id="students">
-            {% for student in students %}
-                <li class="list-group-item">
-                    {{ student.first_name }} {{ student.last_name }} - Classe: {{ student.class_name }}
-                </li>
-            {% endfor %}
-        </ul>
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/classe.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">  <!-- AOS CSS -->
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-primary mb-4">📚 Gestion des Classes</h1>
+
+    <section aria-labelledby="classes-list">
+        <h2 id="classes-list" class="h4 text-secondary">Liste des Classes</h2>
+        {% if classes %}
+            <ul class="list-group mb-4 shadow-sm">
+                {% for classe in classes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center" data-aos="fade-up">
+                        {{ classe.nom_classe }}
+                        <span class="badge bg-primary rounded-pill">{{ classe.nb_eleves or 0 }} élèves</span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Pagination des classes -->
+            <div class="d-flex justify-content-between">
+                {% if classes_page > 1 %}
+                    <a href="{{ url_for('view_classes', page=classes_page-1) }}" class="btn btn-outline-primary">Précédent</a>
+                {% endif %}
+                {% if classes.has_next %}
+                    <a href="{{ url_for('view_classes', page=classes_page+1) }}" class="btn btn-outline-primary">Suivant</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucune classe disponible pour le moment.</div>
+        {% endif %}
+    </section>
+
+    <section id="student-list" aria-labelledby="students-list">
+        <h2 id="students-list" class="h4 text-secondary">👨‍🎓 Liste des Élèves</h2>
+        {% if students %}
+            <ul class="list-group shadow-sm" id="students">
+                {% for student in students %}
+                    <li class="list-group-item d-flex justify-content-between" data-aos="fade-up">
+                        <span>{{ student.first_name }} {{ student.last_name }}</span>
+                        <span class="badge bg-secondary">Classe: {{ student.class_name }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <!-- Pagination des élèves -->
+            <div class="d-flex justify-content-between">
+                {% if students_page > 1 %}
+                    <a href="{{ url_for('view_classes', student_page=students_page-1) }}" class="btn btn-outline-primary">Précédent</a>
+                {% endif %}
+                {% if students.has_next %}
+                    <a href="{{ url_for('view_classes', student_page=students_page+1) }}" class="btn btn-outline-primary">Suivant</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning mt-3">Aucun élève inscrit actuellement.</div>
+        {% endif %}
+    </section>
+
+    <div class="text-center mt-4">
+        <button class="btn btn-outline-primary" id="load-more-btn">
+            Charger plus d'élèves
+        </button>
     </div>
 </div>
+
 <script src="{{ url_for('static', filename='js/classe.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    // Initialisation des animations AOS
+    AOS.init();
+
+    // Fonction pour charger plus d'élèves via AJAX
+    document.getElementById('load-more-btn').addEventListener('click', function () {
+        const loadMoreButton = this ;
+        loadMoreButton.disabled = true ; // Désactiver le bouton pour éviter plusieurs clics
+
+        // On fait une requête AJAX pour charger plus d'élèves
+        fetch('/api/students?page=2') // Exemple : appel API avec pagination
+            .then (response => response.json())
+            .then(data => {
+                const studentsList = document.getElementById('students');
+                const students = data.students ; // Données des étudiants récupérées
+
+                // Ajout des élèves à la liste existante
+                students.forEach (student → {
+                    const li = document.createElement('li');
+                    li.classList.add('list-group-item', 'd-flex', 'justify-content-between');
+                    li.setAttribute('data-aos', 'fade-up');
+                    li.innerHTML = `<span>${student.first_name} ${student.last_name}</span>
+                                   <span class="badge bg-secondary">Classe: ${student.class_name}</span>`;
+                    studentsList.appendChild(li);
+                });
+
+                loadMoreButton.disabled = false; // Réactiver le bouton
+            })
+            .catch(err => {
+                console.error('Erreur lors du chargement des étudiants :', err);
+                loadMoreButton.disabled = false;  // Réactiver en cas d'erreur
+            });
+    });
+</script>
 {% endblock %}

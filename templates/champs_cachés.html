@@ -1,79 +1,162 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
+    <!-- Métadonnées essentielles -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>openSIS Student Information System</title>
+
+    <!-- Favicon de l'application -->
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link href="{{ url_for('static', filename='css/login.css') }}" rel="stylesheet" type="text/css">
+
+    <!-- Feuilles de styles externes -->
+    <!-- Bootstrap 5 pour le style général -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 pour les icônes -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <!-- Select2 pour les menus déroulants améliorés -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
+    <!-- AOS pour les animations au scroll -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+
+    <!-- CSS personnalisé -->
+    <link href="{{ url_for('static', filename='css/connexion.css') }}" rel="stylesheet">
+
+    <!-- Styles supplémentaires -->
+    <style>
+        body {
+            background-color: #f4f6f8;
+        }
+        .login-wrapper {
+            margin-top: 50px;
+        }
+        .panel {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .logo img {
+            height: 50px;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+    </style>
 </head>
 <body>
-    <section class="login">
-        <div class="login-wrapper">
+<!-- Section principale de connexion -->
+<section class="login">
+    <div class="container">
+        <!-- Wrapper centralisé de la boîte de connexion -->
+        <div class="login-wrapper mx-auto col-md-6" data-aos="fade-up">
             <div class="panel">
-                <div class="panel-heading">
-                    <div class="logo">
-                        <img src="{{ url_for('static', filename='images/opensis_logo.png') }}" alt="openSIS" />
+                <!-- En-tête avec logo et titre -->
+                <div class="panel-heading text-center mb-4">
+                    <div class="logo mb-2">
+                        <img src="{{ url_for('static', filename='images/opensis_logo.jpg') }}" alt="openSIS">
                     </div>
                     <h3>Système d'information sur les étudiants</h3>
                 </div>
+
+                <!-- Corps du formulaire -->
                 <div class="panel-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            {% if form.errors %}
-                                <div class="alert alert-danger" role="alert">
-                                    <i aria-hidden="true" class="fa fa-exclamation-triangle"></i>
-                                    Identifiant invalide! Veuillez réessayer.
-                                </div>
-                            {% endif %}
-                            <form name="loginform" method="post" class="text-left" action="{{ url_for('login') }}">
-                                <div class="form-group">
-                                    {{ form.username(class="form-control username", placeholder="Saisissez votre nom d'utilisateur") }}
-                                </div>
-                                <div class="form-group">
-                                    {{ form.password(class="form-control password", placeholder="Entrer le mot de passe", autocomplete="off") }}
-                                </div>
-                                <div class="language-selection">
-                                    <i class="icon-earth"></i>
-                                    <select class="select-search" name="language" id="language" onchange="window.location = '{{ url_for('login') }}?language='+this.value">
-                                        <option value="en">English</option>
-                                        <option value="fr" selected>French</option>
-                                        <option value="es">Spanish</option>
-                                    </select>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <div class="form-group text-center">
-                                            <div class="checkbox checkbox-switch switch-success switch-sm">
-                                                <label>
-                                                    <input type="checkbox" name="remember" id="remember" /><span></span> Souviens-toi de moi
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-12 text-center">
-                                        <p>
-                                            <a href="ForgotPass.php" id="forgotPass">Nom d'utilisateur / mot de passe oublié?</a>
-                                        </p>
-                                    </div>
-                                </div>
-                                {{ form.hidden_tag() }}
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        {{ form.submit(class="btn btn-success btn-lg btn-block", onMouseDown="set_ck(); Set_Cookie('dhtmlgoodies_tab_menu_tabIndex', '', -1)") }}
-                                    </div>
-                                </div>
-                            </form>
+                    <!-- Affichage d'une alerte si le formulaire contient des erreurs -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            Identifiant invalide ! Veuillez réessayer.
                         </div>
-                    </div>
+                    {% endif %}
+
+                    <!-- Formulaire de connexion -->
+                    <form name="loginform" method="post" class="needs-validation" novalidate action="{{ url_for('login') }}">
+                        <!-- Champ utilisateur -->
+                        <div class="form-group mb-3">
+                            {{ form.username(class="form-control", placeholder="Nom d'utilisateur", required=True) }}
+                        </div>
+                        <!-- Champ mot de passe -->
+                        <div class="form-group mb-3">
+                            {{ form.password(class="form-control", placeholder="Mot de passe", autocomplete="off", required=True) }}
+                        </div>
+                        <!-- Sélecteur de langue -->
+                        <div class="form-group mb-3">
+                            <label for="language" class="form-label"><i class="fa-solid fa-earth-americas me-2"></i>Langue</label>
+                            <select class="form-select select2" name="language" id="language">
+                                <option value="en">English</option>
+                                <option value="fr" selected>Français</option>
+                                <option value="es">Español</option>
+                            </select>
+                        </div>
+                        <!-- Checkbox "Souviens-toi de moi" -->
+                        <div class="form-check form-switch mb-3 text-center">
+                            <input class="form-check-input" type="checkbox" id="remember" name="remember">
+                            <label class="form-check-label" for="remember">Souviens-toi de moi</label>
+                        </div>
+                        <!-- Lien mot de passe oublié -->
+                        <div class="text-center mb-3">
+                            <a href="ForgotPass.php" id="forgotPass">Nom d'utilisateur / mot de passe oublié?</a>
+                        </div>
+                        <!-- Token CSRF -->
+                        {{ form.hidden_tag() }}
+                        <!-- Bouton de soumission -->
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-success btn-lg", onMouseDown="set_ck(); Set_Cookie('dhtmlgoodies_tab_menu_tabIndex', '', -1)") }}
+                        </div>
+                    </form>
                 </div>
             </div>
-            <footer>
-                openSIS est un produit d'Open Solutions for Education, Inc. (<a href="http://www.os4ed.com">OS4ED</a>) et est sous <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">licence GPL</a>.
+
+            <!-- Pied de page -->
+            <footer class="text-center mt-4 text-muted small">
+                openSIS est un produit d'Open Solutions for Education, Inc. (<a href="http://www.os4ed.com">OS4ED</a>)
+                et est sous <a href="http://www.gnu.org/licenses/gpl.html" target="_blank">licence GPL</a>.
             </footer>
         </div>
-    </section>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    </div>
+</section>
+
+<!-- Scripts JavaScript requis -->
+<!-- Bootstrap JS avec Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- JS de Select2 pour les menus déroulants -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- JS pour les animations AOS -->
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<!-- SweetAlert2 pour les alertes personnalisées -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<!-- JS personnalisé de l'application -->
+<script src="{{ url_for('static', filename='js/appli.js') }}"></script>
+
+<script>
+    // Initialisation des plugins au chargement de la page
+    document.addEventListener('DOMContentLoaded', () => {
+        AOS.init(); // Démarrage des animations au scroll
+        $('.select2').select2(); // Activation de Select2
+
+        // Changement de langue — redirection automatique
+        document.getElementById('language').addEventListener('change', function () {
+            window.location.href = '{{ url_for('login') }}?language=' + this.value;
+        });
+
+        // Validation du formulaire avec Bootstrap et SweetAlert
+        const form = document.querySelector('.needs-validation');
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Champs requis',
+                    text: 'Veuillez remplir tous les champs obligatoires.',
+                    confirmButtonText: 'OK'
+                });
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>
 </body>
 </html>

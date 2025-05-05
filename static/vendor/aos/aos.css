@@ -1,0 +1,6 @@
+/*!
+ * AOS (Animate on Scroll) v2.3.4
+ * https://michalsnik.github.io/aos
+ * MIT License
+ */
+[data-aos]{opacity:0;transition-property:transform,opacity}[data-aos].aos-animate{opacity:1}[data-aos="fade-up"]{transform:translate3d(0,100px,0)}[data-aos="fade-up"].aos-animate{transform:translateZ(0)}
