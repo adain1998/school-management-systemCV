@@ -1,27 +1,51 @@
+// static/js/dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
-    // Boutons avec redirection
-    document.querySelectorAll('[data-redirect]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const url = btn.getAttribute('data-redirect');
-            window.location.href = url;
-        });
-    });
+    const chartCanvas = document.getElementById('statsChart');
 
-    // Boutons pour ouvrir des modales
-    const enseignantBtn = document.getElementById('btn-add-enseignant');
-    const eleveBtn = document.getElementById('btn-add-eleve');
-
-    if (enseignantBtn) {
-        enseignantBtn.addEventListener('click', () => {
-            const modal = new bootstrap.Modal(document.getElementById('modalAddEnseignant'));
-            modal.show();
-        });
+    if (!chartCanvas) {
+        console.warn('Élément canvas statsChart introuvable.');
+        return;
     }
 
-    if (eleveBtn) {
-        eleveBtn.addEventListener('click', () => {
-            const modal = new bootstrap.Modal(document.getElementById('modalAddEleve'));
-            modal.show();
-        });
-    }
+    const labels = [
+        'Étudiants', 'Enseignants', 'Notes', 'Absences',
+        'Présences', 'Messages', 'Forum', 'Rapports',
+        'Infos école', 'Sondages'
+    ];
+
+    const chartData = {
+        labels: labels,
+        datasets: [{
+            label: 'Total',
+            data: JSON.parse(chartCanvas.dataset.counts || '[]'),
+            backgroundColor: [
+                '#007bff', '#28a745', '#17a2b8', '#ffc107',
+                '#6f42c1', '#fd7e14', '#20c997', '#dc3545',
+                '#6610f2', '#e83e8c'
+            ],
+        }]
+    };
+
+    const config = {
+        type: 'bar',
+        data: chartData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    };
+
+    new Chart(chartCanvas.getContext('2d'), config);
 });

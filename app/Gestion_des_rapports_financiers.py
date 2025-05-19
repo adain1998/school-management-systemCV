@@ -77,6 +77,7 @@ def generate_report(report_type, start_date=None):
     return render_template('generate_report.html', form=form)
 
 
+
 @rapport.route("/download_report/<int:report_id>")
 @admin_required
 def download_report(report_id):
@@ -92,6 +93,7 @@ def download_report(report_id):
     buffer.seek(0)
     return send_file(buffer, as_attachment=True, download_name=f"{report.report_type}_report.pdf",
                      mimetype='application/pdf')
+
 
 
 @rapport.route("/export_reports")
@@ -113,6 +115,7 @@ def export_reports():
     )
 
 
+
 @rapport.route("/view_report_graph/<int:report_id>")
 @admin_required
 def view_report_graph(report_id):
@@ -128,6 +131,7 @@ def view_report_graph(report_id):
     buffer.close()
     graph = base64.b64encode(image_png).decode('utf-8')
     return render_template('view_report_graph.html', graph=graph)
+
 
 
 @rapport.route("/view_reports", methods=['GET', 'POST'])

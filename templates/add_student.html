@@ -16,7 +16,8 @@
     {% endwith %}
 
     <!-- Formulaire d'ajout d'étudiant -->
-    <form method="POST" action="{{ url_for('stud.add_student') }}">
+    <form method="POST" action="{{ url_for(blueprint_stud + '.add_student') }}">
+      <link href="{{ url_for('static', filename='css/add_student.css') }}" rel="stylesheet">
       <div class="form-group">
         <label for="last_name">Nom :</label>
         <input type="text" class="form-control" id="last_name" name="last_name" required>
@@ -91,6 +92,6 @@
       <button type="submit" class="btn btn-primary">Ajouter l'étudiant</button>
     </form>
   </div>
-<link href="{{ url_for('static', filename='css/add_student.css') }}" rel="stylesheet">
+
 <script src="{{ url_for('static', filename='js/add_student.js') }}"></script>
 {% endblock %}

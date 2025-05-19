@@ -71,6 +71,7 @@ def edit_note():
         return redirect(url_for('liste_notes'))
 
 
+
 @resultat.route('/delete_note/<int:id>')
 def delete_note():
     note = Note.query.get_or_404(id)
@@ -411,6 +412,7 @@ def report():
     return render_template('performance_report.html', report=report)
 
 
+
 @resultat.route('/assignments', methods=['GET', 'POST'])
 @login_required
 def assignments():
@@ -458,6 +460,7 @@ def delete_assignment(assignment_id):
     db.session.commit()
     flash('Assignment deleted successfully!', 'success')
     return redirect(url_for('assignments'))
+
 
 
 @resultat.errorhandler(HTTPException)
@@ -591,7 +594,6 @@ def calcul_moyennes_par_classe(classe_id):
     except SQLAlchemyError as e:
         flash(f"Erreur de base de données : {e}", "danger")
         return None
-
 
 
 

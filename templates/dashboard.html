@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Tableau de bord général{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% block content %}
+
+<div class="container my-5">
+    <div class="text-center mb-4">
+        <h1 class="text-primary">Tableau de bord de gestion scolaire</h1>
+        <p class="lead">Bienvenue {{ current_user.first_name }} 👋</p>
+        <p class="text-muted">Vue d'ensemble des indicateurs clés de l'école</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ students_count }}</h2>
+                <p>Étudiants inscrits</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ teachers_count }}</h2>
+                <p>Enseignants</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ note_count }}</h2>
+                <p>Notes enregistrées</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ absences_count }}</h2>
+                <p>Absences</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ attendance_count }}</h2>
+                <p>Présences</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ messages_count }}</h2>
+                <p>Messages internes</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ forumpost_count }}</h2>
+                <p>Messages du forum</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ report_count }}</h2>
+                <p>Rapports générés</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ schoolinfo_count }}</h2>
+                <p>Infos école</p>
+            </div>
+        </div>
+        <div class="col-md-4 mx-auto">
+            <div class="card shadow-sm text-center p-3">
+                <h2 class="text-primary">{{ pool_count }}</h2>
+                <p>Sondages</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-5">
+        <h4 class="text-center mb-4">Statistiques générales</h4>
+
+        <!-- Filtres temporels -->
+        <form method="GET" class="row g-3 align-items-end justify-content-center mb-3">
+            <!-- CSRF Token pour compatibilité POST si besoin -->
+            {# {{ csrf_token() }} #}
+            <div class="col-md-4">
+                <label for="month-select" class="form-label">Mois</label>
+                <select name="month" id="month-select" class="form-select" aria-label="Sélectionner le mois">
+                    <option value="">-- Tous les mois --</option>
+                    {% for month in range(1, 13) %}
+                        <option value="{{ month }}" {% if selected_month == month %}selected{% endif %}>
+                            {{["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"][month - 1]}}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="year-select" class="form-label">Année</label>
+                <select name="year" id="year-select" class="form-select" aria-label="Sélectionner l'année">
+                    {% for year in years %}
+                        <option value="{{ year }}" {% if selected_year == year %}selected{% endif %}>{{ year }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary" aria-label="Filtrer les statistiques">Filtrer</button>
+            </div>
+        </form>
+
+        {% if selected_month or selected_year %}
+        <p class="text-muted text-center">Filtré par:
+            {% if selected_month %}mois {{ selected_month }}{% endif %}
+            {% if selected_month and selected_year %} / {% endif %}
+            {% if selected_year %}année {{ selected_year }}{% endif %}
+        </p>
+        {% endif %}
+
+        <div class="table-responsive overflow-x-auto">
+            <canvas id="statsChart" width="100%" height="50"
+                    data-counts='[{{ students_count }}, {{ teachers_count }}, {{ note_count }},
+                      {{ absences_count }}, {{ attendance_count }}, {{ messages_count }},
+                      {{ forumpost_count }}, {{ report_count }}, {{ schoolinfo_count }}, {{ pool_count }}]'>
+            </canvas>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Préchargement Chart.js pour meilleures performances -->
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/chart.js">
+<script type="module" src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    const ctx = document.getElementById('statsChart').getContext('2d');
+    const statsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: [
+                'Étudiants', 'Enseignants', 'Notes', 'Absences',
+                'Présences', 'Messages', 'Forum', 'Rapports',
+                'Infos école', 'Sondages'
+            ],
+            datasets: [{
+                label: 'Total',
+                data: [
+                    {{ students_count }},
+                    {{ teachers_count }},
+                    {{ note_count }},
+                    {{ absences_count }},
+                    {{ attendance_count }},
+                    {{ messages_count }},
+                    {{ forumpost_count }},
+                    {{ report_count }},
+                    {{ schoolinfo_count }},
+                    {{ pool_count }}
+                ],
+                backgroundColor: [
+                    '#007bff', '#28a745', '#17a2b8', '#ffc107',
+                    '#6f42c1', '#fd7e14', '#20c997', '#dc3545',
+                    '#6610f2', '#e83e8c'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

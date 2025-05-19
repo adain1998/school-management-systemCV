@@ -62,7 +62,7 @@
     </div>
 
     <!-- Bouton d'ajout utilisateur -->
-    <a href="{{ url_for('auth.add_user') }}" class="btn btn-primary mt-3">Ajouter un utilisateur</a>
+    <a href="{{ url_for(blueprint_auth + '.add_user') }}" class="btn btn-primary mt-3">Ajouter un utilisateur</a>
 </div>
 {% endblock %}
 

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Sections{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/view_sections.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 fade-in">
+
+  <h2 class="mb-4">📚 Gestion des Sections</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-layer-group me-2"></i>Sections</h4>
+      <a href="{{ url_for('sect.add_section') }}" class="btn btn-light btn-sm">
+        <i class="fas fa-plus"></i> Ajouter une section
+      </a>
+    </div>
+
+    <div class="card-body table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Nom de la section</th>
+            <th>Classe associée</th>
+            <th>Date de création</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if sections %}
+            {% for section in sections %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ section.nom }}</td>
+                <td>{{ section.classe.nom if section.classe else 'Non spécifiée' }}</td>
+                <td>{{ section.created_at.strftime('%d/%m/%Y') if section.created_at else 'N/A' }}</td>
+                <td class="text-end">
+                  <a href="{{ url_for('sect.edit_section', section_id=section.id) }}" class="btn btn-sm btn-outline-primary" title="Modifier">
+                    <i class="fas fa-edit"></i>
+                  </a>
+
+                  <!-- Bouton Supprimer déclenchant la modale -->
+                  <button type="button" class="btn btn-sm btn-outline-danger"
+                          data-bs-toggle="modal"
+                          data-bs-target="#confirmDeleteModal{{ section.id }}"
+                          title="Supprimer">
+                    <i class="fas fa-trash"></i>
+                  </button>
+
+                  <!-- Modale de confirmation -->
+                  <div class="modal fade" id="confirmDeleteModal{{ section.id }}" tabindex="-1"
+                       aria-labelledby="confirmDeleteLabel{{ section.id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                      <div class="modal-content">
+                        <form method="POST" action="{{ url_for('sect.delete_section', section_id=section.id) }}">
+                          {{ csrf_token() }}  <!-- si CSRFProtect est activé -->
+                          <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="confirmDeleteLabel{{ section.id }}">
+                              Confirmer la suppression
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                          </div>
+                          <div class="modal-body">
+                            Êtes-vous sûr de vouloir supprimer la section :
+                            <strong>{{ section.nom }}</strong> ?
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                              Annuler
+                            </button>
+                            <button type="submit" class="btn btn-danger">
+                              Supprimer
+                            </button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Fin de la modale -->
+
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="5" class="text-center">Aucune section enregistrée.</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Table triable via JS -->
+<table>
+  <thead>
+    <tr>
+      <th class="sortable" data-field="name">Nom</th>
+      <th class="sortable" data-field="created_at">Date de création</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Contenu initial chargé côté serveur ou vide -->
+  </tbody>
+</table>
+
+<script>
+  document.querySelectorAll('th.sortable').forEach(header => {
+    header.dataset.order = 'asc'; // ordre initial
+
+    header.addEventListener('click', () => {
+      const sortBy = header.dataset.field;
+      const currentOrder = header.dataset.order;
+      const order = currentOrder === 'asc' ? 'desc' : 'asc';
+      header.dataset.order = order;
+
+      fetch(`/api/sections?sortBy=${sortBy}&order=${order}`)
+        .then(res => res.json())
+        .then(data => {
+          if(data.error){
+            alert(data.error);
+            return;
+          }
+          const tbody = document.querySelector('table tbody');
+          tbody.innerHTML = '';
+
+          data.data.forEach(section => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${section.name}</td>
+              <td>${new Date(section.created_at).toLocaleDateString()}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .catch(() => alert('Erreur serveur'));
+    });
+  });
+</script>
+
+<!-- CDN SweetAlert2 (utile pour enrichir les alertes futures) -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Script JS personnalisé pour la page sections -->
+<script src="{{ url_for('static', filename='js/view_sections.js') }}"></script>
+{% endblock %}

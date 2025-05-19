@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Rapport de performance{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">Rapport de performance</h1>
+
+    <!-- Messages flash pour les erreurs -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert alert-danger">
+                <ul>
+                    {% for category, message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Filtres et tri -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <form method="get" action="{{ url_for('resultat.results') }}">
+                <div class="form-group">
+                    <label for="filter">Filtrer par moyenne</label>
+                    <select name="filter" id="filter" class="form-control">
+                        <option value="">Sélectionner</option>
+                        <option value="sup" {%if filter_value =='sup' %}selected{% endif %}>Moyenne supérieure à 5</option>
+                        <option value="inf" {%if filter_value =='inf' %}selected{% endif %}>Moyenne inférieure à 5</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Appliquer</button>
+            </form>
+        </div>
+
+        <div class="col-md-4">
+            <form method="get" action="{{ url_for('resultat.results') }}">
+                <div class="form-group">
+                    <label for="sort_by">Trier par</label>
+                    <select name="sort_by" id="sort_by" class="form-control">
+                        <option value="nom" {%if sort_by =='nom' %}selected{% endif %}>Nom</option>
+                        <option value="moyenne" {%if sort_by =='moyenne' %}selected{% endif %}>Moyenne</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="order">Ordre</label>
+                    <select name="order" id="order" class="form-control">
+                        <option value="asc" {%if order =='asc' %}selected{% endif %}>Ascendant</option>
+                        <option value="desc" {%if order =='desc' %}selected{% endif %}>Descendant</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Appliquer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Affichage des résultats sous forme de table paginée -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Matière</th>
+                    <th>Moyenne</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for matiere in matieres. Items %}
+                    <tr>
+                        <td>{{ matiere.nom }}</td>
+                        <td>{{ matiere.moyenne|round(2) }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between">
+        <div>
+            <span>Page {{ matieres.page }} sur {{ matieres.pages }}</span>
+        </div>
+        <div>
+            {% if matieres.has_prev %}
+                <a href="{{ url_for('resultat.results', page=matieres.prev_num) }}" class="btn btn-secondary">Précédent</a>
+            {% endif %}
+            {% if matieres.has_next %}
+                <a href="{{ url_for('resultat.results', page=matieres.next_num) }}" class="btn btn-secondary">Suivant</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Affichage des graphiques -->
+    <h3 class="text-center">Graphiques de Performance</h3>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <h5>Courbe Sinusoïdale</h5>
+            <img src="{{ url_for('static', filename='images/sinus_plot.png') }}" class="img-fluid" alt="Courbe Sinusoïdale">
+        </div>
+        <div class="col-md-4">
+            <h5>Points Dispersés</h5>
+            <img src="{{ url_for('static', filename='images/scatter_plot.png') }}" class="img-fluid" alt="Points Dispersés">
+        </div>
+        <div class="col-md-4">
+            <h5>Distribution des Moyennes</h5>
+            <img src="{{ url_for('static', filename='images/moyenne_student.png') }}" class="img-fluid" alt="Distribution des Moyennes">
+        </div>
+    </div>
+</div>
+<link href="{{ url_for('static', filename='css/performance_report.css') }}" rel="stylesheet">
+<script src="{{ url_for('static', filename='js/performance_report.js') }}"></script>
+{% endblock %}

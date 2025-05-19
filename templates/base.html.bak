@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Application de gestion scolaire - plateforme complète pour la gestion des élèves, examens, paiements, et rapports.">
+    <meta name="author" content="Équipe Gestion Scolaire">
+    <meta name="keywords" content="école, gestion scolaire, étudiants, paiements, examens, rapports, éducation">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="canonical" href="{{ request.url }}">
+
+    <title>{% block title %}Gestion Scolaire{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon-16x16.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#007bff">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.min.json') }}">
+
+
+    <!-- CSS Frameworks & Libraries -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="preconnect" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-MnHCpV8G8b9wJjxRZCQnB0Pb9b2xv5EkCB3zvbMceWWFy2UoZCkF5TbD0oEyUAAk" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-5V/pTGTXg8k7V6JBPJP/gHiLL08EyWf6f1dC3AAI6iB1WJ1kUt8BrAHXMC4MNi06KLvKduQwChxjN4s9+3UgbQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
+
+    <!-- Styles personnalisés -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashoard_styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/student_list.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Student_details.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Signup.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/edit_section.css') }}">
+
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --text-light: #ffffff;
+            --navbar-dark: #1f1f1f;
+        }
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+        }
+        .dark-mode .navbar {
+            background-color: var(--navbar-dark);
+        }
+    </style>
+</head>
+<body>
+
+<header class="bg-light py-2 text-right pr-3">
+    <button class="btn btn-sm btn-outline-secondary" onclick="toggleDarkMode()" aria-label="Activer le mode sombre">
+        <i class="fas fa-moon"></i> Mode sombre
+    </button>
+</header>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light" role="navigation">
+    <a class="navbar-brand font-weight-bold" href="{{ url_for('index') }}">Gestion Scolaire</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Basculer la navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            {% if current_user.is_authenticated %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.logout') }}">Déconnexion</a></li>
+                {% if current_user.is_admin %}
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.manage_users') }}">Gestion utilisateurs</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.manage_visitors') }}">Gestion visiteurs</a></li>
+                {% endif %}
+            {% else %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login') }}">Se connecter</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('connex.signup') }}">S'inscrire</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.login_parent') }}">Connexion parents</a></li>
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('auth.register_parent') }}">Inscription parents</a></li>
+            {% endif %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('home') }}">Accueil</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('stud.students') }}">Étudiants</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('stud.add_student') }}">Ajouter étudiant</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('manage_students') }}">Gérer étudiants</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('view_classes') }}">Classes</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('view_options') }}">Options</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('view_fees') }}">Frais</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('schedul.view_schedules') }}">Horaires</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('schedul.view_calendar') }}">Calendrier</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('examen.view_exam') }}">Examens</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('paiem.get_payments') }}">Paiements</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('rapport.generate_report', report_type='daily') }}">Rapports</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('application.performance') }}">Performance</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('resultat.index_note') }}">Moyennes</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('mes.messages') }}">Messages</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('mes.forum') }}">Forum</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Flash Messages -->
+<div class="container mt-3" role="alert">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
+<main class="container mt-4 mb-5" role="main">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- JS Libraries -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha384-ZvpUoO/+Pw5y3C3LeNokVmYo2D0sLOp6MQcD0THYxGOrYjkAfGZJb6x8u4lw3Rrl" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fullcalendar/5.11.3/main.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+<!-- Custom JS -->
+<script>
+    function toggleDarkMode() {
+        const body = document.body;
+        const isDark = body.classList.toggle('dark-mode');
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        localStorage.setItem('dark-mode', isDark);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (localStorage.getItem('dark-mode') === 'true') {
+            document.body.classList.add('dark-mode');
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+        AOS.init({ duration: 1000 });
+    });
+</script>
+
+{% block scripts %}{% endblock %}
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      const version = '1.0.3'; // Mets à jour cette version à chaque nouvelle release
+      navigator.serviceWorker.register(`/service-worker.js?v=${version}`)
+        .then(reg => console.log(`✅ Service Worker v${version} enregistré :`, reg))
+        .catch(err => console.error('❌ Échec Service Worker :', err));
+    });
+  }
+</script>
+
+<script src="{{ url_for('static', filename='js/Signup.js') }}"></script>
+<script src="{{ url_for('static', filename='js/edit_section.js') }}"></script>
+</body>
+</html>

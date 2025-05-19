@@ -13,7 +13,7 @@
 <title>Connexion des parents</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login_parent.css') }}">
-<form method="POST" action="{{ url_for('auth.login_parent') }}">
+<form method="POST" action="{{ url_for(blueprint_auth + '.login_parent') }}">
     {{ form.hidden_tag() }}
     <div class="form-group">
         <label for="name">Nom:</label>

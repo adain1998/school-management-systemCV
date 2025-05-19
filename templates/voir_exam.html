@@ -9,7 +9,7 @@
         <!-- Formulaire de filtrage -->
         <div class="mb-4">
             <h4>Filtrer les Examens</h4>
-            <form method="POST" action="{{ url_for('examen.filter_and_search_exams') }}" class="form-inline">
+            <form method="POST" action="{{ url_for(blueprint_examen + '.filter_and_search_exams') }}" class="form-inline">
                 <div class="form-group mr-3">
                     <label for="subject">Matière</label>
                     <input type="text" class="form-control" id="subject" name="subject" placeholder="Matière" value="{{ request.form.get('subject') }}">
@@ -72,7 +72,7 @@
 
         <!-- Lien vers la page d'ajout d'examen -->
         <div class="text-center">
-            <a href="{{ url_for('examen.add_exam') }}" class="btn btn-success">Ajouter un Examen</a>
+            <a href="{{ url_for(blueprint_examen + '.add_exam') }}" class="btn btn-success">Ajouter un Examen</a>
         </div>
     </div>
 <script src="{{ url_for('static', filename='js/Voir_exam.js') }}"></script>

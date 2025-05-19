@@ -11,7 +11,7 @@
 <body>
 <div class="container">
     <h1>S'inscrire</h1>
-    <form method="POST" action="{{ url_for('auth.register_parent') }}">
+    <form method="POST" action="{{ url_for(blueprint_auth + '.register_parent') }}">
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.email.label(class="form-control-label") }}

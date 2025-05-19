@@ -1,0 +1,205 @@
+/* view_sections.css */
+/* 🌐 Design moderne et fluide pour la page des sections */
+
+/* Conteneur principal */
+.container {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+  max-width: 1000px;
+  margin: auto;
+}
+
+/* Titre principal */
+.container h2 {
+  font-weight: 600;
+  font-size: 1.75rem;
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* Carte */
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  padding: 1rem 1.5rem;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header h4 {
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Bouton d'ajout */
+.card-header .btn {
+  font-size: 0.875rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Table */
+.table-hover tbody tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.table thead th {
+  background-color: #343a40;
+  color: #fff;
+  text-align: center;
+  vertical-align: middle;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+}
+
+.table tbody td, .table thead th {
+  vertical-align: middle;
+  text-align: center;
+  font-size: 0.95rem;
+  padding: 0.75rem 1rem;
+  word-break: break-word;
+}
+
+/* Actions dans la table */
+.table tbody td.text-end {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.table tbody td.text-end .btn {
+  margin-left: 0.3rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Boutons */
+.btn {
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.btn-success {
+  background-color: #198754;
+  border-color: #198754;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #157347;
+  border-color: #157347;
+  color: white;
+}
+
+.btn-danger {
+  border-color: #dc3545;
+  color: #dc3545;
+  background-color: transparent;
+}
+
+.btn-danger:hover {
+  background-color: #bb2d3b;
+  border-color: #b02a37;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0a58ca;
+  border-color: #0a53be;
+}
+
+/* Alertes */
+.alert {
+  font-size: 0.95rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+/* Modale */
+.modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 1rem 1.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.modal-body {
+  font-size: 1rem;
+  padding: 1rem 1.5rem;
+  color: #333;
+}
+
+.modal-footer {
+  padding: 0.75rem 1.5rem;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+  }
+  .table thead {
+    display: none;
+  }
+  .table tbody td {
+    display: block;
+    text-align: right;
+    position: relative;
+    padding-left: 50%;
+    border: none;
+    font-size: 0.9rem;
+  }
+  .table tbody td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 1rem;
+    top: 0.75rem;
+    font-weight: 600;
+    text-align: left;
+    color: #495057;
+  }
+  .table tbody td.text-end {
+    text-align: right;
+  }
+}
+
+/* Animation douce à l'apparition */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Highlight row on hover alternative */
+.table-hover-highlight {
+  background-color: #f8f9fa !important;
+  transition: background-color 0.3s ease;
+}

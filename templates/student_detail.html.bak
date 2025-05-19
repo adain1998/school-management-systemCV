@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% block title %}Détails de l'Étudiant{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2 class="mb-4 text-center">Fiche de l'Étudiant</h2>
+
+    {% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/Student_details.css') }}">
+    {% endblock %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="card shadow rounded mb-4">
+        <div class="card-body">
+            <form method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="first_name" class="form-label">Prénom</label>
+                        <input type="text" name="first_name" id="first_name" class="form-control" value="{{ student.first_name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="last_name" class="form-label">Nom</label>
+                        <input type="text" name="last_name" id="last_name" class="form-control" value="{{ student.last_name }}" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="date_naissance" class="form-label">Date de Naissance</label>
+                        <input type="date" name="date_naissance" id="date_naissance" class="form-control" value="{{ student.date_naissance }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="paiement" class="form-label">Montant payé</label>
+                        <input type="number" step="0.01" name="paiement" id="paiement" class="form-control" value="{{ student.fees_paid }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="debt" class="form-label">Dette</label>
+                        <input type="number" step="0.01" name="debt" id="debt" class="form-control" value="{{ student.debt }}">
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="religion" class="form-label">Religion</label>
+                        <input type="text" name="religion" id="religion" class="form-control" value="{{ student.religion or '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="parent_id" class="form-label">Parent ID</label>
+                        <input type="number" name="parent_id" id="parent_id" class="form-control" value="{{ student.parent_id or '' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="class_id" class="form-label">Classe ID</label>
+                        <input type="number" name="class_id" id="class_id" class="form-control" value="{{ student.class_id or '' }}">
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save"></i> Mettre à jour
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Formulaire de contact -->
+    <div class="card shadow rounded mb-4">
+        <div class="card-body">
+            <h4>Contacter l'étudiant</h4>
+            <form action="{{ url_for('stud.contact_student', student_id=student.id) }}" method="POST">
+                <div class="mb-3">
+                    <label for="email" class="form-label">Votre adresse email</label>
+                    <input type="email" name="email" id="email" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="message" class="form-label">Message</label>
+                    <textarea name="message" id="message" rows="4" class="form-control" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">Envoyer le message</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ url_for('stud.student_list') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Retour à la liste
+        </a>
+    </div>
+</div>
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/Student_details.js') }}"></script>
+{% endblock %}

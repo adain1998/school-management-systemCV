@@ -1,50 +1,127 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
 {% block title %}Tableau de bord de l'élève{% endblock %}
 
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard_eleves.css') }}">
+  <style>
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 20px;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-    <h2>Bienvenue, {{ current_user.first_name }} !</h2>
+<div class="container py-4">
+  <h2 class="fw-bold">👨‍🎓 Tableau de bord de l'élève</h2>
 
-    <!-- Annonces -->
-    <div class="alert alert-info">
-        <h4>Dernières Annonces</h4>
-        <ul>
-            <li>Révision des matières pour le prochain examen de maths.</li>
-            <li>Nouvelle date pour le devoir de physique : 10 mars.</li>
-        </ul>
+  <!-- Section des informations de l'élève -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title">Informations personnelles</h4>
+      <p><strong>Nom :</strong> {{ current_user.first_name }} {{ current_user.last_name }}</p>
+      <p><strong>Identifiant élève :</strong> {{current_user.numero_matricule}}</p>
+      <p><strong>Email :</strong> {{ current_user.email }}</p>
+      <p><strong>Date de naissance :</strong> {{current_user.date_naissance.strftime('%d %b, %Y') }}</p>
+      <p><strong>Religion :</strong> {{current_user. religion or "Non renseigné"}}</p>
     </div>
+  </div>
 
-    <!-- Résultats et Performances -->
-    <div class="row">
-        <div class="col-md-6">
-            <h4>Mes Résultats</h4>
-            <ul class="list-group">
-                <li class="list-group-item">Mathématiques : 16/20</li>
-                <li class="list-group-item">Français : 14/20</li>
-                <li class="list-group-item">Histoire : 18/20</li>
-            </ul>
-        </div>
-
-        <!-- Devoirs et Examens -->
-        <div class="col-md-6">
-            <h4>Mes Devoirs</h4>
-            <ul class="list-group">
-                <li class="list-group-item">Devoir de Mathématiques - Rendu pour le 15 mars</li>
-                <li class="list-group-item">Devoir de Physique - Rendu pour le 18 mars</li>
-            </ul>
-        </div>
+  <!-- Section des frais -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title">Frais et Paiements</h4>
+      <a href="{{ url_for(blueprint_paie + '.liste_frais') }}" class="btn btn-info">Voir mes frais</a>
+      <p>Statut des frais : {{'Payé' if current_user.fees_paid > 0 else 'Non payé'}}</p>
     </div>
+  </div>
 
-    <!-- Examens -->
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <h4>Prochains Examens</h4>
-            <ul>
-                <li>Examen de Mathématiques - 12 mars</li>
-                <li>Examen de Physique - 18 mars</li>
-            </ul>
-        </div>
+  <!-- Section des résultats et performances -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title">Mes résultats</h4>
+      <p><strong>Moyenne générale :</strong> {{current_user.avg_grade}}%</p>
+      <p><strong>Rang dans la classe :</strong> {{current_user.rank_in_class}}</p>
+      <a href="{{ url_for('resultats.view_results') }}" class="btn btn-success">Voir mes résultats</a>
+
+      <!-- Graphique des notes par matière -->
+      <div class="chart-container">
+        <canvas id="gradesBySubjectChart"></canvas>
+      </div>
+
+      <!-- Graphique de l'évolution des moyennes -->
+      <div class="chart-container">
+        <canvas id="averageTrendChart"></canvas>
+      </div>
     </div>
+  </div>
+
+  <!-- Section des notifications -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h4 class="card-title">Notifications</h4>
+      {% for notification in current_user.notifications %}
+        <div class="alert alert-info">
+          {{ notification.message }}
+        </div>
+      {% else %}
+        <p>Aucune notification récente.</p>
+      {% endfor %}
+    </div>
+  </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='js/dashboard_eleves.js') }}"></script>
+  <script>
+    // Exemple de données dynamiques injectées depuis le backend (à adapter selon vos modèles)
+    const gradesBySubject = {{grades_by_subject | tojson}}
+    const averageTrend = {{average_trend | tojson}} ;
+
+    const ctx1 = document.getElementById('gradesBySubjectChart').getContext('2d');
+    const gradesChart = new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: gradesBySubject.map(g => g.subject),
+        datasets: [{
+          label: 'Note (%)',
+          data: gradesBySubject.map(g => g.grade),
+          backgroundColor: '#4e73df',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Notes par matière'}}}}) ;
+
+    const ctx2 = document.getElementById('averageTrendChart').getContext('2d');
+    const trendChart = new Chart(ctx2, {
+      type: 'line',
+      data: {
+        labels: averageTrend.map(p => p.term),
+        datasets: [{
+          label: 'Moyenne (%)',
+          data: averageTrend.map(p => p.average),
+          borderColor: '#1cc88a',
+          tension: 0.4,
+          fill: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: {
+            display: true,
+            text: 'Évolution de la moyenne'
+          }
+        }
+      }
+    });
+  </script>
 {% endblock %}

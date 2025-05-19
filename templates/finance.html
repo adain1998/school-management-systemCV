@@ -6,7 +6,7 @@
     <h2>Gestion des Paiements</h2>
 
     <!-- Formulaire de filtrage -->
-    <form method="GET" action="{{ url_for('paiem.filter_payment') }}" class="mb-4">
+    <form method="GET" action="{{ url_for(blueprint_paiem + '.filter_payment') }}" class="mb-4">
         <div class="row">
             <div class="col-md-3">
                 <label for="filter_by">Filtrer par :</label>

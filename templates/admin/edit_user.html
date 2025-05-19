@@ -43,7 +43,7 @@
     </form>
 
     <!-- Retour à la gestion des utilisateurs -->
-    <a href="{{ url_for('auth.manage_users') }}" class="btn btn-secondary mt-3">Retour à la gestion des utilisateurs</a>
+    <a href="{{ url_for(blueprint_auth + '.manage_users') }}" class="btn btn-secondary mt-3">Retour à la gestion des utilisateurs</a>
 </div>
 {% endblock %}
 

@@ -46,7 +46,7 @@
     </table>
 
     <!-- Formulaire sécurisé pour la déconnexion -->
-    <form id="logout-form" action="{{ url_for('auth.logout') }}" method="POST" style="display: inline;">
+    <form id="logout-form" action="{{ url_for(blueprint_auth + '.logout') }}" method="POST" style="display: inline;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-danger mt-4">Déconnexion</button>
     </form>

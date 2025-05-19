@@ -36,12 +36,13 @@ def create_flask_app_instance():
     return flask_app
 
 
+
 # ✅ Démarrer l'application Flask avec gestion des erreurs
 if __name__ == "__main__":
     try:
         app_instance = create_flask_app_instance()  # Créer l'instance de l'application
         print(f"🚀 FLASK_ENV: {os.getenv('FLASK_ENV')}")  # Afficher l'environnement utilisé
-        app_instance.run(debug=True)  # Lancer l'application en mode debug
+        app_instance.run(debug=True, port=5000)  # Lancer l'application en mode debug
     except Exception as e:
         print("🚨 Erreur lors du démarrage:", str(e))
         traceback.print_exc()

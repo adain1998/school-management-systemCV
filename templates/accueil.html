@@ -5,8 +5,8 @@
 {% block content %}
 <div class="container">
     <h1>Bienvenue sur la page d'accueil de paiement</h1>
-    <a href="{{ url_for('paiem.new_payment') }}" class="btn btn-primary" id="new-payment-btn">Nouveau Paiement</a>
-    <a href="{{ url_for('paiem.get_payments') }}" class="btn btn-secondary" id="view-payments-btn">Voir les Paiements</a>
+    <a href="{{ url_for(blueprint_paiem + '.new_payment') }}" class="btn btn-primary" id="new-payment-btn">Nouveau Paiement</a>
+    <a href="{{ url_for(blueprint_paiem + '.get_payments') }}" class="btn btn-secondary" id="view-payments-btn">Voir les Paiements</a>
 </div>
 {% endblock %}
 

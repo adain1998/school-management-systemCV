@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, flash, request, redirect, url_for
 from app.models import db, Absence, Student
 from app.forms import AbsenceForm
 from flask_login import login_required
+from app.decorators import roles_required
 
 absenc = Blueprint('abscen', __name__)
 
@@ -50,6 +51,7 @@ def manage_absences(student_id):
 
 
 @absenc.route('/absences/edit/<int:absence_id>', methods=['GET', 'POST'])
+@roles_required('admin', 'superadmin')
 def edit_absence(absence_id):
     absence = Absence.query.get_or_404(absence_id)
     form = AbsenceForm()
@@ -72,6 +74,7 @@ def edit_absence(absence_id):
 
 
 @absenc.route('/absences/delete/<int:absence_id>', methods=['POST'])
+@roles_required('admin', 'superadmin')
 def delete_absence(absence_id):
     absence = Absence.query.get_or_404(absence_id)
     student_id = absence.student.id

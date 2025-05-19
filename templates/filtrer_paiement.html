@@ -75,7 +75,7 @@
         <p>Aucun étudiant trouvé pour cette classe.</p>
     {% endif %}
 
-    <a href="{{ url_for('paiem.index') }}" class="btn btn-secondary mt-4">Retour</a>
+    <a href="{{ url_for(blueprint_paiem + '.index') }}" class="btn btn-secondary mt-4">Retour</a>
 </div>
 {% endblock %}
 

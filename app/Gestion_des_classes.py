@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, flash, url_for
 from app.models import db, Classe, Sections, Option, Student
 from werkzeug.exceptions import NotFound, BadRequest
-
+from app.decorators import roles_required
+import logging
 # Initialisation du Blueprint
 niveau = Blueprint('niveau', __name__)
 
@@ -31,7 +32,7 @@ def view_classes():
 @niveau.route('/add_class', methods=['POST'])
 def add_class():
     try:
-        nom = request.form.get('nom')
+        nom = request.form.get('nom', '').strip()
 
         if not nom:
             raise BadRequest("Le nom de la classe est requis.")
@@ -40,15 +41,16 @@ def add_class():
         db.session.add(new_class)
         db.session.commit()
 
-        flash('Classe ajoutée avec succès!', 'success')
+        flash('✅ Classe ajoutée avec succès !', 'success')
         return redirect(url_for('niveau.view_classes'))
 
     except BadRequest as e:
-        flash(str(e), 'danger')
+        flash(f"⚠️ {e.description}", 'danger')
         return redirect(url_for('niveau.view_classes'))
 
     except Exception as e:
-        flash(f"Une erreur s'est produite lors de l'ajout de la classe : {str(e)}", 'danger')
+        logging.exception("Erreur lors de l'ajout de la classe :")
+        flash(f"❌ Une erreur s'est produite lors de l'ajout de la classe : {str(e)}", 'danger')
         return redirect(url_for('niveau.view_classes'))
 
 
@@ -86,6 +88,7 @@ def edit_class():
 
 # View pour supprimer une classe
 @niveau.route('/delete_classe/<int:id>', methods=['POST'])
+@roles_required('admin', 'superadmin')
 def delete_classe():
     try:
         classe = Classe.query.get_or_404(id)
@@ -136,4 +139,10 @@ def gestion_classes():
     except Exception as e:
         flash(f"Une erreur s'est produite lors de la récupération des données : {str(e)}", 'danger')
         return redirect(url_for('niveau.view_classes'))
+
+
+
+@niveau.route('/test404')
+def test404():
+    return render_template("404.html")
 

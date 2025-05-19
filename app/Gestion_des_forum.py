@@ -4,6 +4,7 @@ from flask_login import current_user, login_required
 from app.forms import ForumPostForm, NotificationForm, PollForm
 from datetime import datetime
 from sqlalchemy import desc
+from app.decorators import roles_required
 
 meeting = Blueprint("meeting", __name__)
 
@@ -20,6 +21,7 @@ def forum():
         return redirect(url_for('main.forum'))
     posts = ForumPost.query.all()
     return render_template('forum.html', form=form, posts=posts)
+
 
 
 @meeting.route('/forum/filter', methods=['GET', 'POST'])
@@ -72,6 +74,8 @@ def filter_notifications():
 
 
 @meeting.route('/create_poll', methods=['GET', 'POST'])
+@roles_required('enseignant','admin', 'superadmin')
+@login_required
 def create_poll():
     form = PollForm()
     if form.validate_on_submit():
@@ -90,29 +94,3 @@ def create_poll():
         flash('Sondage créé avec succès !', 'success')
         return redirect(url_for('create_poll'))
     return render_template('sondage.html', form=form)
-
-# code reserve forum post
-"""@meeting.route('/notifications/filter', methods=['GET', 'POST'])
-@login_required
-def filter_notifications():
-    form = NotificationForm()
-    filter_column = request.args.get('filter_by', 'due_date')
-    order = request.args.get('order', 'asc')
-    page = request.args.get('page', 1, type=int)
-    per_page = 10
-    allowed_filters = ['due_date', 'tilte', 'description']
-    value = str
-    if filter_column not in allowed_filters:
-        return 'invalid filter column', 400
-    query = Notification.query
-    query = query.filter_by(**{filter_column: value})
-    if order == 'desc':
-        query = query.order_by(desc(getattr(Notification, filter_column)))
-    else:
-        query = query.order_by(desc(getattr(Notification, filter_column)))
-    pagination = query.paginate(page=page, per_page=per_page)
-    notifica = pagination.items
-    notification = query.all()
-    return render_template('Notification.html',
-                           form=form, notificationt=notification, notifica=notifica)"""
-

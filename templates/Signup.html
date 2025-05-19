@@ -1,95 +1,143 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block content %}
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/Signup.css') }}">
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center my-4">Créer un compte</h2>
 
-            <!-- Affichage des messages flash -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    <div class="alert-container">
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            {% endwith %}
-
-            <form method="POST" action="{{ url_for('connex.signup') }}">
-                {{ form.hidden_tag() }}
-
-                <div class="form-group">
-                    {{ form.username.label }}
-                    {{ form.username(class="form-control", placeholder="Nom d'utilisateur") }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.email.label }}
-                    {{ form.email(class="form-control", placeholder="Email") }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.password.label }}
-                    {{ form.password(class="form-control", placeholder="Mot de passe") }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.confirm_password.label }}
-                    {{ form.confirm_password(class="form-control", placeholder="Confirmer le mot de passe") }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.last_name.label }}
-                    {{ form.last_name(class="form-control", placeholder="Nom de famille") }}
-                </div>
-
-                <div class="form-group">
-                    {{ form.role.label }}
-                    {{ form.role(class="form-control", onchange="toggleFields()") }}
-                </div>
-
-                <div class="form-group" id="specialite_field" style="display: none;">
-                    {{ form.specialite.label }}
-                    {{ form.specialite(class="form control", placeholder="Spécialité de l'enseignant")}}
-                </div>
-
-                <div class="form-group" id="niveau_field" style="display: none;">
-                    {{ form.niveau.label }}
-                    {{ form.niveau(class="formcontrol", placeholder="Niveau de l'élève")}}
-                </div>
-
-                <div class="form-group" id="role_admin_field" style="display: none;">
-                    {{ form.role_admin.label }}
-                    {{ form.role_admin(class="formcontrol", placeholder="Rôle de l'administrateur") }}
-                </div>
-
-                <div class="form-group text-center">
-                    {{ form.submit(class="btn btn-primary btn-lg") }}
-                </div>
-            </form>
-
-            <p class="text-center my-4">Déjà un compte ? <a href="{{ url_for('auth.login') }}">Se connecter</a></p>
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-primary text-white text-center py-4">
+          <h4>Création de compte</h4>
         </div>
+        <div class="card-body p-4">
+          <form method="POST" action="{{ url_for(blueprint_connex + '.signup') }}" novalidate>
+            {{ form.hidden_tag() }}
+
+            <!-- Username -->
+            <div class="form-group mb-3">
+              {{ form.username.label(class="form-label") }}
+              {{ form.username(class="form-control", placeholder="Nom d'utilisateur") }}
+              {% for error in form.username.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Email -->
+            <div class="form-group mb-3">
+              {{ form.email.label(class="form-label") }}
+              {{ form.email(class="form-control," placeholder="Adresse email") }}
+              {% for error in form.email.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Password -->
+            <div class="form-group mb-3">
+              {{ form.password.label(class="form-label") }}
+              {{ form.password(class="form-control", placeholder="Mot de passe") }}
+              {% for error in form.password.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Confirm Password -->
+            <div class="form-group mb-3">
+              {{ form.confirm_password.label(class="form-label") }}
+              {{ form.confirm_password(class="form-control", placeholder="Confirmez le mot de passe") }}
+              {% for error in form.confirm_password.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Nom -->
+            <div class="form-group mb-3">
+              {{ form.last_name.label(class="form-label") }}
+              {{ form.last_name(class="form-control", placeholder="Votre nom de famille") }}
+              {% for error in form.last_name.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Rôle -->
+            <div class="form-group mb-3">
+              {{ form.role.label(class="form-label") }}
+              {{ form.role(class="form-select") }}
+              {% for error in form.role.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Spécialité (enseignant) -->
+            <div class="form-group mb-3" id="specialite-field" style="display:none;">
+              {{ form.specialite.label(class="form-label") }}
+              {{ form.specialite(class="form-control", placeholder="Spécialité") }}
+              {% for error in form.specialite.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Niveau (élève) -->
+            <div class="form-group mb-3" id="niveau-field" style="display:none;">
+              {{ form.niveau.label(class="form-label") }}
+              {{ form.niveau(class="form-control," placeholder="Niveau scolaire") }}
+              {% for error in form.niveau.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Rôle Administratif -->
+            <div class="form-group mb-3" id="role-admin-field" style="display:none;">
+              {{ form.role_admin.label(class="form-label") }}
+              {{ form.role_admin(class="form-control", placeholder="Responsabilité (ex: Directeur)") }}
+              {% for error in form.role_admin.errors %}
+                <small class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </div>
+
+            <!-- Submit -->
+            <div class="d-grid mt-4">
+              {{ form.submit(class="btn btn-primary btn-lg") }}
+            </div>
+          </form>
+
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <div class="mt-4">
+                {% for category, message in messages %}
+                  <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endwith %}
+        </div>
+      </div>
     </div>
+  </div>
 </div>
-<script src="{{ url_for('static', filename='js/Signup.js') }}"></script>
+
+<!-- JS dynamique pour affichage conditionnel -->
 <script>
-    function toggleFields() {
-        let role = document.getElementById("role").value;
-        document.getElementById("specialite_field").style.display = (role === "enseignant") ? "block" : "none" ;
-        document.getElementById("niveau_field").style.display = (role === "eleve") ? "block" : "none" ;
-        document.getElementById("role_admin_field").style.display = (role === "administrateur") ? "block" : "none" ;}
+  document.addEventListener('DOMContentLoaded', function () {
+    const roleSelect = document.querySelector('select[name="role"]');
+    const specialiteField = document.getElementById('specialite-field');
+    const niveauField = document.getElementById('niveau-field');
+    const roleAdminField = document.getElementById('role-admin-field');
 
-    // Exécuter la fonction lors du chargement de la page pour afficher les champs corrects
-    window.onload = toggleFields;
+    function toggleFields(role) {
+      specialiteField.style.display = (role === 'enseignant') ? 'block' : 'none';
+      niveauField.style.display = (role === 'eleve') ? 'block' : 'none';
+      roleAdminField.style.display = (role === 'administrateur') ? 'block' : 'none';
+    }
+
+    if (roleSelect) {
+      toggleFields(roleSelect.value);
+      roleSelect.addEventListener('change', () => {
+        toggleFields(roleSelect.value);
+      });
+    }
+  });
 </script>
-
 {% endblock %}

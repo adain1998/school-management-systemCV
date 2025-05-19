@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container">
+    <h2>Ajouter un étudiant</h2>
+
+    <!-- Affichage des messages flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="alert alert-dismissible fade show" role="alert">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Formulaire d'ajout d'étudiant -->
+    <form method="POST" action="{{ url_for('stud.add_student') }}">
+      <link href="{{ url_for('static', filename='css/add_student.css') }}" rel="stylesheet">
+      <div class="form-group">
+        <label for="last_name">Nom :</label>
+        <input type="text" class="form-control" id="last_name" name="last_name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="first_name">Prénom :</label>
+        <input type="text" class="form-control" id="first_name" name="first_name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="class_name">Nom de la classe :</label>
+        <input type="text" class="form-control" id="class_name" name="class_name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="date_naissance">Date de naissance :</label>
+        <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
+      </div>
+
+      <div class="form-group">
+        <label for="fees_paid">Frais payés :</label>
+        <input type="number" step="0.01" class="form-control" id="fees_paid" name="fees_paid">
+      </div>
+
+      <div class="form-group">
+        <label for="debt">Dette :</label>
+        <input type="number" step="0.01" class="form-control" id="debt" name="debt">
+      </div>
+
+      <div class="form-group">
+        <label for="religion">Religion :</label>
+        <input type="text" class="form-control" id="religion" name="religion" value="N/A">
+      </div>
+
+      <div class="form-group">
+        <label for="parent_id">Parent :</label>
+        <select class="form-control" id="parent_id" name="parent_id" required>
+          {% for parent in parents %}
+            <option value="{{ parent.id }}">{{ parent.last_name }} {{ parent.first_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="class_id">Classe :</label>
+        <select class="form-control" id="class_id" name="class_id" required>
+          {% for classe in classes %}
+            <option value="{{ classe.id }}">{{ classe.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="options">Options :</label>
+        <select class="form-control" id="options" name="options" multiple>
+          {% for option in options %}
+            <option value="{{ option.id }}">{{ option.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="sections">Sections :</label>
+        <select class="form-control" id="sections" name="sections" multiple>
+          {% for section in sections %}
+            <option value="{{ section.id }}">{{ section.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Ajouter l'étudiant</button>
+    </form>
+  </div>
+
+<script src="{{ url_for('static', filename='js/add_student.js') }}"></script>
+{% endblock %}

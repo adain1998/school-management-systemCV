@@ -143,6 +143,7 @@ def forum():
     return render_template('forum.html', form=form, posts=posts)
 
 
+
 @mes.route('/information/filter', methods=['GET', 'POST'])
 @login_required
 def filter_info():
@@ -151,6 +152,7 @@ def filter_info():
     order = request.args.get('order', 'asc')
     infos = SchoolInfo.query.order_by(SchoolInfo, filter_by, order)
     return render_template('info.html', form=form, infos=infos)
+
 
 
 @mes.route('/forum/edit/<int:post_id>', methods=['GET', 'POST'])
@@ -172,6 +174,7 @@ def edit_post(post_id):
     return render_template('edit_post.html', form=form, post=post)
 
 
+
 @mes.route('/forum/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete_post(post_id):
@@ -182,6 +185,7 @@ def delete_post(post_id):
     db.session.commit()
     flash('Post deleted successfully!', 'success')
     return redirect(url_for('forum'))
+
 
 
 @mes.errorhandler(HTTPException)

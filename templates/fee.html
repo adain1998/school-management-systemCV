@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Frais{% endblock %}
+
+{% block styles %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fees.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">📊 Liste des Frais</h2>
+    <a href="{{ url_for(blueprint_paie + '.add_fee_form') }}" class="btn btn-success">
+      ➕ Ajouter un frais
+    </a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="card p-3">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nom de l'élève</th>
+            <th>Montant</th>
+            <th>Statut</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in frais %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ f.student_nom }}</td>
+            <td>{{ f.montant }} FC</td>
+            <td>
+              {% if f.status == 'payé' %}
+                <span class="badge bg-success">Payé</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">Non payé</span>
+              {% endif %}
+            </td>
+            <td>{{ f.description or '-' }}</td>
+            <td>
+              <div class="d-flex gap-2">
+                <a href="{{ url_for('paie.edit_fee', id=f.id) }}" class="btn btn-sm btn-primary btn-icon">
+                  ✏️ Modifier
+                </a>
+                <form method="POST" action="{{ url_for('paie.delete_fee', id=f.id) }}" onsubmit="return confirm('Confirmer la suppression ?')">
+                  <button type="submit" class="btn btn-sm btn-danger btn-icon">
+                    🗑️ Supprimer
+                  </button>
+                </form>
+                <a href="{{ url_for('paie.details_frais', frais_id=f.id) }}" class="btn btn-sm btn-info text-white btn-icon">
+                  🔍 Détails
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="text-center text-muted">Aucun frais enregistré.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='js/fees.js') }}"></script>
+{% endblock %}

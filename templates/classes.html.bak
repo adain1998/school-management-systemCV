@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Gestion des Classes{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/classe.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-primary mb-4">📚 Gestion des Classes</h1>
+
+    <section aria-labelledby="classes-list">
+        <h2 id="classes-list" class="h4 text-secondary">Liste des Classes</h2>
+        {% if classes %}
+            <ul class="list-group mb-4 shadow-sm">
+                {% for classe in classes %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center" data-aos="fade-up">
+                        {{ classe.nom_classe }}
+                        <span class="badge bg-primary rounded-pill">{{ classe.nb_eleves or 0 }} élèves</span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <div class="d-flex justify-content-between">
+                {% if classes_page > 1 %}
+                    <a href="{{ url_for('niveau.view_classes', page=classes_page-1) }}" class="btn btn-outline-primary">Précédent</a>
+                {% endif %}
+                {% if classes.has_next %}
+                    <a href="{{ url_for('niveau.view_classes', page=classes_page+1) }}" class="btn btn-outline-primary">Suivant</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">Aucune classe disponible pour le moment.</div>
+        {% endif %}
+    </section>
+
+    <!-- ✅ Formulaire d’ajout de classe -->
+    <section class="mt-5">
+        <h2 class="h4 text-secondary">➕ Ajouter une nouvelle classe</h2>
+
+        <form action="{{ url_for('niveau.add_class') }}" method="POST" class="row g-3 needs-validation" novalidate>
+            <div class="col-md-6">
+                <label for="nom" class="form-label">Nom de la classe <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nom" name="nom" placeholder="Ex: 6e année A" required>
+                <div class="invalid-feedback">Veuillez entrer le nom de la classe.</div>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Ajouter la classe</button>
+            </div>
+        </form>
+    </section>
+
+    <section id="student-list" aria-labelledby="students-list">
+        <h2 id="students-list" class="h4 text-secondary">👨‍🎓 Liste des Élèves</h2>
+        {% if students %}
+            <ul class="list-group shadow-sm" id="students">
+                {% for student in students %}
+                    <li class="list-group-item d-flex justify-content-between" data-aos="fade-up">
+                        <span>{{ student.first_name }} {{ student.last_name }}</span>
+                        <span class="badge bg-secondary">Classe: {{ student.class_name }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+
+            <div class="d-flex justify-content-between">
+                {% if students_page > 1 %}
+                    <a href="{{ url_for('niveau.view_classes', student_page=students_page-1) }}" class="btn btn-outline-primary">Précédent</a>
+                {% endif %}
+                {% if students.has_next %}
+                    <a href="{{ url_for('niveau.view_classes', student_page=students_page+1) }}" class="btn btn-outline-primary">Suivant</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="alert alert-warning mt-3">Aucun élève inscrit actuellement.</div>
+        {% endif %}
+    </section>
+
+    <div class="text-center mt-4">
+        <button class="btn btn-outline-primary" id="load-more-btn">
+            Charger plus d'élèves
+        </button>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/classe.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script>
+    AOS.init();
+
+    document.getElementById('load-more-btn').addEventListener('click', function () {
+        const loadMoreButton = this;
+        loadMoreButton.disabled = true;
+
+        const nextPage = parseInt(this.dataset.page || 2);
+
+        fetch(`/api/students?page=${nextPage}`)
+            .then(response => response.json())
+            .then(data => {
+                const studentsList = document.getElementById('students');
+                const students = data.students;
+
+                if (students.length === 0) {
+                    loadMoreButton.style.display = 'none';
+                    return;
+                }
+
+                students.forEach(student => {
+                    const li = document.createElement('li');
+                    li.classList.add('list-group-item', 'd-flex', 'justify-content-between');
+                    li.setAttribute('data-aos', 'fade-up');
+                    li.innerHTML = `<span>${student.first_name} ${student.last_name}</span>
+                                    <span class="badge bg-secondary">Classe: ${student.class_name}</span>`;
+                    studentsList.appendChild(li);
+                });
+
+                loadMoreButton.dataset.page = nextPage + 1;
+                loadMoreButton.disabled = false;
+            })
+            .catch(err => {
+                console.error('Erreur lors du chargement des étudiants :', err);
+                loadMoreButton.disabled = false;
+            });
+    });
+
+    // ✅ Validation Bootstrap pour le formulaire
+    (() => {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+{% endblock %}

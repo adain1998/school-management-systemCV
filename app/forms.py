@@ -240,58 +240,6 @@ class ScheduleForm(FlaskForm):
     submit = SubmitField('Soumettre')
 
 
-class SignupForm(FlaskForm):
-    username = StringField('Nom d\'utilisateur',
-                           validators=[
-                               DataRequired(message="Le nom d'utilisateur est obligatoire."),
-                               Length(min=4, max=20,
-                                      message="Le nom d'utilisateur doit comporter entre 4 et 20 caractères.")
-                           ])
-
-    email = StringField('Email',
-                        validators=[
-                            DataRequired(message="L'email est requis."),
-                            Email(message="Veuillez entrer une adresse email valide.")
-                        ])
-
-    password = PasswordField('Mot de passe',
-                             validators=[
-                                 DataRequired(message="Le mot de passe est obligatoire."),
-                                 Length(min=6, message="Le mot de passe doit comporter au moins 6 caractères.")
-                             ])
-
-    confirm_password = PasswordField('Confirmer le mot de passe',
-                                     validators=[
-                                         DataRequired(message="Veuillez confirmer votre mot de passe."),
-                                         EqualTo('password', message="Les mots de passe ne correspondent pas.")
-                                     ])
-
-    last_name = StringField('Nom',
-                            validators=[
-                                DataRequired(message="Le nom est obligatoire."),
-                                Length(min=2, max=50, message="Le nom doit comporter entre 2 et 50 caractères.")
-                            ])
-
-    role = SelectField('Type d\'utilisateur',
-                       choices=[('enseignant', 'Enseignant'), ('eleve', 'Élève'), ('administrateur', 'Administrateur')],
-                       validators=[DataRequired(message="Veuillez sélectionner un type d'utilisateur.")])
-
-    # Ces champs sont conditionnels en fonction du rôle sélectionné
-    specialite = StringField('Spécialité',
-                             validators=[Length(max=100,
-                                                message="La spécialité ne doit pas dépasser 100 caractères.")])  # visible uniquement pour les enseignants
-
-    niveau = StringField('Niveau',
-                         validators=[Length(max=50,
-                                            message="Le niveau ne doit pas dépasser 50 caractères.")])  # visible uniquement pour les élèves
-
-    role_admin = StringField('Rôle Administratif',
-                             validators=[Length(max=50,
-                                                message="Le rôle administratif ne doit pas dépasser 50 caractères.")])  # visible uniquement pour les administrateurs
-
-    submit = SubmitField('S\'inscrire')
-
-
 
 class RegistrationParentForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
@@ -368,20 +316,123 @@ class OptionForm(FlaskForm):
     name = StringField('Option Name', validators=[DataRequired(), Length(min=3, max=100)])
 # signup
 
-"""class SignupForm(FlaskForm):
-    name = StringField('Nom', validators=[DataRequired(message='entrez votre nom'),
-                                          Length(min=5, max=100, message='Le nom doit contenir entre 5 et 10 '
-                                                                         'caractères.')])
-    email = EmailField('Email', validators=[DataRequired(), Email("Veuillez entrer une adresse e-mail valide")])
-    password = PasswordField('Mot de passe', validators=[DataRequired(),
-                                                         Length(min=8, message="Le mot de passe doit contenir "
-                                                                               "au moins 8 caractères.")])
-    confirm_password = PasswordField('confirmer le mot de passe', validators=[DataRequired(),
-                                                                              EqualTo('password', message=
-                                                                              'Les mots de passe '
-                                                                              'doivent correspondre.')])
-    submit = SubmitField("S'inscrire")"""
-"""class NotificationForm(FlaskForm):
-    user_id = StringField('User ID', validators=[DataRequired()])
-    message = TextAreaField('Message', validators=[DataRequired()])
-    submit = SubmitField('Envoyer Notification')"""
+class SignupForm(FlaskForm):
+    username = StringField(
+        "Nom d'utilisateur",
+        validators=[
+            DataRequired(message="Le nom d'utilisateur est requis."),
+            Length(min=3, max=50, message="Le nom d'utilisateur doit contenir entre 3 et 50 caractères.")
+        ]
+    )
+
+    email = StringField(
+        "Adresse email",
+        validators=[
+            DataRequired(message="L'adresse email est requise."),
+            Email(message="Adresse email invalide."),
+            Length(max=120)
+        ]
+    )
+
+    password = PasswordField(
+        "Mot de passe",
+        validators=[
+            DataRequired(message="Le mot de passe est requis."),
+            Length(min=6, message="Le mot de passe doit contenir au moins 6 caractères.")
+        ]
+    )
+
+    confirm_password = PasswordField(
+        "Confirmer le mot de passe",
+        validators=[
+            DataRequired(message="Veuillez confirmer votre mot de passe."),
+            EqualTo('password', message="Les mots de passe ne correspondent pas.")
+        ]
+    )
+
+    last_name = StringField(
+        "Nom",
+        validators=[
+            DataRequired(message="Le nom est requis."),
+            Length(min=2, max=50)
+        ]
+    )
+
+    role = SelectField(
+        "Rôle",
+        choices=[
+            ('enseignant', 'Enseignant'),
+            ('eleve', 'Élève'),
+            ('administrateur', 'Administrateur')
+        ],
+        validators=[DataRequired(message="Le rôle est requis.")]
+    )
+
+    specialite = StringField(
+        "Spécialité",
+        validators=[Optional(), Length(max=100)]
+    )
+
+    niveau = StringField(
+        "Niveau",
+        validators=[Optional(), Length(max=100)]
+    )
+
+    role_admin = StringField(
+        "Rôle Administratif",
+        validators=[Optional(), Length(max=100)]
+    )
+
+    submit = SubmitField("S'inscrire")
+
+
+    """class SignupForm(FlaskForm):
+    username = StringField('Nom d\'utilisateur',
+                           validators=[
+                               DataRequired(message="Le nom d'utilisateur est obligatoire."),
+                               Length(min=4, max=20,
+                                      message="Le nom d'utilisateur doit comporter entre 4 et 20 caractères.")
+                           ])
+
+    email = StringField('Email',
+                        validators=[
+                            DataRequired(message="L'email est requis."),
+                            Email(message="Veuillez entrer une adresse email valide.")
+                        ])
+
+    password = PasswordField('Mot de passe',
+                             validators=[
+                                 DataRequired(message="Le mot de passe est obligatoire."),
+                                 Length(min=6, message="Le mot de passe doit comporter au moins 6 caractères.")
+                             ])
+
+    confirm_password = PasswordField('Confirmer le mot de passe',
+                                     validators=[
+                                         DataRequired(message="Veuillez confirmer votre mot de passe."),
+                                         EqualTo('password', message="Les mots de passe ne correspondent pas.")
+                                     ])
+
+    last_name = StringField('Nom',
+                            validators=[
+                                DataRequired(message="Le nom est obligatoire."),
+                                Length(min=2, max=50, message="Le nom doit comporter entre 2 et 50 caractères.")
+                            ])
+
+    role = SelectField('Type d\'utilisateur',
+                       choices=[('enseignant', 'Enseignant'), ('eleve', 'Élève'), ('administrateur', 'Administrateur')],
+                       validators=[DataRequired(message="Veuillez sélectionner un type d'utilisateur.")])
+
+    # Ces champs sont conditionnels en fonction du rôle sélectionné
+    specialite = StringField('Spécialité',
+                             validators=[Length(max=100,
+                                                message="La spécialité ne doit pas dépasser 100 caractères.")])  # visible uniquement pour les enseignants
+
+    niveau = StringField('Niveau',
+                         validators=[Length(max=50,
+                                            message="Le niveau ne doit pas dépasser 50 caractères.")])  # visible uniquement pour les élèves
+
+    role_admin = StringField('Rôle Administratif',
+                             validators=[Length(max=50,
+                                                message="Le rôle administratif ne doit pas dépasser 50 caractères.")])  # visible uniquement pour les administrateurs
+
+    submit = SubmitField('S\'inscrire')"""

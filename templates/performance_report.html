@@ -22,7 +22,7 @@
     <!-- Filtres et tri -->
     <div class="row mb-3">
         <div class="col-md-4">
-            <form method="get" action="{{ url_for('resultat.results') }}">
+            <form method="get" action="{{ url_for(blueprint_resultat + '.results') }}">
                 <div class="form-group">
                     <label for="filter">Filtrer par moyenne</label>
                     <select name="filter" id="filter" class="form-control">
@@ -36,7 +36,7 @@
         </div>
 
         <div class="col-md-4">
-            <form method="get" action="{{ url_for('resultat.results') }}">
+            <form method="get" action="{{ url_for(blueprint_resultat + '.results') }}">
                 <div class="form-group">
                     <label for="sort_by">Trier par</label>
                     <select name="sort_by" id="sort_by" class="form-control">

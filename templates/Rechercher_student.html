@@ -5,7 +5,7 @@
     <h2>Liste des étudiants</h2>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/Rechercher_student.css') }}">
     <!-- Formulaire de recherche -->
-    <form method="GET" action="{{ url_for('stud.rechercher_eleves') }}">
+    <form method="GET" action="{{ url_for(blueprint_stud + '.rechercher_eleves') }}">
       <div class="form-group">
         <label for="nom">Nom :</label>
         <input type="text" class="form-control" id="nom" name="nom" value="{{ nom }}" placeholder="Entrez le nom de l'étudiant">

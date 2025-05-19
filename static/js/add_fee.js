@@ -1,50 +1,64 @@
-// add_fee.js
+document.addEventListener("DOMContentLoaded", function() {
+  const form = document.querySelector('form');
+  const studentNom = document.getElementById('student_nom');
+  const montant = document.getElementById('montant');
+  const status = document.getElementById('status');
+  const description = document.getElementById('description');
 
-$(document).ready(function () {
-    // Configuration globale de Toastr
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    };
+  // Validation du formulaire
+  form.addEventListener("submit", function(event) {
+    event.preventDefault(); // Empêcher l'envoi immédiat du formulaire
 
-    // Validation du formulaire avant soumission
-    $('#add-fee-form').on('submit', function (event) {
-        let isValid = true;
+    let errors = [];
 
-        // Réinitialiser les messages d'erreur
-        $('.form-control').removeClass('is-invalid');
-        $('.invalid-feedback').remove();
+    // Vérification du champ "Nom de l'élève"
+    if (studentNom.value.trim() === "") {
+      errors.push("Le nom de l'élève est requis.");
+    }
 
-        // Vérifier le type de frais
-        const feeType = $('#fee_type').val().trim();
-        if (feeType === '') {
-            isValid = false;
-            $('#fee_type').addClass('is-invalid');
-            $('#fee_type').after('<div class="invalid-feedback">Le type de frais est obligatoire.</div>');
-        }
+    // Vérification du champ "Montant"
+    if (montant.value.trim() === "" || parseFloat(montant.value) <= 0) {
+      errors.push("Le montant doit être un nombre supérieur à zéro.");
+    }
 
-        // Vérifier le montant
-        const amount = $('#amount').val().trim();
-        if (amount === '' || isNaN(amount) || parseFloat(amount) <= 0) {
-            isValid = false;
-            $('#amount').addClass('is-invalid');
-            $('#amount').after('<div class="invalid-feedback">Veuillez entrer un montant valide supérieur à zéro.</div>');
-        }
+    // Vérification du champ "Statut"
+    if (status.value.trim() === "") {
+      errors.push("Le statut est requis.");
+    }
 
-        // Si le formulaire n'est pas valide, empêcher la soumission
-        if (!isValid) {
-            event.preventDefault();
-            toastr.error('Veuillez corriger les erreurs avant de soumettre le formulaire.', 'Erreur de validation');
-        } else {
-            // Afficher une notification de succès
-            toastr.success('Les frais ont été ajoutés avec succès.', 'Succès');
-        }
-    });
+    // Si des erreurs sont détectées, les afficher
+    if (errors.length > 0) {
+      errors.forEach(function(error) {
+        toastr.error(error);
+      });
+    } else {
+      // Si aucun problème, soumettre le formulaire
+      form.submit();
+    }
+  });
+
+  // Initialisation des messages Toastr
+  toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "timeOut": "5000"
+  };
+
+  // Affichage des messages flash de Flask (si présents)
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        {% if category == 'success' %}
+          toastr.success("{{ message }}");
+        {% elif category == 'error' %}
+          toastr.error("{{ message }}");
+        {% elif category == 'warning' %}
+          toastr.warning("{{ message }}");
+        {% else %}
+          toastr.info("{{ message }}");
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 });

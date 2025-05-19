@@ -1,0 +1,65 @@
+version: 1.0
+name: Sections API Tests
+
+environments:
+  default:
+    base_url: http://127.0.0.1:5000
+
+requests:
+  - name: Lister les sections (GET /sections)
+    method: GET
+    url: /sections
+    headers:
+      Accept: application/json
+    validate:
+      - eq: [status_code, 200]
+      - has_key: [json, data]
+
+  - name: Ajouter une section valide (POST /sections/add)
+    method: POST
+    url: /sections/add
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body:
+      nom: Section Test
+      classe_id: "1"
+    validate:
+      - eq: [status_code, 302]  # Redirection attendue après ajout
+      - has_header: [Location]
+
+  - name: Ajouter une section sans nom (POST /sections/add)
+    method: POST
+    url: /sections/add
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body:
+      nom: ""
+      classe_id: "1"
+    validate:
+      - eq: [status_code, 302]  # Redirection avec message flash warning
+      - has_header: [Location]
+
+  - name: Supprimer une section (POST /delete_section/1)
+    method: POST
+    url: /delete_section/1
+    validate:
+      - in: [status_code, [302, 404]]  # selon que la section existe ou pas
+
+  - name: Editer une section GET (formulaire)
+    method: GET
+    url: /sections/edit/1
+    validate:
+      - eq: [status_code, 200]
+      - contains: [text, "form"]
+
+  - name: Editer une section POST (mise à jour)
+    method: POST
+    url: /sections/edit/1
+    headers:
+      Content-Type: application/x-www-form-urlencoded
+    body:
+      name: Section Modifiée
+      classe_id: "1"
+    validate:
+      - eq: [status_code, 302]  # Redirection attendue
+

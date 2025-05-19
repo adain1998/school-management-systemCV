@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Finance.css') }}">
+<div class="container mt-4">
+    <h2>Gestion des Paiements</h2>
+
+    <!-- Formulaire de filtrage -->
+    <form method="GET" action="{{ url_for('paiem.filter_payment') }}" class="mb-4">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="filter_by">Filtrer par :</label>
+                <select id="filter_by" name="filter_by" class="form-control">
+                    <option value="timestamp">Date</option>
+                    <option value="amount">Montant</option>
+                    <option value="status">Statut</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="order">Ordre :</label>
+                <select id="order" name="order" class="form-control">
+                    <option value="asc">Croissant</option>
+                    <option value="desc">Décroissant</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filter_value">Valeur :</label>
+                <input id="filter_value" type="text" name="filter_value" class="form-control" placeholder="Ex: payé">
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary">Filtrer</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Table des paiements -->
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.id }}</td>
+                <td>{{ payment.timestamp.strftime('%d/%m/%Y %H:%M') if payment.timestamp else 'N/A' }}</td>
+                <td>{{ payment.amount }} €</td>
+                <td>{{ payment.status }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" class="text-center">Aucun paiement trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+<!-- Toastr CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+
+<!-- Toastr JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="{{ url_for('static', filename='js/Finance.js') }}"></script>
+<script>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                toastr.{{ category }}("{{ message }}");
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</script>
+

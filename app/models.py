@@ -117,7 +117,7 @@ class Note(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     valeur = db.Column(db.Float)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
-    matiere_id = db.Column(db.Integer, db.ForeignKey('matiere.id'))
+    matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'))
     note = db.Column(db.Float, nullable=False)
     date = db.Column(db.DateTime, default=lambda: datetime.now(pytz.utc))
     commentaire = db.Column(Text)
@@ -160,6 +160,12 @@ class Student(db.Model):
     notes = db.relationship('Note', back_populates='student', lazy=True, cascade="all, delete-orphan")
     absences = db.relationship('Absence', back_populates='student', lazy=True, cascade="all, delete-orphan")
     attendance = db.relationship('Attendance', back_populates='student', lazy=True, cascade="all, delete-orphan")
+    assignments = db.relationship(
+        'Assignment',
+        secondary='students_assignments',
+        backref=db.backref('students', lazy='dynamic'),
+        lazy='dynamic'
+    )
 
     debt = db.Column(db.Float, default=0.0)
     religion = db.Column(db.String(20), nullable=True)
@@ -186,6 +192,49 @@ class Student(db.Model):
     def __repr__(self):
         return f'<Student {self.first_name} {self.last_name}>'
 
+
+@property
+def name(self):
+    return f"{self.first_name} {self.last_name}"
+
+
+@property
+def avg_grade(self):
+    try:
+        notes = self.notes or []
+        if not notes:
+            return 0
+        return round(sum(note.note for note in notes) / len(notes), 2)
+    except AttributeError:
+        return 0
+
+
+@property
+def attendance_rate(self):
+    total_absences = len(self.absences) if self.absences else 0
+    total_presences = len(self.attendance) if self.attendance else 0
+    total_days = total_absences + total_presences
+    return round((total_presences / total_days) * 100, 2) if total_days > 0 else 0
+
+@property
+def absences_count(self):
+    try:
+        return len(self.absences or [])
+    except AttributeError:
+        return 0
+
+
+@property
+def completed_assignments():
+    # à remplacer si tu as une relation assignments
+    return 0
+
+
+@property
+def total_assignments():
+    return 0
+
+
 class Classe(db.Model):
     __tablename__ = 'classe'
 
@@ -197,6 +246,7 @@ class Classe(db.Model):
 
     def __repr__(self):
         return f'<Classe {self.name}>'
+
 
 class Option(db.Model):
     __tablename__ = 'option'
@@ -215,7 +265,7 @@ class Sections(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     # Relation many-to-many avec Student via la table de liaison students_sections
     students = db.relationship('Student', secondary='students_sections', backref='sections')
 
@@ -349,6 +399,7 @@ class Message(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(pytz.utc))
+    email = db.Column(db.String(120), nullable=False)
     sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
     recipient = db.relationship('User', foreign_keys=[recipient_id], backref='received_messages')
 
@@ -369,19 +420,39 @@ class ForumPost(db.Model):
         return f'<ForumPost {self.id}{self.user_id}{self.title}{self.body}{self.timestamp} >'
 
 
-
+# ============================
+# Assignment Model
+# ============================
 class Assignment(db.Model):
-    __tablename__ = 'Assignment'
+    __tablename__ = 'assignment'
+
     id = db.Column(db.Integer, primary_key=True)
-    teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    student_id = db.Column(db.Integer, db.ForeignKey('student_id'))
+    teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Référence à l'enseignant
     title = db.Column(db.String(140))
     description = db.Column(db.String(140))
     due_date = db.Column(db.DateTime(timezone=True), default=datetime.now(pytz.utc))
 
-    def __repr__(self):
-        return f'<Assignment {self.id}{self.teacher_id}{self.title}{self.description}{self.due_date.isoformat} >'
+    # Relation Many-to-Many avec Student
+    students = db.relationship(
+        'Student',
+        secondary='students_assignments',  # Table de jonction
+        backref=db.backref('assignments', lazy='dynamic')
+    )
 
+    def __repr__(self):
+        return f'<Assignment {self.id} {self.title} {self.teacher_id} {self.due_date.isoformat()}>'
+
+
+# ============================
+# Table de jonction pour Many-to-Many
+# ============================
+students_assignments = db.Table(
+    'students_assignments',
+    db.Column('student_id', db.Integer, db.ForeignKey('student.id'), primary_key=True),
+    db.Column('assignment_id', db.Integer, db.ForeignKey('assignment.id'), primary_key=True),
+    db.Column('completed', db.Boolean, default=False),  # Statut de l'assignement
+    db.Column('submission_date', db.DateTime, nullable=True)  # Date de soumission
+)
 
 
 class Notification(db.Model):
@@ -413,6 +484,7 @@ class Teacher(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     subject = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now(pytz.utc))
 
     def __repr__(self):
         return f'<Teacher{self.id}{self.name}{self.subject} >'
@@ -534,137 +606,5 @@ class Exam(db.Model):
     score = db.Column(db.Float, nullable=False)
 
 
-
 def create_tables():
     db.create_all()
-
-
-
-    """class Student(db.Model):
-        __tablename__ = 'student'
-
-        id = db.Column(db.Integer, primary_key=True)
-        last_name = db.Column(db.String(100), nullable=False)
-        first_name = db.Column(db.String(100), nullable=False)
-        class_name = db.Column(db.String(50), nullable=False)
-        date_naissance = db.Column(db.Date, nullable=False)
-        registration_date = db.Column(db.DateTime, default=lambda: datetime.now(pytz.utc), nullable=False)
-
-        # registration_date = db.Column(db.Date, default=lambda: datetime.now(pytz.utc))
-        fees_paid = db.Column(db.Float, default=0.0)
-        numero_matricule = db.Column(db.String(20), nullable=False, unique=True)
-        class_id = db.Column(db.Integer, db.ForeignKey("classe.id"), nullable=False)
-        parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), nullable=False)
-
-        parent = db.relationship('Parent', back_populates='students', lazy=True)
-        notes = db.relationship('Note', back_populates='student', lazy=True, cascade="all, delete-orphan")
-        absences = db.relationship('Absence', back_populates='student', lazy=True, cascade="all, delete-orphan")
-        presences = db.relationship('Attendance', back_populates='student', lazy=True, cascade="all, delete-orphan")
-
-        debt = db.Column(db.Float, default=0.0)
-        religion = db.Column(db.String(20), nullable=True)
-
-        classes = db.relationship('Classe', secondary='students_classes', backref='students')
-        sections = db.relationship('Sections', secondary='students_sections', backref='students')
-        options = db.relationship('Option', secondary='students_options', backref='students')
-
-        def __init__(self, last_name, first_name, class_name, date_naissance,
-                     numero_matricule, class_id, parent_id, fees_paid=0.0, debt=0.0,
-                     religion=None):
-            self.last_name = last_name
-            self.first_name = first_name
-            self.class_name = class_name
-            self.date_naissance = date_naissance
-            self.registration_date = datetime.now(pytz.utc)
-            self.numero_matricule = numero_matricule
-            self.class_id = class_id
-            self.parent_id = parent_id
-            self.fees_paid = fees_paid
-            self.debt = debt
-            self.religion = religion
-
-        def __repr__(self):
-            return f'<Student {self.first_name} {self.last_name}>
-            
-            class Classe(db.Model):
-    __tablename__ = 'classe'
-    id = db.Column(db.Integer, primary_key=True)
-    niveau = db.Column(db.String(100), nullable=False)
-    nom = db.Column(db.String(100), nullable=False)
-
-    students = db.relationship('Student', back_populates='classe', cascade="all, delete")
-
-    def __repr__(self):
-        return f'<Classe {self.id} {self.nom} {self.niveau}>'
-
-
-
-class Option(db.Model):
-    __tablename__ = 'option'
-    id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String(100), nullable=False)
-
-    # Relation avec les étudiants via la table de jointure sectionsoptions
-    students = db.relationship('Student', secondary='sectionsoptions', backref='options')
-
-    def __repr__(self):
-        return f'<Option {self.nom}>'
-
-
-
-class studentsClasses(db.Model):
-    __tablename__ = 'students_classes'
-    id_student = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True)
-    id_classe = db.Column(db.Integer, db.ForeignKey('classe.id'), primary_key=True)
-
-
-
-class studentssections(db.Model):
-    __tablename__ = 'students_sections'
-    id_student = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True)
-    id_section = db.Column(db.Integer, db.ForeignKey('sections.id'), primary_key=True)
-
-
-
-class studentsOptions(db.Model):
-    __tablename__ = 'students_options'
-    id_student = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True)
-    id_option = db.Column(db.Integer, db.ForeignKey('option.id'), primary_key=True)
-
-
-
-class Sections(db.Model):
-    __tablename__ = 'sections'
-    id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String(30), unique=True, nullable=False)
-    students = db.relationship('Student', secondary='studentssections', backref='sections')
-
-    def __repr__(self):
-        return f'<Sections {self.id} {self.nom}>'
-
-
-
-
-class sectionsOptions(db.Model):
-    __tablename__ = 'sectionsoptions'
-    id = db.Column(db.Integer, primary_key=True)
-    id_option = db.Column(db.Integer, db.ForeignKey('option.id'), nullable=False)
-    id_student = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-
-    option = db.relationship('Option', backref=db.backref('sectionsoptions', cascade='all, delete-orphan'))
-    student = db.relationship('Student', backref=db.backref('sectionsoptions', cascade='all, delete-orphan'))
-
-    def __repr__(self):
-        return f'<sectionsOptions {self.id_option} {self.id_student}>
-        
-        class Attendance(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.utc))
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
-    presence = db.Column(db.Boolean, nullable=False)
-    students = db.relationship('Student', back_populates='attendance')"""
-
-
-
-
-

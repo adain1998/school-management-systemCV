@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Bienvenue sur la page d'accueil de paiement</h1>
+    <a href="{{ url_for('paiem.new_payment') }}" class="btn btn-primary" id="new-payment-btn">Nouveau Paiement</a>
+    <a href="{{ url_for('paiem.get_payments') }}" class="btn btn-secondary" id="view-payments-btn">Voir les Paiements</a>
+</div>
+{% endblock %}
+
+{% block styles %}
+<!-- Inclusion du CSS de Toastr -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+<!-- Votre fichier CSS personnalisé -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/acceuil.css') }}">
+{% endblock %}
+
+{% block scripts %}
+<!-- Inclusion de jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Inclusion du JS de Toastr -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+<!-- Votre fichier JavaScript personnalisé -->
+<script src="{{ url_for('static', filename='js/acceuil.js') }}"></script>
+{% endblock %}

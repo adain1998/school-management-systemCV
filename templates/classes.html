@@ -5,7 +5,7 @@
 {% block head %}
     {{ super() }}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/classe.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">  <!-- AOS CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
@@ -24,18 +24,34 @@
                 {% endfor %}
             </ul>
 
-            <!-- Pagination des classes -->
             <div class="d-flex justify-content-between">
                 {% if classes_page > 1 %}
-                    <a href="{{ url_for('view_classes', page=classes_page-1) }}" class="btn btn-outline-primary">Précédent</a>
+                    <a href="{{ url_for('niveau.view_classes', page=classes_page-1) }}" class="btn btn-outline-primary">Précédent</a>
                 {% endif %}
                 {% if classes.has_next %}
-                    <a href="{{ url_for('view_classes', page=classes_page+1) }}" class="btn btn-outline-primary">Suivant</a>
+                    <a href="{{ url_for('niveau.view_classes', page=classes_page+1) }}" class="btn btn-outline-primary">Suivant</a>
                 {% endif %}
             </div>
         {% else %}
             <div class="alert alert-info">Aucune classe disponible pour le moment.</div>
         {% endif %}
+    </section>
+
+    <!-- ✅ Formulaire d’ajout de classe -->
+    <section class="mt-5">
+        <h2 class="h4 text-secondary">➕ Ajouter une nouvelle classe</h2>
+
+        <form action="{{ url_for(blueprint_niveau + '.add_class') }}" method="POST" class="row g-3 needs-validation" novalidate>
+            <div class="col-md-6">
+                <label for="nom" class="form-label">Nom de la classe <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="nom" name="nom" placeholder="Ex: 6e année A" required>
+                <div class="invalid-feedback">Veuillez entrer le nom de la classe.</div>
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Ajouter la classe</button>
+            </div>
+        </form>
     </section>
 
     <section id="student-list" aria-labelledby="students-list">
@@ -50,13 +66,12 @@
                 {% endfor %}
             </ul>
 
-            <!-- Pagination des élèves -->
             <div class="d-flex justify-content-between">
                 {% if students_page > 1 %}
-                    <a href="{{ url_for('view_classes', student_page=students_page-1) }}" class="btn btn-outline-primary">Précédent</a>
+                    <a href="{{ url_for('niveau.view_classes', student_page=students_page-1) }}" class="btn btn-outline-primary">Précédent</a>
                 {% endif %}
                 {% if students.has_next %}
-                    <a href="{{ url_for('view_classes', student_page=students_page+1) }}" class="btn btn-outline-primary">Suivant</a>
+                    <a href="{{ url_for('niveau.view_classes', student_page=students_page+1) }}" class="btn btn-outline-primary">Suivant</a>
                 {% endif %}
             </div>
         {% else %}
@@ -74,37 +89,56 @@
 <script src="{{ url_for('static', filename='js/classe.js') }}"></script>
 <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 <script>
-    // Initialisation des animations AOS
     AOS.init();
 
-    // Fonction pour charger plus d'élèves via AJAX
     document.getElementById('load-more-btn').addEventListener('click', function () {
-        const loadMoreButton = this ;
-        loadMoreButton.disabled = true ; // Désactiver le bouton pour éviter plusieurs clics
+        const loadMoreButton = this;
+        loadMoreButton.disabled = true;
 
-        // On fait une requête AJAX pour charger plus d'élèves
-        fetch('/api/students?page=2') // Exemple : appel API avec pagination
-            .then (response => response.json())
+        const nextPage = parseInt(this.dataset.page || 2);
+
+        fetch(`/api/students?page=${nextPage}`)
+            .then(response => response.json())
             .then(data => {
                 const studentsList = document.getElementById('students');
-                const students = data.students ; // Données des étudiants récupérées
+                const students = data.students;
 
-                // Ajout des élèves à la liste existante
-                students.forEach (student → {
+                if (students.length === 0) {
+                    loadMoreButton.style.display = 'none';
+                    return;
+                }
+
+                students.forEach(student => {
                     const li = document.createElement('li');
                     li.classList.add('list-group-item', 'd-flex', 'justify-content-between');
                     li.setAttribute('data-aos', 'fade-up');
                     li.innerHTML = `<span>${student.first_name} ${student.last_name}</span>
-                                   <span class="badge bg-secondary">Classe: ${student.class_name}</span>`;
+                                    <span class="badge bg-secondary">Classe: ${student.class_name}</span>`;
                     studentsList.appendChild(li);
                 });
 
-                loadMoreButton.disabled = false; // Réactiver le bouton
+                loadMoreButton.dataset.page = nextPage + 1;
+                loadMoreButton.disabled = false;
             })
             .catch(err => {
                 console.error('Erreur lors du chargement des étudiants :', err);
-                loadMoreButton.disabled = false;  // Réactiver en cas d'erreur
+                loadMoreButton.disabled = false;
             });
     });
+
+    // ✅ Validation Bootstrap pour le formulaire
+    (() => {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
 </script>
 {% endblock %}

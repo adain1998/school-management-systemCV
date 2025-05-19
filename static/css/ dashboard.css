@@ -1,0 +1,202 @@
+/* Reset et base */
+body {
+  font-family: 'Segoe UI', 'Roboto', sans-serif;
+  background: linear-gradient(145deg, #f0f0f5, #e4e7ec);
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+/* Section principale */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Titre principal */
+h1 {
+  font-weight: 700;
+  font-size: 2.5rem;
+  color: #222;
+}
+
+/* Lead text */
+.lead {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #555;
+}
+
+/* Cartes style TikTok-like */
+.card {
+  background: white;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease-in-out, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+/* Titres dans les cartes */
+.card h2 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ff0050; /* Couleur TikTok principale */
+}
+
+/* Paragraphe dans les cartes */
+.card p {
+  font-size: 1rem;
+  color: #444;
+  margin-bottom: 0;
+}
+
+/* Filtres */
+form label {
+  font-weight: 600;
+  color: #333;
+}
+
+form select, form button {
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+}
+
+form button {
+  background-color: #ff0050;
+  border: none;
+  color: #fff;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+form button:hover {
+  background-color: #e60045;
+}
+
+/* Texte filtré */
+.text-muted.text-center {
+  font-style: italic;
+  font-size: 0.95rem;
+}
+
+/* Responsive Chart Container */
+.table-responsive {
+  border-radius: 16px;
+  background-color: #fff;
+  padding: 1rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  margin-top: 2rem;
+}
+
+/* Animation entrée section */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card, .table-responsive {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 2rem;
+  }
+
+  .card h2 {
+    font-size: 1.6rem;
+  }
+
+  .card p {
+    font-size: 0.95rem;
+  }
+}
+/* Navigation style TikTok */
+.navbar-tiktok {
+    background: linear-gradient(to right, #000000, #111111);
+    color: #fff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.navbar-logo .logo-img {
+    height: 32px;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.navbar-logo .logo-img:hover {
+    transform: scale(1.1);
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #ffffff;
+}
+
+.navbar-menu .nav-link {
+    color: #e0e0e0;
+    font-weight: 500;
+    transition: color 0.3s;
+    position: relative;
+}
+
+.navbar-menu .nav-link:hover,
+.navbar-menu .nav-link.active {
+    color: #ff0050;
+}
+
+.navbar-menu .nav-link::after {
+    content: '';
+    display: block;
+    width: 0%;
+    height: 2px;
+    background: #ff0050;
+    transition: width 0.3s ease-in-out;
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+}
+
+.navbar-menu .nav-link:hover::after {
+    width: 100%;
+}
+
+.navbar-avatar .avatar-img {
+    height: 36px;
+    width: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid #ff0050;
+    transition: transform 0.3s ease;
+}
+
+.navbar-avatar .avatar-img:hover {
+    transform: rotate(5deg) scale(1.05);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .navbar-menu {
+        display: none !important;
+    }
+}
