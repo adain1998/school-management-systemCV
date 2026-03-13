@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Liste des Notes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">📚 Liste des Notes</h2>
+
+    <!-- Filtres -->
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <label for="student_id" class="form-label">Filtrer par étudiant</label>
+            <select name="student_id" id="student_id" class="form-select">
+                <option value="">-- Tous les étudiants --</option>
+                {% for student in students %}
+                    <option value="{{ student.id }}"
+                        {% if request.args.get('student_id', type=int) == student.id %}selected{% endif %}>
+                        {{ student.nom }} {{ student.prenom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-5">
+            <label for="matiere_id" class="form-label">Filtrer par matière</label>
+            <select name="matiere_id" id="matiere_id" class="form-select">
+                <option value="">-- Toutes les matières --</option>
+                {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}"
+                        {% if request.args.get('matiere_id', type=int) == matiere.id %}selected{% endif %}>
+                        {{ matiere.nom }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+        </div>
+    </form>
+
+    <!-- Tableau -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Étudiant</th>
+                    <th>Matière</th>
+                    <th>Note</th>
+                    <th>Devoir</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in notes_ensemble %}
+                    <tr>
+                        <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                        <td>{{ note.student.nom }} {{ note.student.prenom }}</td>
+                        <td>{{ note.matiere.nom }}</td>
+                        <td>{{ note.note }}</td>
+                        <td>{{ note.assignment_id }}</td>
+                        <td>{{ note.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucune note disponible.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center">
+        {{ pagination.links }}
+    </div>
+
+    <!-- Actions -->
+    <div class="mt-4 d-flex justify-content-between">
+        <a href="{{ url_for('resultat.grade') }}" class="btn btn-success">
+            ➕ Ajouter une note
+        </a>
+
+        <div>
+            <a href="{{ url_for('resultat.export_pdf') }}" class="btn btn-outline-danger me-2">📄 Exporter en PDF</a>
+            <a href="{{ url_for('resultat.export_excel') }}" class="btn btn-outline-success">📊 Exporter en Excel</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

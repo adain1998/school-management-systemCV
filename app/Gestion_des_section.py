@@ -6,24 +6,24 @@ from sqlalchemy import asc, desc
 from werkzeug.exceptions import NotFound
 import logging
 
-sect = Blueprint('sect', __name__)
+blueprint_sect = Blueprint('sect', __name__)
 
 
-@sect.route('/sections', methods=['GET'])
+@blueprint_sect.route('/sections', methods=['GET'])
 def view_sections():
     try:
         sections = Sections.query.order_by(Sections.nom.asc()).all()
         if not sections:
             flash("Aucune section enregistrée pour le moment.", "info")
-        return render_template('sections/view_sections.html', sections=sections)
+        return render_template('view_sections.html', sections=sections)
     except Exception as e:
         current_app.logger.error(f"Erreur lors du chargement des sections : {str(e)}")
         flash("Une erreur s’est produite lors du chargement des sections. Veuillez réessayer.", "danger")
-        return render_template('/view_sections.html', sections=[])
+        return render_template('view_sections.html', sections=[])
 
 
 
-@sect.route('/sections/add', methods=['POST'])
+@blueprint_sect.route('/sections/add', methods=['POST'])
 def add_section():
     try:
         nom = request.form.get('nom', '').strip()
@@ -61,7 +61,7 @@ def add_section():
 
 
 
-@sect.route('/sections/edit/<int:section_id>', methods=['GET', 'POST'])
+@blueprint_sect.route('/sections/edit/<int:section_id>', methods=['GET', 'POST'])
 def edit_section(section_id):
     section = Sections.query.get_or_404(section_id)
 
@@ -122,7 +122,7 @@ def edit_section(section_id):
 
 
 
-@sect.route('/delete_section/<int:section_id>', methods=['POST'])
+@blueprint_sect.route('/delete_section/<int:section_id>', methods=['POST'])
 def delete_section(section_id):
     try:
         section = Sections.query.get_or_404(section_id)
@@ -156,7 +156,7 @@ def delete_section(section_id):
 
 
 
-@sect.route('/', methods=['GET'])
+@blueprint_sect.route('/', methods=['GET'])
 def get_sections():
     # Récupérer les paramètres de tri
     sort_by = request.args.get('sortBy', 'name')

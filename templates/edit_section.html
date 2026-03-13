@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}Modifier une Section{% endblock %}
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/edit_section.css') }}">
 {% block content %}
 <div class="container mt-5">
     <div class="card shadow-lg border-0 rounded-4">
@@ -53,4 +53,6 @@
         </div>
     </div>
 </div>
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/edit_section.js') }}"></script>
 {% endblock %}

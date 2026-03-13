@@ -1,0 +1,115 @@
+{# templates/Notification.jinja.html #}
+{% extends 'base.html' %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/Notification.css') }}">
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="{{ url_for('static', filename='js/custom_notifications.js') }}" defer></script>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <h1 class="mb-4 text-center">Notifications</h1>
+
+  {# Affichage des messages flash #}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'warning' if category=='warning' else ('danger' if category=='error' else 'info') }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <form id="filter-form" method="get" class="row g-3 align-items-end justify-content-center mb-4">
+    <div class="col-auto">
+      <label for="filter_by" class="form-label fw-semibold">Filtrer par</label>
+      <select id="filter_by" name="filter_by" class="form-select" aria-label="Filtrer par colonne">
+        <option value="due_date" {% if form.filter_by.data == 'due_date' %}selected{% endif %}>Date d'échéance</option>
+        <option value="title" {% if form.filter_by.data == 'title' %}selected{% endif %}>Titre</option>
+        <option value="description" {% if form.filter_by.data == 'description' %}selected{% endif %}>Description</option>
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <label for="order" class="form-label fw-semibold">Ordre</label>
+      <select id="order" name="order" class="form-select" aria-label="Ordre de tri">
+        <option value="asc" {% if form.order.data == 'asc' %}selected{% endif %}>Croissant</option>
+        <option value="desc" {% if form.order.data == 'desc' %}selected{% endif %}>Décroissant</option>
+      </select>
+    </div>
+
+    <div class="col-auto">
+      <button type="submit" id="filter-button" class="btn btn-primary w-100" aria-live="polite">
+        Appliquer le filtre
+      </button>
+    </div>
+  </form>
+
+  <div class="table-responsive shadow-sm rounded">
+    <table class="table table-striped align-middle mb-0" aria-describedby="notificationsTableCaption">
+      <caption id="notificationsTableCaption" class="visually-hidden">Liste des notifications filtrées</caption>
+      <thead class="table-primary">
+        <tr>
+          <th scope="col" class="text-center">#</th>
+          <th scope="col" class="text-start">Titre</th>
+          <th scope="col" class="text-start d-none d-md-table-cell">Description</th>
+          <th scope="col" class="text-center">Date d'échéance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if notifications %}
+          {% for notif in notifications %}
+          <tr tabindex="0" class="notification-row" aria-label="Notification {{ loop.index }}: {{ notif.title }}">
+            <th scope="row" class="text-center">{{ (pagination.page -1)*pagination.per_page + loop.index }}</th>
+            <td>{{ notif.title }}</td>
+            <td class="d-none d-md-table-cell text-truncate" style="max-width: 400px;">{{ notif.description }}</td>
+            <td class="text-center">{{ notif.due_date.strftime('%d/%m/%Y') if notif.due_date else '-' }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr><td colspan="4" class="text-center py-4 text-muted">Aucune notification trouvée.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Pagination bootstrap #}
+  {% if pagination.pages > 1 %}
+  <nav aria-label="Pagination notifications" class="mt-4 d-flex justify-content-center">
+    <ul class="pagination pagination-sm mb-0">
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for(request.endpoint, **request.view_args, page=1, filter_by=form.filter_by.data, order=form.order.data) }}" aria-label="Première page">&laquo;&laquo;</a>
+      </li>
+      <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for(request.endpoint, **request.view_args, page=pagination.prev_num, filter_by=form.filter_by.data, order=form.order.data) }}" aria-label="Page précédente">&laquo;</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+        {% if p %}
+          <li class="page-item {% if p == pagination.page %}active{% endif %}">
+            <a class="page-link" href="{{ url_for(request.endpoint, **request.view_args, page=p, filter_by=form.filter_by.data, order=form.order.data) }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for(request.endpoint, **request.view_args, page=pagination.next_num, filter_by=form.filter_by.data, order=form.order.data) }}" aria-label="Page suivante">&raquo;</a>
+      </li>
+      <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+        <a class="page-link" href="{{ url_for(request.endpoint, **request.view_args, page=pagination.pages, filter_by=form.filter_by.data, order=form.order.data) }}" aria-label="Dernière page">&raquo;&raquo;</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+<script src="{{ url_for('static', filename='js/Notification.js') }}"></script>
+{% endblock %}

@@ -1,7 +1,0 @@
-{% extends "base_info.html" %}
-{% block title %}Error{% endblock %}
-{% block content %}
-<h1>Error {{ error.code }}</h1>
-<p>{{ error.description }}</p>
-<a href="{{ url_for('info') }}" class="btn btn-secondary">Retourner</a>
-{% endblock %}

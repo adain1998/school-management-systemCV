@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Ajouter une Note{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Ajout des Note</h2>
+
+    <!-- Message Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Formulaire de note -->
+    <div class="card shadow-lg p-4 mb-5 bg-white rounded">
+        <form method="POST" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.student_id.label(class="form-label") }}
+                {{ form.student_id(class="form-select") }}
+                {% if form.student_id.errors %}
+                    <div class="text-danger">{{ form.student_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.matiere_id.label(class="form-label") }}
+                {{ form.matiere_id(class="form-select") }}
+                {% if form.matiere_id.errors %}
+                    <div class="text-danger">{{ form.matiere_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.assignment_id.label(class="form-label") }}
+                {{ form.assignment_id(class="form-control") }}
+                {% if form.assignment_id.errors %}
+                    <div class="text-danger">{{ form.assignment_id.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.note.label(class="form-label") }}
+                {{ form.note(class="form-control") }}
+                {% if form.note.errors %}
+                    <div class="text-danger">{{ form.note.errors[0] }}</div>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">{{ form.submit.label.text }}</button>
+        </form>
+    </div>
+
+    <!-- Liste des notes déjà enregistrées -->
+    <div class="table-responsive">
+        <h4 class="mt-5 mb-3">Notes enregistrées</h4>
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Étudiant</th>
+                    <th>Matière</th>
+                    <th>ID Devoir</th>
+                    <th>Note</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for note in notes_eleves %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ note.student.full_name if note.student else 'N/A' }}</td>
+                        <td>{{ note.subject.name if note.subject else 'N/A' }}</td>
+                        <td>{{ note.assignment_id }}</td>
+                        <td>{{ note.note }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Aucune note enregistrée pour le moment.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

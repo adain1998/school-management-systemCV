@@ -4,21 +4,23 @@ from wtforms import (FloatField,
                      DateField, SelectField, IntegerField,
                      TextAreaField, BooleanField, StringField,
                      PasswordField, SubmitField, FieldList, FormField)
+from wtforms.fields.numeric import DecimalField
 from wtforms.validators import NumberRange, Length, EqualTo, ValidationError, DataRequired, Email, Optional
-from app.models import User, Frais, Parent, Student
+from app.models import Frais, Parent, Student
 from wtforms.fields import DateTimeField
 
 
 current_year = date.today().year
 
+
 class PaymentForm(FlaskForm):
     student_id = SelectField('Étudiant', coerce=int, validators=[DataRequired()])
     frais_id = SelectField('Type de Frais', coerce=int, validators=[DataRequired(message='Saisissez le type de frais')])
     montant = FloatField('Montant Payé', validators=[
-        DataRequired(message="Veuillez saisir un montant"),
-        NumberRange(min=1900, max=int(date.today().year), message="Veuillez saisir une année valide.")
+        DataRequired(message="Veuillez saisir un montant positif"),
+        NumberRange(min=0.01, message="Le montant doit être positif.")
     ])
-    date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired("Veuillez saisir une date")])
+    date = DateField('Date', format='%Y-%m-%d', validators=[DataRequired(message="Veuillez saisir une date")])
     statut = SelectField('Statut', choices=[
         ('En attente', 'En attente'),
         ('Complété', 'Complété'),
@@ -29,9 +31,6 @@ class PaymentForm(FlaskForm):
         DataRequired(),
         NumberRange(min=1, max=12, message="Le mois doit être compris entre 1 et 12.")
     ])
-
-    # Correction : stocker l'année actuelle avant l'utilisation
-
     annee = IntegerField('Année', validators=[
         DataRequired(),
         NumberRange(min=1900, max=current_year, message="Veuillez saisir une année valide.")
@@ -41,29 +40,50 @@ class PaymentForm(FlaskForm):
 
     def __init__(self, *args, **kwargs):
         super(PaymentForm, self).__init__(*args, **kwargs)
-
-        # Remplir la liste des frais à partir de la base de données
         self.frais_id.choices = [(frais.id, frais.description) for frais in Frais.query.all()]
-        self.student_id.choices = [(student.id, f"{student.first_name} {student.last_name}") for student in
-                                   Student.query.all()]
+        self.student_id.choices = [(student.id, f"{student.first_name} {student.last_name}") for student in Student.query.all()]
 
     def validate_date(self, field):
-        """Valide que la date ne soit pas dans le futur."""
         if field.data > date.today():
             raise ValidationError("La date ne peut pas être dans le futur.")
 
 
-class FraisForm(FlaskForm):
-    description = StringField('Description du frais', validators=[DataRequired()])
-    montant = FloatField('Montant du frais', validators=[DataRequired(message='Veuillez saisir un montant'),
-                                                         NumberRange(min=0, message='Le montant doit être positif')])
-    submit = SubmitField('ajouter Transaction')
+
+class EditFeeForm(FlaskForm):
+    student_full_name = StringField(
+        "Nom complet de l’étudiant",
+        validators=[DataRequired(message="Le nom est requis")]
+    )
+    montant = DecimalField(
+        "Montant",
+        validators=[
+            DataRequired(message="Le montant est requis"),
+            NumberRange(min=0, message="Le montant doit être positif")
+        ]
+    )
+    status = SelectField(
+        "Statut",
+        choices=[
+            ('paid', 'Payé'),
+            ('unpaid', 'Impayé'),
+            ('pending', 'En attente')
+        ],
+        validators=[DataRequired(message="Le statut est requis")]
+    )
+    submit = SubmitField("Mettre à jour")
+
+    # noinspection PyMethodFirstArgAssignment
+    def validate_student_full_name(self, field):
+        if len(field.data.strip()) == 0:
+            raise ValidationError("Le nom de l’étudiant ne peut pas être vide.")
+
 
 
 class ModifierPaiement(FlaskForm):
     montant = FloatField('Montant', validators=[DataRequired()])
     date = DateField('Date', format='%Y-%m-%d')
     frais_id = SelectField('Frais', coerce=int)
+
 
 
 class studentForm(FlaskForm):
@@ -80,7 +100,7 @@ class studentForm(FlaskForm):
 
 
 
-class LoginForm(FlaskForm):
+class LoginUtilisateurForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Mot de passe", validators=[DataRequired()])
     remember = BooleanField("Se souvenir de moi")
@@ -113,44 +133,13 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Se connecter')
 
 
-class LoginparentForm(FlaskForm):
-    name = StringField('Nom', validators=[DataRequired(), Length(min=5, max=30)])
-    email = StringField('Email', validators=[DataRequired
-                                             (message="L'email est requis"),
-                                             Email(message="Format de l'email invalide"), Length(max=35, min=8,
-                                                                                                 message="L'email "
-                                                                                                         "n'est pas "
-                                                                                                         "depassé 35 "
-                                                                                                         "caractères.")]
-                        )
-    password = PasswordField('Mon de passe', validators=[DataRequired()])
-    child_name_1 = StringField("Nom de l'enfant 1 ",
-                               validators=[DataRequired(message="Le nom de l'enfant est requis")])
-    child_name_2 = StringField("Nom de l'enfant 2",
-                               validators=[DataRequired(
-                                   message="Le nom de l'enfant 2 est requis"),
-                                   Length(max=35, min=3, message="Le Nom de l'enfant n'est pas depasser 35 "
-                                                                 "caractères ")])
-    remember = BooleanField('Se souvenir de moi')
-    submit = SubmitField('Connexion ')
-
-
-def validate_username(username):
-    user = User.query.filter_by(username=username.data).first()
-    if user:
-        raise ValidationError('That username is taken. Please choose a different one.')
-
-
-def validate_email(email):
-    user = User.query.filter_by(email=email.data).first()
-    if user:
-        raise ValidationError('That email is taken. Please choose a different one.')
 
 
 class profilForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     Submit = SubmitField('enregistrer')
+
 
 
 class MessageForm(FlaskForm):
@@ -176,11 +165,11 @@ class AssignemntForm(FlaskForm):
 
 
 class NoteForm(FlaskForm):
-    student_id = SelectField('Etudiant', coerce=int, validators=[DataRequired()])
-    matiere_id = SelectField('Matiere', coerce=int, validators=[DataRequired()])
-    Assignment_id = StringField('Assignment ID', validators=[DataRequired()])
-    Note = FloatField('Note', validators=[DataRequired()])
-    submit = SubmitField('soumettre une note')
+    student_id = SelectField('Étudiant', coerce=int, validators=[DataRequired()])
+    matiere_id = SelectField('Matière', coerce=int, validators=[DataRequired()])
+    assignment_id = StringField('ID du devoir', validators=[DataRequired()])
+    note = FloatField('Note', validators=[DataRequired()])
+    submit = SubmitField('Soumettre une note')
 
 
 class NoteFilterForm(FlaskForm):
@@ -241,35 +230,6 @@ class ScheduleForm(FlaskForm):
 
 
 
-class RegistrationParentForm(FlaskForm):
-    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
-    password = PasswordField('Mot de passe', validators=[DataRequired(), Length(min=8)])
-    confirm_password = PasswordField('Confirmer le mot de passe',
-                                     validators=[DataRequired(), EqualTo('password',
-                                                                         message='Les mots de passe doivent '
-                                                                                 'correspondre.')])
-    submit = SubmitField('S\'inscrire')
-
-    def validate_unique_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Cet email est déjà enregistré. Veuillez choisir un autre email.')
-
-    def validate_existing_email(self, field):
-        parent = Parent.query.filter_by(email=field.data).first()
-        if not parent:
-            raise ValidationError('Email non reconnu. Veuillez vérifier et réessayer.')
-
-
-class ParentLoginForm(FlaskForm):
-    name = StringField('Nom', validators=[DataRequired(), Length(min=3)])
-    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
-    password = PasswordField('Mot de passe', validators=[DataRequired()])
-    child_name_1 = StringField('Nom de l\'enfant 1', validators=[DataRequired()])
-    child_name_2 = StringField('Nom de l\'enfant 2 (optionnel)')
-    remember = BooleanField('Se souvenir de moi')
-    submit = SubmitField('Connexion')
-
 
 class ReportForm(FlaskForm):
     report_type = SelectField('Report Type', choices=[('daily', 'Daily'), ('weekly', 'Weekly'), ('monthly', 'Monthly'),
@@ -314,7 +274,14 @@ class NotificationForm(FlaskForm):
 
 class OptionForm(FlaskForm):
     name = StringField('Option Name', validators=[DataRequired(), Length(min=3, max=100)])
+
+
+
+class ResendConfirmationForm(FlaskForm):
+    email = StringField("Adresse email", validators=[DataRequired(), Email()])
+    submit = SubmitField("Renvoyer le lien")
 # signup
+
 
 class SignupForm(FlaskForm):
     username = StringField(
@@ -386,53 +353,76 @@ class SignupForm(FlaskForm):
     submit = SubmitField("S'inscrire")
 
 
-    """class SignupForm(FlaskForm):
-    username = StringField('Nom d\'utilisateur',
-                           validators=[
-                               DataRequired(message="Le nom d'utilisateur est obligatoire."),
-                               Length(min=4, max=20,
-                                      message="Le nom d'utilisateur doit comporter entre 4 et 20 caractères.")
-                           ])
 
-    email = StringField('Email',
-                        validators=[
-                            DataRequired(message="L'email est requis."),
-                            Email(message="Veuillez entrer une adresse email valide.")
-                        ])
+class ParentRegistrationForm(FlaskForm):
+    name = StringField("Nom du parent", validators=[DataRequired(), Length(min=2, max=150)])
+    email = StringField("Email", validators=[DataRequired(), Email(), Length(max=120)])
+    password = PasswordField("Mot de passe", validators=[DataRequired(), Length(min=6)])
+    confirm_password = PasswordField("Confirmer le mot de passe", validators=[DataRequired(), EqualTo("password")])
 
-    password = PasswordField('Mot de passe',
-                             validators=[
-                                 DataRequired(message="Le mot de passe est obligatoire."),
-                                 Length(min=6, message="Le mot de passe doit comporter au moins 6 caractères.")
-                             ])
+    # Enfant 1
+    child1_first_name = StringField("Prénom de l'enfant 1", validators=[Length(max=100), Optional()])
+    child1_last_name = StringField("Nom de l'enfant 1", validators=[Length(max=100), Optional()])
+    child1_birth_date = DateField("Date de naissance de l'enfant 1", format="%Y-%m-%d", validators=[Optional()])
+    child1_class_id = IntegerField("Classe ID de l'enfant 1", validators=[Optional()])
+    child1_religion = StringField("Religion de l'enfant 1", validators=[Length(max=20), Optional()])
 
-    confirm_password = PasswordField('Confirmer le mot de passe',
-                                     validators=[
-                                         DataRequired(message="Veuillez confirmer votre mot de passe."),
-                                         EqualTo('password', message="Les mots de passe ne correspondent pas.")
-                                     ])
+    # Enfant 2 (optionnel)
+    child2_first_name = StringField("Prénom de l'enfant 2 (optionnel)", validators=[Length(max=100), Optional()])
+    child2_last_name = StringField("Nom de l'enfant 2 (optionnel)", validators=[Length(max=100), Optional()])
+    child2_birth_date = DateField("Date de naissance de l'enfant 2", format="%Y-%m-%d", validators=[Optional()])
+    child2_class_id = IntegerField("Classe ID de l'enfant 2", validators=[Optional()])
+    child2_religion = StringField("Religion de l'enfant 2", validators=[Length(max=20), Optional()])
 
-    last_name = StringField('Nom',
-                            validators=[
-                                DataRequired(message="Le nom est obligatoire."),
-                                Length(min=2, max=50, message="Le nom doit comporter entre 2 et 50 caractères.")
-                            ])
+    submit = SubmitField("Créer le compte")
 
-    role = SelectField('Type d\'utilisateur',
-                       choices=[('enseignant', 'Enseignant'), ('eleve', 'Élève'), ('administrateur', 'Administrateur')],
-                       validators=[DataRequired(message="Veuillez sélectionner un type d'utilisateur.")])
+    def validate_email(self, field):
+        existing_parent = Parent.query.filter_by(email=field.data.lower()).first()
+        if existing_parent:
+            raise ValidationError("Cet e-mail est déjà utilisé. Veuillez en choisir un autre.")
 
-    # Ces champs sont conditionnels en fonction du rôle sélectionné
-    specialite = StringField('Spécialité',
-                             validators=[Length(max=100,
-                                                message="La spécialité ne doit pas dépasser 100 caractères.")])  # visible uniquement pour les enseignants
 
-    niveau = StringField('Niveau',
-                         validators=[Length(max=50,
-                                            message="Le niveau ne doit pas dépasser 50 caractères.")])  # visible uniquement pour les élèves
 
-    role_admin = StringField('Rôle Administratif',
-                             validators=[Length(max=50,
-                                                message="Le rôle administratif ne doit pas dépasser 50 caractères.")])  # visible uniquement pour les administrateurs
+class ParentLoginForm(FlaskForm):
+    email = StringField("Email", validators=[
+        DataRequired(message="L'email est requis"),
+        Email(message="Format de l'email invalide")
+    ])
+    password = PasswordField("Mot de passe", validators=[DataRequired()])
+    remember = BooleanField("Se souvenir de moi")
+    submit = SubmitField("Connexion")
 
-    submit = SubmitField('S\'inscrire')"""
+
+
+"""class LoginparentForm(FlaskForm):
+    name = StringField('Nom', validators=[DataRequired(), Length(min=5, max=30)])
+    email = StringField('Email', validators=[DataRequired
+                                             (message="L'email est requis"),
+                                             Email(message="Format de l'email invalide"), Length(max=35, min=8,
+                                                                                                 message="L'email "
+                                                                                                         "n'est pas "
+                                                                                                         "depassé 35 "
+                                                                                                         "caractères.")]
+                        )
+    password = PasswordField('Mon de passe', validators=[DataRequired()])
+    child_name_1 = StringField("Nom de l'enfant 1 ",
+                               validators=[DataRequired(message="Le nom de l'enfant est requis")])
+    child_name_2 = StringField("Nom de l'enfant 2",
+                               validators=[DataRequired(
+                                   message="Le nom de l'enfant 2 est requis"),
+                                   Length(max=35, min=3, message="Le Nom de l'enfant n'est pas depasser 35 "
+                                                                 "caractères ")])
+    remember = BooleanField('Se souvenir de moi')
+    submit = SubmitField('Connexion ')
+
+
+def validate_username(username):
+    user = User.query.filter_by(username=username.data).first()
+    if user:
+        raise ValidationError('That username is taken. Please choose a different one.')
+
+
+def validate_email(email):
+    user = User.query.filter_by(email=email.data).first()
+    if user:
+        raise ValidationError('That email is taken. Please choose a different one.')"""

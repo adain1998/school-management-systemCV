@@ -7,7 +7,7 @@
         {{ form.hidden_tag() }}
         <div class="form-group">
             {{ form.date.label(class="form-label") }}
-            {{ form.date(class="form-control", id="date", placeholder="YYYY-MM-DD HH:MM") }}
+            {{ form.date(class="form-control," id="date," placeholder="YYYY-MM-DD HH:MM") }}
         </div>
         <div class="form-group">
             {{ form.reason.label(class="form-label") }}
@@ -25,4 +25,46 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/edit_absence.js') }}"></script>
+{% endblock %}
+
+
+{% extends 'base.html' %}
+
+{% block title %}Modifier Absence{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Modifier l'absence du {{ absence.date.strftime('%d/%m/%Y') }}</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.date.label(class="form-label") }}
+            {{ form.date(class="form-control", required=True) }}
+            {% if form.date.errors %}
+                <div class="text-danger">{{ form.date.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <div class="mb-3">
+            {{ form.reason.label(class="form-label") }}
+            {{ form.reason(class="form-control", required=True) }}
+            {% if form.reason.errors %}
+                <div class="text-danger">{{ form.reason.errors[0] }}</div>
+            {% endif %}
+        </div>
+        <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+        <a href="{{ url_for('absenc.manage_absences', student_id=absence.student_id) }}" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
 {% endblock %}

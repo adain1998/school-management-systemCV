@@ -1,9 +1,15 @@
-{% extends 'base_post.html' %}
+{% extends "base.html" %}
 
-{% block title %}Error{% endblock %}
+{% block title %}Erreur - Publication{% endblock %}
 
 {% block content %}
-    <h1>An Error Occurred</h1>
-    <p>{{ error.description }}</p>
-    <a href="{{ url_for('forum') }}" class="btn btn-primary">Retourner au Forum</a>
+<div class="container mt-5">
+  <div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">Erreur liée aux publications</h4>
+    <p>Code d'erreur : {{ error.code }}</p>
+    <hr>
+    <p>{{ error.description or "Une erreur est survenue lors de la gestion des publications. Veuillez vérifier votre saisie." }}</p>
+    <a href="{{ url_for('tableau.index') }}" class="btn btn-warning mt-3">Retour aux publications</a>
+  </div>
+</div>
 {% endblock %}

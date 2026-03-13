@@ -1,12 +1,75 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hors ligne</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 20px;
+    }
 
-{% block title %}Hors ligne{% endblock %}
+    .container {
+      max-width: 400px;
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
 
-{% block content %}
-<div class="container text-center py-5">
-  <h1 class="display-4 text-danger">Vous êtes hors ligne</h1>
-  <p class="lead mt-4">Cette page n’est pas disponible sans connexion Internet.</p>
-  <p>Veuillez vérifier votre connexion ou réessayer plus tard.</p>
-  <a href="/" class="btn btn-primary mt-3">Retour à l'accueil</a>
-</div>
-{% endblock %}
+    img {
+      width: 150px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      color: #333;
+    }
+
+    p {
+      color: #666;
+      margin: 1rem 0;
+    }
+
+    button {
+      background-color: #007bff;
+      border: none;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .small {
+      font-size: 0.8rem;
+      margin-top: 2rem;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <img src="/static/icons/icon-192.png" alt="Offline Icon" />
+    <h1>Vous êtes hors ligne</h1>
+    <p>Impossible de charger cette page sans connexion Internet.</p>
+    <button onclick="location.reload()">Réessayer</button>
+    <p class="small">Gestion scolaire — version hors ligne</p>
+  </div>
+</body>
+</html>

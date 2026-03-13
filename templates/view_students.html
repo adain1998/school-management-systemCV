@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des étudiants{% endblock %}
+
+{% block styles %}
+<style>
+  /* Styles épurés et modernes pour le tableau */
+  .table-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  th {
+    cursor: pointer;
+    background-color: #f5f7fa;
+    position: relative;
+    user-select: none;
+  }
+
+  th.sort-active {
+    background-color: #e0e7ff;
+    color: #2c3e50;
+    font-weight: 600;
+  }
+
+  th .sort-indicator {
+    font-size: 0.75rem;
+    margin-left: 0.3rem;
+    color: #657786;
+  }
+
+  tr:hover {
+    background-color: #f9fafb;
+  }
+
+  /* Pagination */
+  .pagination {
+    margin-top: 1rem;
+    text-align: center;
+  }
+
+  .pagination a, .pagination span {
+    display: inline-block;
+    margin: 0 4px;
+    padding: 6px 12px;
+    color: #4a90e2;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+
+  .pagination a:hover {
+    background-color: #e1eaff;
+    border-color: #4a90e2;
+  }
+
+  .pagination .current-page {
+    background-color: #4a90e2;
+    color: white;
+    border-color: #4a90e2;
+    cursor: default;
+  }
+
+  /* Messages flash */
+  .flash-message {
+    max-width: 1000px;
+    margin: 1rem auto;
+    padding: 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .flash-warning {
+    background-color: #fff4e5;
+    color: #c67c00;
+    border: 1px solid #c67c00;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="table-container">
+
+  <h1>Liste des étudiants</h1>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <table>
+    <thead>
+      <tr>
+        {# Colonnes avec liens de tri #}
+        {% set headers = {
+          'nom': 'Nom',
+          'prenom': 'Prénom',
+          'matricule': 'Matricule',
+          'date': 'Date d\'inscription'
+        } %}
+        {% for key, label in headers.items() %}
+          {# active si champ trié #}
+          {% set active = (key == sort_by) %}
+          <th class="{{ 'sort-active' if active }}">
+            <a href="{{ url_for('stud.view_students', sort_by=key, page=1) }}" style="color: inherit; text-decoration: none;">
+              {{ label }}
+              {% if active %}
+                <span class="sort-indicator">&#9650;</span>
+              {% endif %}
+            </a>
+          </th>
+        {% endfor %}
+        <th>Classe</th>
+        <th>Options</th>
+        <th>Sections</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if students %}
+        {% for student in students %}
+          <tr>
+            <td>{{ student.last_name }}</td>
+            <td>{{ student.first_name }}</td>
+            <td>{{ student.numero_matricule }}</td>
+            <td>{{ student.registration_date.strftime('%d/%m/%Y') if student.registration_date else '-' }}</td>
+            <td>{{ student.classe.nom if student.classe else '-' }}</td>
+            <td>
+              {% for option in student.options %}
+                {{ option.nom }}{% if not loop.last %}, {% endif %}
+              {% else %}
+                -
+              {% endfor %}
+            </td>
+            <td>
+              {% for section in student.sections %}
+                {{ section.nom }}{% if not loop.last %}, {% endif %}
+              {% else %}
+                -
+              {% endfor %}
+            </td>
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:1rem;">Aucun étudiant trouvé.</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+
+  {# Pagination #}
+  <div class="pagination" role="navigation" aria-label="Pagination des étudiants">
+    {% if page > 1 %}
+      <a href="{{ url_for('stud.view_students', page=page-1, sort_by=sort_by) }}" aria-label="Page précédente">&laquo; Précédent</a>
+    {% else %}
+      <span aria-disabled="true" style="color: #aaa;">&laquo; Précédent</span>
+    {% endif %}
+
+    <span class="current-page">Page {{ page }} / {{ total_pages }}</span>
+
+    {% if page < total_pages %}
+      <a href="{{ url_for('stud.view_students', page=page+1, sort_by=sort_by) }}" aria-label="Page suivante">Suivant &raquo;</a>
+    {% else %}
+      <span aria-disabled="true" style="color: #aaa;">Suivant &raquo;</span>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

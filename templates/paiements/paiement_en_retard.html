@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">📌 Paiements en Retard</h1>
+    <span
+      class="mt-2 sm:mt-0 inline-block bg-red-100 text-red-600 text-sm font-medium px-3 py-1 rounded-full whitespace-nowrap"
+      aria-live="polite"
+    >
+      {{ pagination.total }} paiement{{ 's' if pagination.total > 1 }} en retard
+    </span>
+  </div>
+
+  <!-- Filtres -->
+  <form method="GET" class="bg-white shadow-sm p-4 rounded-lg grid grid-cols-1 md:grid-cols-4 gap-4 mb-6" role="search" aria-label="Filtrer les paiements">
+    <input
+      type="text"
+      name="client"
+      placeholder="Nom du client"
+      value="{{ filters.client }}"
+      class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent w-full"
+      autocomplete="off"
+      aria-label="Filtrer par nom du client"
+    >
+    <input
+      type="text"
+      name="mois"
+      placeholder="Mois (ex: janvier)"
+      value="{{ filters.mois }}"
+      class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent w-full"
+      autocomplete="off"
+      aria-label="Filtrer par mois"
+    >
+    <input
+      type="number"
+      name="annee"
+      placeholder="Année (ex: 2024)"
+      value="{{ filters.annee }}"
+      class="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent w-full"
+      min="2000"
+      max="2100"
+      aria-label="Filtrer par année"
+    >
+    <button
+      type="submit"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-md transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+      aria-label="Rechercher les paiements"
+    >
+      🔍 Rechercher
+    </button>
+  </form>
+
+  <!-- Tableau -->
+  <div class="overflow-x-auto bg-white shadow rounded-lg">
+    <table class="min-w-full text-sm text-left border-collapse border border-gray-200">
+      <thead class="bg-gray-100 text-gray-600 uppercase text-xs font-semibold">
+        <tr>
+          <th class="px-6 py-3 border border-gray-200">#</th>
+          <th class="px-6 py-3 border border-gray-200">Nom</th>
+          <th class="px-6 py-3 border border-gray-200">Date échéance</th>
+          <th class="px-6 py-3 border border-gray-200">Mois</th>
+          <th class="px-6 py-3 border border-gray-200">Année</th>
+          <th class="px-6 py-3 border border-gray-200">Montant</th>
+          <th class="px-6 py-3 border border-gray-200">Statut</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200 text-gray-700">
+        {% for p in payments %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-6 py-4 border border-gray-200">{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+          <td class="px-6 py-4 font-medium border border-gray-200">{{ p.student.nom }}</td>
+          <td class="px-6 py-4 border border-gray-200">{{ p.date.strftime('%d/%m/%Y') }}</td>
+          <td class="px-6 py-4 capitalize border border-gray-200">{{ p.mois }}</td>
+          <td class="px-6 py-4 border border-gray-200">{{ p.annee }}</td>
+          <td class="px-6 py-4 border border-gray-200">{{ '{:,.2f}'.format(p.montant) }} Fc</td>
+          <td class="px-6 py-4 border border-gray-200">
+            {% if p.statut == 'payé' %}
+              <span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs font-semibold">Payé</span>
+            {% elif p.statut == 'en attente' %}
+              <span class="bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full text-xs font-semibold">En attente</span>
+            {% elif p.statut == 'annulé' %}
+              <span class="bg-red-100 text-red-600 px-2 py-1 rounded-full text-xs font-semibold">Annulé</span>
+            {% else %}
+              <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs font-semibold">Inconnu</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7" class="px-6 py-4 text-center text-gray-500">Aucun paiement en retard trouvé.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <nav class="flex justify-between items-center mt-6" aria-label="Pagination">
+    <div class="text-sm text-gray-600">
+      Page {{ pagination.page }} sur {{ pagination.pages }}
+    </div>
+    <div class="space-x-2">
+      {% if pagination.has_prev %}
+        <a href="?page={{ pagination.prev_num }}&client={{ filters.client }}&mois={{ filters.mois }}&annee={{ filters.annee }}"
+           class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+           aria-label="Page précédente">← Précédent</a>
+      {% endif %}
+      {% if pagination.has_next %}
+        <a href="?page={{ pagination.next_num }}&client={{ filters.client }}&mois={{ filters.mois }}&annee={{ filters.annee }}"
+           class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+           aria-label="Page suivante">Suivant →</a>
+      {% endif %}
+    </div>
+  </nav>
+</div>
+
+<!-- Expérience UX JS -->
+<script>
+  // Suggérer automatiquement le mois courant si champ vide
+  const moisInput = document.querySelector('input[name="mois"]');
+  if (moisInput && !moisInput.value) {
+    const moisActuel = new Intl.DateTimeFormat('fr-FR', { month: 'long' }).format(new Date());
+    moisInput.placeholder = `Mois (ex: ${moisActuel})`;
+  }
+</script>
+{% endblock %}

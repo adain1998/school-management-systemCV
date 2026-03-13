@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Historique des Paiements{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/historique.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Historique des Paiements</h2>
+    <a href="{{ url_for(blueprint_paiem + '.paiement_nouveau') }}" class="btn btn-success">
+      <i class="bi bi-plus-circle me-1"></i> Nouveau Paiement
+    </a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      {% if paiements %}
+      <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Élève</th>
+              <th>Date</th>
+              <th>Mois</th>
+              <th>Année</th>
+              <th>Montant</th>
+              <th>Frais</th>
+              <th>Statut</th>
+              <th>Enregistré le</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for paiement in paiements %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ paiement.student.name if paiement.student else "N/A" }}</td>
+              <td>{{ paiement.date.strftime('%d/%m/%Y') if paiement.date else "N/A" }}</td>
+              <td>{{ paiement.mois }}</td>
+              <td>{{ paiement.annee }}</td>
+              <td>{{ "{:,.2f}".format(paiement.montant) }} FC</td>
+              <td>{{ paiement.frais.libelle if paiement.frais else "N/A" }}</td>
+              <td>
+                {% if paiement.statut == 'payé' %}
+                  <span class="badge bg-success">Payé</span>
+                {% elif paiement.statut == 'en attente' %}
+                  <span class="badge bg-warning text-dark">En attente</span>
+                {% elif paiement.statut == 'annulé' %}
+                  <span class="badge bg-danger">Annulé</span>
+                {% else %}
+                  <span class="badge bg-secondary">Inconnu</span>
+                {% endif %}
+              </td>
+              <td>{{ paiement.timestamp.strftime('%d/%m/%Y %H:%M') if paiement.timestamp else "N/A" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="alert alert-info text-center" role="alert">
+        Aucun paiement enregistré pour le moment.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/historique.js') }}" defer></script>
+{% endblock %}

@@ -22,8 +22,9 @@ BLUEPRINTS = {
     'niveau': 'blueprint_niveau',
     'absenc': 'blueprint_absenc',
     'auth': 'blueprint_auth',
+    'connex': 'blueprint_connex',
     'tableau': 'blueprint_tableau',
-    'connex': 'blueprint_connex'
+    'schedul': 'blueprint_schedul'
 }
 
 # 🔍 Expression régulière pour détecter les appels url_for('blueprint.route')
@@ -47,7 +48,7 @@ def process_file(filepath: str) -> None:
     for bp, route in matches:
         if bp in BLUEPRINTS:
             old_call = f"url_for('{bp}.{route}')"
-            new_call = f"url_for({BLUEPRINTS[bp]} + '.{route}')"
+            new_call = f"url_for('{BLUEPRINTS[bp]}.{route}')"
             if old_call in content and new_call not in content:
                 content = content.replace(old_call, new_call)
                 modified = True

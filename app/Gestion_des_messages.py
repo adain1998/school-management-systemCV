@@ -4,10 +4,10 @@ from app.forms import MessageForm, SchoolInfoForm, EditInfoForm, ForumPostForm
 from app.models import db, Message, User, SchoolInfo, ForumPost
 from werkzeug.exceptions import HTTPException
 
-mes = Blueprint('mes', __name__)
+blueprint_mes = Blueprint('mes', __name__)
 
 
-@mes.route('/messages', methods=['GET', 'POST'])
+@blueprint_mes.route('/messages', methods=['GET', 'POST'])
 @login_required
 def messages():
     form = MessageForm()
@@ -20,14 +20,15 @@ def messages():
             flash('Message sent successfully!', 'success')
         else:
             flash('Recipient not found.', 'danger')
-        return redirect(url_for('main.messages'))
+        return redirect(url_for('mes.messages'))
     sent_messages = Message.query.filter_by(sender=current_user).all()
     received_messages = Message.query.filter_by(recipient=current_user).all()
     return render_template('message.html', form=form,
                            sent_messages=sent_messages, received_messages=received_messages)
 
 
-@mes.route('/messages/filter', methods=['GET', 'POST'])
+
+@blueprint_mes.route('/messages/filter', methods=['GET', 'POST'])
 @login_required
 def filter_messages(msgs):
     try:
@@ -43,17 +44,18 @@ def filter_messages(msgs):
         # Logique pour récupérer les messages en fonction du filtre
         msgs = get_filtered_messages(filter_by, order)
         if msgs is None or len(msgs) == 0:
-            return render_template('filter_message.html', msg="Aucun message trouvé")
+            return render_template('filtrer_messages.html', msg="Aucun message trouvé")
 
     except ValueError as e:
         error = str(e)
-        return render_template('filter_message.html', error=error)
+        return render_template('filtrer_messages.html', error=error)
     except Exception as e:
 
-        return render_template('filter_message.html', msgs=msgs, error=str(e))
+        return render_template('filtrer_messages.html', msgs=msgs, error=str(e))
 
 
-@mes.route('/MessageService')
+
+@blueprint_mes.route('/MessageService')
 def get_filtered_messages(filter_by, order):
     query = Message.query
     if filter_by == 'timestamp':
@@ -67,23 +69,26 @@ def get_filtered_messages(filter_by, order):
     return query.all()
 
 
-@mes.route('/messages/<int:messege_id>/mark-as-read', methods=['POST'])
+
+@blueprint_mes.route('/messages/<int:messege_id>/mark-as-read', methods=['POST'])
 def mark_as_read(message_id):
     message = Message.query.get_or_404(message_id)
     message.read = True
     db.session.commit()
-    return redirect(url_for('messages'))
+    return redirect(url_for('mes.messages'))
 
 
-@mes.route('/messages/<int:messege_id>/delete', methods=['POST'])
+
+@blueprint_mes.route('/messages/<int:messege_id>/delete', methods=['POST'])
 def delete_message(message_id):
     message = Message.query.get_or_404(message_id)
     db.session.delete()
     db.session.commit()
-    return redirect(url_for('messages', message=message))
+    return redirect(url_for('mes.messages', message=message))
 
 
-@mes.route('/info', methods=['GET', 'POST'])
+
+@blueprint_mes.route('/info', methods=['GET', 'POST'])
 @login_required
 def info():
     form = SchoolInfoForm()
@@ -92,12 +97,13 @@ def info():
         db.session.add(info_generate)
         db.session.commit()
         flash('Information posted successfully!', 'success')
-        return redirect(url_for('info'))
+        return redirect(url_for('mes.info'))
     infos = SchoolInfo.query.all()
     return render_template('info.html', form=form, infos=infos)
 
 
-@mes.route('/info/edit/<int:info_id>', methods=['GET', 'POST'])
+
+@blueprint_mes.route('/info/edit/<int:info_id>', methods=['GET', 'POST'])
 @login_required
 def edit_info(info_id):
     info_editer = SchoolInfo.query.get_or_404(info_id)
@@ -107,44 +113,26 @@ def edit_info(info_id):
         info.content = form.content.data
         db.session.commit()
         flash('Information updated successfully!', 'success')
-        return redirect(url_for('info'))
+        return redirect(url_for('mes.info'))
     elif request.method == 'GET':
         form.title.data = info.title
         form.content.data = info.content
     return render_template('edit_info.html', form=form, info_editer=info_editer)
 
 
-@mes.route('/info/delete/<int:info_id>', methods=['POST'])
+
+@blueprint_mes.route('/info/delete/<int:info_id>', methods=['POST'])
 @login_required
 def delete_info(info_id):
     info_supprimer = SchoolInfo.query.get_or_404(info_id)
     db.session.delete(info_supprimer)
     db.session.commit()
     flash('Information deleted successfully!', 'success')
-    return redirect(url_for('info'))
-
-
-@mes.errorhandler(HTTPException)
-def handle_exception(e):
-    return render_template('error.html', error=e), e.code
-
-
-@mes.route('/forum', methods=['GET', 'POST'])
-@login_required
-def forum():
-    form = ForumPostForm()
-    if form.validate_on_submit():
-        post = ForumPost(user_id=current_user.id, title=form.title.data, body=form.body.data)
-        db.session.add(post)
-        db.session.commit()
-        flash('Post created successfully!', 'success')
-        return redirect(url_for('forum'))
-    posts = ForumPost.query.order_by(ForumPost.timestamp.desc()).all()
-    return render_template('forum.html', form=form, posts=posts)
+    return redirect(url_for('mes.info'))
 
 
 
-@mes.route('/information/filter', methods=['GET', 'POST'])
+@blueprint_mes.route('/information/filter', methods=['GET', 'POST'])
 @login_required
 def filter_info():
     form = SchoolInfoForm()
@@ -155,7 +143,7 @@ def filter_info():
 
 
 
-@mes.route('/forum/edit/<int:post_id>', methods=['GET', 'POST'])
+@blueprint_mes.route('/forum/edit/<int:post_id>', methods=['GET', 'POST'])
 @login_required
 def edit_post(post_id):
     post = ForumPost.query.get_or_404(post_id)
@@ -167,7 +155,7 @@ def edit_post(post_id):
         post.body = form.body.data
         db.session.commit()
         flash('Post updated successfully!', 'success')
-        return redirect(url_for('forum'))
+        return redirect(url_for('meeting.forum'))
     elif request.method == 'GET':
         form.title.data = post.title
         form.body.data = post.body
@@ -175,7 +163,7 @@ def edit_post(post_id):
 
 
 
-@mes.route('/forum/delete/<int:post_id>', methods=['POST'])
+@blueprint_mes.route('/forum/delete/<int:post_id>', methods=['POST'])
 @login_required
 def delete_post(post_id):
     post = ForumPost.query.get_or_404(post_id)
@@ -184,10 +172,14 @@ def delete_post(post_id):
     db.session.delete(post)
     db.session.commit()
     flash('Post deleted successfully!', 'success')
-    return redirect(url_for('forum'))
+    return redirect(url_for('mes.handle_exception'))
 
 
 
-@mes.errorhandler(HTTPException)
+@blueprint_mes.errorhandler(HTTPException)
 def handle_exception(e):
-    return render_template('error_post.html', error=e), e.code
+    if request.path.startswith('/post'):
+        template = 'error_post.html'
+    else:
+        template = 'error.html'
+    return render_template(template, error=e), e.code

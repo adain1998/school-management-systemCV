@@ -1,0 +1,12 @@
+{
+  "name": "school_management",
+  "version": "1.0.0",
+  "description": "Tailwind + Flask project",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tailwindcss -i ./static/src/input.css -o ./static/dist/output.css --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {}
+}

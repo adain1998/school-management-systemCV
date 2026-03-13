@@ -1,27 +1,56 @@
 {% extends 'base.html' %}
 
-{% block title %}Accueil{% endblock %}
+{% block title %}Accueil Paiement{% endblock %}
 
-{% block content %}
-<div class="container">
-    <h1>Bienvenue sur la page d'accueil de paiement</h1>
-    <a href="{{ url_for(blueprint_paiem + '.new_payment') }}" class="btn btn-primary" id="new-payment-btn">Nouveau Paiement</a>
-    <a href="{{ url_for(blueprint_paiem + '.get_payments') }}" class="btn btn-secondary" id="view-payments-btn">Voir les Paiements</a>
-</div>
-{% endblock %}
-
-{% block styles %}
-<!-- Inclusion du CSS de Toastr -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
-<!-- Votre fichier CSS personnalisé -->
+{% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/acceuil.css') }}">
 {% endblock %}
 
-{% block scripts %}
-<!-- Inclusion de jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- Inclusion du JS de Toastr -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
-<!-- Votre fichier JavaScript personnalisé -->
+{% block content %}
+<div class="container py-5">
+  <div class="text-center mb-5">
+    <h1 class="display-5 fw-bold">Bienvenue sur le module de Paiement</h1>
+    <p class="lead text-muted">Gérez les transactions, consultez l'historique et bien plus.</p>
+    <!-- Lien vers l'accueil du module de paiement -->
+    <a href="{{ url_for(blueprint_paiem +'.paiement_accueil') }}" class="btn btn-outline-dark mt-3">Accueil Paiement</a>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Nouvelle Transaction</h5>
+          <p class="card-text">Enregistrez un nouveau paiement.</p>
+          <a href="{{ url_for(blueprint_paiem +'.paiement_nouveau') }}" class="btn btn-primary">Commencer</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Historique</h5>
+          <p class="card-text">Consultez les paiements précédents.</p>
+          <a href="{{ url_for(blueprint_paiem +'.paiement_historique') }}" class="btn btn-outline-primary">Voir</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body text-center">
+          <h5 class="card-title">Paramètres</h5>
+          <p class="card-text">Configurez les options du module.</p>
+          <a href="{{ url_for(blueprint_paiem +'.paiement_settings') }}" class="btn btn-outline-secondary">Configurer</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="text-center text-muted py-4">
+  &copy; {{ current_year }} - Module Paiement | Complexe Scolaire
+</footer>
+
 <script src="{{ url_for('static', filename='js/acceuil.js') }}"></script>
 {% endblock %}

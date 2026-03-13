@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Paiements par Période{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/periode.css') }}">
+{% block content %}
+<div class="container my-4">
+    <h2 class="mb-4 text-center">Paiements selon une période</h2>
+
+    <!-- Formulaire de filtrage -->
+    <form method="get" class="row gy-2 gx-3 align-items-center" id="filter-form">
+        <div class="col-md-4">
+            <label for="periode" class="form-label">Période :</label>
+            <select class="form-select" id="periode" name="periode">
+                <option value="today" {% if period == 'today' %}selected{% endif %}>Aujourd'hui</option>
+                <option value="yesterday" {% if period == 'yesterday' %}selected{% endif %}>Hier</option>
+                <option value="week" {% if period == 'week' %}selected{% endif %}>7 derniers jours</option>
+                <option value="two_weeks" {% if period == 'two_weeks' %}selected{% endif %}>14 derniers jours</option>
+                <option value="month" {% if period == 'month' %}selected{% endif %}>Mois</option>
+                <option value="three_months" {% if period == 'three_months' %}selected{% endif %}>3 Mois</option>
+                <option value="six_months" {% if period == 'six_months' %}selected{% endif %}>6 Mois</option>
+                <option value="year" {% if period == 'year' %}selected{% endif %}>1 An</option>
+                <option value="custom" {% if period == 'custom' %}selected{% endif %}>Personnalisée</option>
+            </select>
+        </div>
+        <div class="col-md-3" id="custom-start-group" style="display: none;">
+            <label for="start" class="form-label">Date début :</label>
+            <input type="date" class="form-control" id="start" name="start" value="{{ start.strftime('%Y-%m-%d') if start }}">
+        </div>
+        <div class="col-md-3" id="custom-end-group" style="display: none;">
+            <label for="end" class="form-label">Date fin :</label>
+            <input type="date" class="form-control" id="end" name="end" value="{{ end.strftime('%Y-%m-%d') if end }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+        </div>
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mt-4">
+        <input type="text" id="search" class="form-control w-50" placeholder="Rechercher un client ou un montant...">
+        <div>
+            <button id="exportExcel" class="btn btn-success btn-sm me-2">Exporter Excel</button>
+            <button id="exportPDF" class="btn btn-danger btn-sm">Exporter PDF</button>
+        </div>
+    </div>
+
+    <hr class="my-3">
+
+    {% if payments %}
+    <div class="table-responsive">
+        <table id="paiements-table" class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Client</th>
+                    <th>Montant</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ payment.date.strftime('%d/%m/%Y à %H:%M') }}</td>
+                    <td>{{ payment.client.name if payment.client else 'N/A' }}</td>
+                    <td>{{ "{:,.2f}".format(payment.amount) }} Fc</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <nav>
+            <ul class="pagination justify-content-center" id="pagination"></ul>
+        </nav>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        Aucun paiement trouvé pour la période sélectionnée.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const periode = document.getElementById("periode");
+        const startGroup = document.getElementById("custom-start-group");
+        const endGroup = document.getElementById("custom-end-group");
+
+        function toggleCustomFields() {
+            const isCustom = periode.value === "custom";
+            startGroup.style.display = isCustom ? "block" : "none";
+            endGroup.style.display = isCustom ? "block" : "none";
+        }
+        periode.addEventListener("change", toggleCustomFields);
+        toggleCustomFields();
+
+        // Filtrage local
+        document.getElementById("search").addEventListener("keyup", function () {
+            const query = this.value.toLowerCase();
+            const rows = document.querySelectorAll("#paiements-table tbody tr");
+            rows.forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(query) ? "" : "none";
+            });
+        });
+
+        // Export Excel
+        document.getElementById("exportExcel").addEventListener("click", function () {
+            const table = document.getElementById("paiements-table");
+            const wb = XLSX.utils.table_to_book(table, {sheet: "Paiements"});
+            XLSX.writeFile(wb, "paiements.xlsx");
+        });
+
+        // Export PDF
+        document.getElementById("exportPDF").addEventListener("click", function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.autoTable({ html: "#paiements-table" });
+            doc.save("paiements.pdf");
+        });
+
+        // Pagination
+        const rowsPerPage = 10;
+        const rows = Array.from(document.querySelectorAll("#paiements-table tbody tr"));
+        const pagination = document.getElementById("pagination");
+
+        function paginate(page = 1) {
+            const totalPages = Math.ceil(rows.length / rowsPerPage);
+            pagination.innerHTML = "";
+
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement("li");
+                li.className = `page-item ${i === page ? "active" : ""}`;
+                li.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                li.addEventListener("click", e => {
+                    e.preventDefault();
+                    paginate(i);
+                });
+                pagination.appendChild(li);
+            }
+
+            rows.forEach((row, i) => {
+                row.style.display = (i >= (page - 1) * rowsPerPage && i < page * rowsPerPage) ? "" : "none";
+            });
+        }
+
+        paginate(); // Initialisation
+    });
+</script>
+{% endblock %}

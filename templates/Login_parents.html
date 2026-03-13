@@ -1,130 +1,55 @@
 {% extends "base.html" %}
-{% block title %}Connexion des parents{% endblock %}
-<h2>Connexion des parents</h2>
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<ul class="flashes">
-    {% for category, message in messages %}
-    <li class="{{category}}">{{message}}</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
-<title>Connexion des parents</title>
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/login_parent.css') }}">
-<form method="POST" action="{{ url_for(blueprint_auth + '.login_parent') }}">
-    {{ form.hidden_tag() }}
-    <div class="form-group">
-        <label for="name">Nom:</label>
-        <input type="text" class="form-control" id="name" name="name" required>
-        {{ form.name(class_='form-control', placeholder='Entrez votre nom') }}
-        {% for error in form.name.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
+
+{% block title %}Connexion Parent{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/Login_parents.css') }}">
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center py-5" style="min-height: 90vh;">
+  <div class="col-lg-5 col-md-8 col-sm-10 col-12">
+    <div class="card shadow-lg">
+      <div class="card-body">
+        <h2 class="card-title text-center mb-4">Connexion Parent</h2>
+
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control", placeholder="Entrez votre email") }}
+            {% for error in form.email.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3 position-relative">
+            {{ form.password.label(class="form-label") }}
+            <div class="position-relative">
+              {{ form.password(class="form-control", placeholder="Entrez votre mot de passe", id="password") }}
+              <button type="button" class="toggle-password" onclick="togglePassword()">
+                👁️
+              </button>
+            </div>
+            {% for error in form.password.errors %}
+              <div class="text-danger">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="mb-3 form-check">
+            {{ form.remember(class="form-check-input") }}
+            {{ form.remember.label(class="form-check-label") }}
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Se connecter</button>
+        </form>
+
+        <div class="mt-4 text-center">
+          <small>Vous n'avez pas de compte ? <a href="{{ url_for('auth.register_parent') }}">Créer un compte</a></small>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" class="form-control" id="email" name="email" required>
-        {{ form.email(class_='form-control', placeholder='Entrez votre email') }}
-        {% for error in form.email.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-    </div>
-    <div class="form-group">
-        <label for="password">Mot de passe:</label>
-        <input type="password" class="form-control" id="password" name="password" required>
-        {{ form.password(class_='form-control', placeholder='Entrez le mot de passe') }}
-        {% for error in form.password.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-    </div>
-    <div class="form-group">
-        <label for="child_name_1">Nom de l'enfant 1:</label>
-        <input type="text" class="form-control_1" id="child_name_1" name="child_name1_" required>
-        {{ form.child_name_1(class_='form-control', placeholder='Entrez le nom de l\'enfant 1') }}
-        {% for error in form.child_name_1.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-    </div>
-    <div class="form-group">
-        <label for="child_name_2">Nom de l'enfant 2:</label>
-        <input type="text" class="form-control" id="child_name_2" name="child_name2" required>
-        {{ form.child_name_2(class_='form-control', placeholder='Entrez le nom de l\'enfant 2 (optionnel)') }}
-        {% for error in form.child_name_2.errors %}
-        <span class="text-danger">{{ error }}</span>
-        {% endfor %}
-    </div>
-    <div class="form-group">
-        {{ form.remember() }} {{ form.remember.label }}
-    </div>
-    <button type="submit" class="btn btn-primary">{{ form.submit.label }}</button>
-    <script>
-    {% block javascript %}
-    $(document).ready(function() {
-        function validateForm() {
-            let isValid = true;
-            let name = $('#name').val();
-            if (name.length < 3) {
-                $('#name-error').text('Le nom doit contenir au moins 3 caractères.');
-                isValid = false;
-            } else {
-                $('#name-error').text('');
-            }
-            let email = $('#email').val();
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(email)) {
-                $('#email-error').text('Veuillez entrer une adresse email valide.');
-                isValid = false;
-            } else {
-                $('#email-error').text('');
-            }
-            let childName1 = $('#child_name_1').val();
-            if (childName1.trim() === '') {
-                $('#child_name_1-error').text('Veuillez entrer le nom de l\'enfant 1.');
-                isValid = false;
-            } else {
-                $('#child_name_1-error').text('');
-            }
-            let childName2 = $('#child_name_2').val();
-            if (childName2.trim() !== '') {
-                if (childName2.length < 3) {
-                    $('#child_name_2-error').text('Le nom de l\'enfant 2 doit contenir au moins 3 caractères.');
-                    isValid = false;
-                } else if (!/^[a-zA-Z]+$/.test(childName2)) {
-                    $('#child_name_2-error').text('Le nom de l\'enfant 2 ne doit contenir que des lettres.');
-                    isValid = false;
-                } else {
-                    $('#child_name_2-error').text('');
-                }
-            }
-            return isValid;
-        }
-        $('form').submit(function(event) {
-            if (!validateForm()) {
-                event.preventDefault();
-            }
-        });
-    });
-    {% endblock %}
-    </script>
-</form>
+  </div>
+</div>
+{% endblock %}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/Login_parents.js') }}"></script>
+{% endblock %}

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
+<link href="{{ url_for('static', filename='css/filter_student.css') }}" rel="stylesheet">
 <div class="container mt-5">
     <h1 class="text-center mb-4">Filtrer les Étudiants</h1>
 
-    <form method="GET" action="{{ url_for('filter_student') }}" class="mb-4">
+    <form method="GET" action="{{ url_for('stud.filter_student') }}" class="mb-4">
         <div class="row">
             <div class="col-md-4">
                 <label for="filter_class_name" class="form-label">Classe :</label>
@@ -58,7 +59,5 @@
         <p class="text-center text-muted mt-3">Aucun étudiant trouvé.</p>
     {% endif %}
 </div>
-<link href="{{ url_for('static', filename='css/filter_student.css') }}" rel="stylesheet">
-
-<script src="{{ url_for('static', filename='filter_student.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/filter_student.js') }}"></script>
 {% endblock %}

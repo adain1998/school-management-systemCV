@@ -1,0 +1,152 @@
+/* Définition des styles globaux */
+body {
+    background-color: #f4f7fc;  /* Couleur de fond claire et agréable */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Conteneur principal */
+.container {
+    max-width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Conteneur spécifique au formulaire de connexion */
+.login-container {
+    max-width: 400px;
+    margin: 5% auto;
+    padding: 40px 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.login-container:hover {
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+}
+
+/* Titre du formulaire */
+.login-container h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #212529;
+}
+
+/* Formulaire et champs de texte */
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 12px 15px;
+    width: 100%;
+    margin-bottom: 18px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+}
+
+/* Bouton de soumission */
+.btn-primary {
+    width: 100%;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    color: #fff;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    box-shadow: 0 4px 12px rgba(0, 86, 179, 0.5);
+    outline: none;
+}
+
+/* Section pour les messages flash */
+.flash-message {
+    margin-bottom: 25px;
+}
+
+/* Personnalisation des notifications Toastr */
+.toast-top-right {
+    top: 20px;
+    right: 20px;
+}
+
+.toast-success {
+    background-color: #28a745;  /* Vert pour le succès */
+    color: white;
+}
+
+.toast-error {
+    background-color: #dc3545;  /* Rouge pour l'erreur */
+    color: white;
+}
+
+.toast-info {
+    background-color: #17a2b8;  /* Bleu pour l'information */
+    color: white;
+}
+
+.toast-warning {
+    background-color: #ffc107;  /* Jaune pour l'avertissement */
+    color: #212529;
+}
+
+/* Personnalisation des animations de Toastr */
+.toast {
+    border-radius: 8px;
+    padding: 15px 20px;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Optimisation du texte du lien mot de passe oublié */
+.text-center a {
+    color: #007bff;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.text-center a:hover,
+.text-center a:focus {
+    text-decoration: underline;
+    color: #0056b3;
+    outline: none;
+}
+
+/* Responsive - Ajustements mobiles */
+@media (max-width: 480px) {
+    .login-container {
+        margin: 10% 15px;
+        padding: 30px 20px;
+    }
+
+    .login-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .btn-primary {
+        font-size: 1rem;
+        padding: 10px;
+    }
+}

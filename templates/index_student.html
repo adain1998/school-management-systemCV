@@ -1,94 +1,147 @@
 {% extends "base.html" %}
 
+{% block title %}Gestion des Étudiants{% endblock %}
+
 {% block content %}
-<h1 class="mt-5">Liste des Étudiants</h1>
-
-<!-- Formulaire de Filtrage -->
-<form method="get" action="{{ url_for('index') }}" class="form-inline mb-3">
-    <div class="form-group mr-2">
-        <label for="filter_class_name" class="mr-2">Classe:</label>
-        <input type="text" class="form-control" id="filter_class_name" name="filter_class_name" value="{{ request.args.get('filter_class_name', '') }}">
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">Liste des Étudiants</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+            + Ajouter un étudiant
+        </button>
     </div>
-    <div class="form-group mr-2">
-        <label for="filter_religion" class="mr-2">Religion:</label>
-        <input type="text" class="form-control" id="filter_religion" name="filter_religion" value="{{ request.args.get('filter_religion', '') }}">
-    </div>
-    <button type="submit" class="btn btn-primary">Filtrer</button>
-</form>
 
-<!-- Tableau des Étudiants -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th><a href="{{ url_for('index', sort_by='last_name', order='asc' if request.args.get('order') == 'desc' else 'desc') }}">Nom</a></th>
-            <th><a href="{{ url_for('index', sort_by='first_name', order='asc' if request.args.get('order') == 'desc' else 'desc') }}">Prénom</a></th>
-            <th><a href="{{ url_for('index', sort_by='class_name', order='asc' if request.args.get('order') == 'desc' else 'desc') }}">Classe</a></th>
-            <th>Date de Naissance</th>
-            <th>Date d'Inscription</th>
-            <th>Frais Payés</th>
-            <th>Dette</th>
-            <th>Religion</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
+    <!-- Formulaire de filtrage -->
+    <form method="get" action="{{ url_for('stud.index_students') }}" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="filter_class_name" placeholder="Filtrer par classe"
+                value="{{ request.args.get('filter_class_name', '') }}">
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control" name="filter_religion" placeholder="Filtrer par religion"
+                value="{{ request.args.get('filter_religion', '') }}">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-outline-secondary w-100">Filtrer</button>
+        </div>
+    </form>
+
+    <!-- Affichage en tableau + carte -->
+    {% if students %}
+    <div class="table-responsive mb-4">
+        <table class="table table-hover align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th><a href="{{ url_for('stud.index_students', sort_by='last_name', order='asc' if request.args.get('order') == 'desc' else 'desc') }}">Nom</a></th>
+                    <th><a href="{{ url_for('stud.index_students', sort_by='first_name', order='asc' if request.args.get('order') == 'desc' else 'desc') }}">Prénom</a></th>
+                    <th>Classe</th>
+                    <th>Naissance</th>
+                    <th>Inscription</th>
+                    <th>Payé</th>
+                    <th>Dette</th>
+                    <th>Religion</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.last_name }}</td>
+                    <td>{{ student.first_name }}</td>
+                    <td>{{ student.class_name }}</td>
+                    <td>{{ student.date_naissance }}</td>
+                    <td>{{ student.registration_date }}</td>
+                    <td>{{ student.fees_paid }}</td>
+                    <td>{{ student.debt }}</td>
+                    <td>{{ student.religion or 'N/A' }}</td>
+                    <td>
+                        <a href="{{ url_for('stud.edit_student', id=student.id) }}" class="btn btn-sm btn-warning">✎</a>
+                        <a href="{{ url_for('stud.delete_student', id=student.id) }}" class="btn btn-sm btn-danger">🗑️</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row">
         {% for student in students %}
-        <tr>
-            <td>{{ student.last_name }}</td>
-            <td>{{ student.first_name }}</td>
-            <td>{{ student.class_name }}</td>
-            <td>{{ student.date_naissance }}</td>
-            <td>{{ student.registration_date }}</td>
-            <td>{{ student.fees_paid }}</td>
-            <td>{{ student.debt }}</td>
-            <td>{{ student.religion }}</td>
-            <td>
-                <a href="{{ url_for('edit_student', id=student.id) }}" class="btn btn-warning btn-sm">Modifier</a>
-                <a href="{{ url_for('delete_student', id=student.id) }}" class="btn btn-danger btn-sm">Supprimer</a>
-            </td>
-        </tr>
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <h5 class="card-title text-primary fw-bold">{{ student.first_name }} {{ student.last_name }}</h5>
+                    <p class="card-text mb-1"><strong>Classe :</strong> {{ student.class_name }}</p>
+                    <p class="card-text mb-1"><strong>Matricule :</strong> {{ student.numero_matricule }}</p>
+                    <p class="card-text mb-1"><strong>Paiement :</strong> <span class="badge bg-success">{{ student.fees_paid }} FC</span></p>
+                    <p class="card-text mb-1"><strong>Dette :</strong> <span class="badge bg-danger">{{ student.debt }} FC</span></p>
+                    <p class="card-text mb-1"><strong>Religion :</strong> {{ student.religion or 'Non précisée' }}</p>
+                    <p class="card-text mb-1"><strong>Date d’inscription :</strong> {{ student.registration_date.strftime('%d/%m/%Y') }}</p>
+                    <a href="{{ url_for('stud.view_students', id=student.id) }}" class="btn btn-outline-primary mt-3 w-100">
+                        Voir profil complet
+                    </a>
+                </div>
+            </div>
+        </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">Aucun étudiant trouvé.</div>
+    {% endif %}
+</div>
 
-<h2 class="mt-5">Ajouter un Étudiant</h2>
-<form action="{{ url_for('add_student') }}" method="post">
-    <div class="form-group">
-        <label for="last_name">Nom:</label>
-        <input type="text" class="form-control" id="last_name" name="last_name" required>
+<!-- Modal d’ajout d’un étudiant -->
+<div class="modal fade" id="addStudentModal" tabindex="-1" aria-labelledby="addStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form action="{{ url_for('stud.add_student') }}" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addStudentModalLabel">Ajouter un étudiant</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body row g-3">
+                    <div class="col-md-6">
+                        <label for="last_name" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="last_name" name="last_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="first_name" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="first_name" name="first_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="class_name" class="form-label">Classe</label>
+                        <input type="text" class="form-control" id="class_name" name="class_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="class_id" class="form-label">ID Classe</label>
+                        <input type="number" class="form-control" id="class_id" name="class_id" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="date_naissance" class="form-label">Date de naissance</label>
+                        <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="registration_date" class="form-label">Date d’inscription</label>
+                        <input type="date" class="form-control" id="registration_date" name="registration_date" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="fees_paid" class="form-label">Frais Payés</label>
+                        <input type="number" class="form-control" id="fees_paid" name="fees_paid" step="0.01" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="debt" class="form-label">Dette</label>
+                        <input type="number" class="form-control" id="debt" name="debt" step="0.01" required>
+                    </div>
+                    <div class="col-md-12">
+                        <label for="religion" class="form-label">Religion</label>
+                        <input type="text" class="form-control" id="religion" name="religion">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group">
-        <label for="first_name">Prénom:</label>
-        <input type="text" class="form-control" id="first_name" name="first_name" required>
-    </div>
-    <div class="form-group">
-        <label for="class_name">Classe:</label>
-        <input type="text" class="form-control" id="class_name" name="class_name" required>
-    </div>
-    <div class="form-group">
-        <label for="date_naissance">Date de Naissance:</label>
-        <input type="date" class="form-control" id="date_naissance" name="date_naissance" required>
-    </div>
-    <div class="form-group">
-        <label for="registration_date">Date d'Inscription:</label>
-        <input type="date" class="form-control" id="registration_date" name="registration_date" required>
-    </div>
-    <div class="form-group">
-        <label for="fees_paid">Frais Payés:</label>
-        <input type="number" step="0.01" class="form-control" id="fees_paid" name="fees_paid" required>
-    </div>
-    <div class="form-group">
-        <label for="class_id">ID de la Classe:</label>
-        <input type="number" class="form-control" id="class_id" name="class_id" required>
-    </div>
-    <div class="form-group">
-        <label for="debt">Dette:</label>
-        <input type="number" step="0.01" class="form-control" id="debt" name="debt" required>
-    </div>
-    <div class="form-group">
-        <label for="religion">Religion:</label>
-        <input type="text" class="form-control" id="religion" name="religion">
-    </div>
-    <button type="submit" class="btn btn-primary">Ajouter</button>
-</form>
+</div>
 {% endblock %}

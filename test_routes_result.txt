@@ -1,0 +1,72 @@
+📅 Date du test : 2025-05-19 22:45:10
+🔍 Test de 64 routes GET sans arguments...
+
+[❌] http://127.0.0.1:5000/sect/sections → Code: 500
+[❌] http://127.0.0.1:5000/sect/ → Code: 500
+[❌] http://127.0.0.1:5000/examen/exams /add → Code: 500
+[❌] http://127.0.0.1:5000/examen/schedules → Code: 500
+[❌] http://127.0.0.1:5000/examen/exams/filter_and_search → Code: 500
+[❌] http://127.0.0.1:5000/rapports/export_reports → Code: 500
+[❌] http://127.0.0.1:5000/rapports/view_reports → Code: 500
+[❌] http://127.0.0.1:5000/students/students → Code: 401
+[❌] http://127.0.0.1:5000/students/ → Code: 401
+[❌] http://127.0.0.1:5000/students/filter_student → Code: 500
+[❌] http://127.0.0.1:5000/students/api/students → Code: 500
+[💥] http://127.0.0.1:5000/students/student/rechercher → Exception: TooManyRedirects - Exceeded 30 redirects.
+[💥] http://127.0.0.1:5000/students/all_students → Exception: TooManyRedirects - Exceeded 30 redirects.
+[❌] http://127.0.0.1:5000/students/student → Code: 500
+[❌] http://127.0.0.1:5000/application/performance → Code: 401
+[❌] http://127.0.0.1:5000/paiem/index → Code: 500
+[❌] http://127.0.0.1:5000/paiem/payment/new → Code: 401
+[❌] http://127.0.0.1:5000/paiem/payments → Code: 401
+[❌] http://127.0.0.1:5000/paiem/paiement/add → Code: 401
+[❌] http://127.0.0.1:5000/paiem/paiements/manage → Code: 401
+[❌] http://127.0.0.1:5000/paiem/paiements/overdue → Code: 401
+[❌] http://127.0.0.1:5000/paiem/paiements/report → Code: 401
+[❌] http://127.0.0.1:5000/paiem/payment_history → Code: 401
+[❌] http://127.0.0.1:5000/paiem/payment/filter → Code: 401
+[❌] http://127.0.0.1:5000/opt/options → Code: 500
+[❌] http://127.0.0.1:5000/opt/add_option → Code: 500
+[❌] http://127.0.0.1:5000/mes/messages → Code: 500
+[❌] http://127.0.0.1:5000/mes/messages/filter → Code: 500
+[❌] http://127.0.0.1:5000/mes/MessageService → Code: 500
+[❌] http://127.0.0.1:5000/mes/info → Code: 500
+[❌] http://127.0.0.1:5000/mes/forum → Code: 500
+[❌] http://127.0.0.1:5000/mes/information/filter → Code: 500
+[❌] http://127.0.0.1:5000/paie/fees → Code: 401
+[❌] http://127.0.0.1:5000/paie/add_fee → Code: 401
+[❌] http://127.0.0.1:5000/paie/ → Code: 500
+[❌] http://127.0.0.1:5000/meeting/forum → Code: 401
+[❌] http://127.0.0.1:5000/meeting/forum/filter → Code: 500
+[❌] http://127.0.0.1:5000/meeting/notifications/filter → Code: 401
+[❌] http://127.0.0.1:5000/meeting/create_poll → Code: 500
+[❌] http://127.0.0.1:5000/niveau/classes → Code: 500
+[❌] http://127.0.0.1:5000/niveau/gestion_classes → Code: 500
+[❌] http://127.0.0.1:5000/niveau/test404 → Code: 500
+[❌] http://127.0.0.1:5000/auth/signup → Code: 500
+[❌] http://127.0.0.1:5000/auth/login_parent → Code: 500
+[❌] http://127.0.0.1:5000/auth/register → Code: 500
+[❌] http://127.0.0.1:5000/auth/login → Code: 500
+[❌] http://127.0.0.1:5000/auth/admin/users → Code: 401
+[❌] http://127.0.0.1:5000/auth/admin/visitors → Code: 401
+[❌] http://127.0.0.1:5000/auth/users → Code: 401
+[❌] http://127.0.0.1:5000/auth/admin/user/add → Code: 401
+[❌] http://127.0.0.1:5000/auth/admin/users/json → Code: 401
+[❌] http://127.0.0.1:5000/auth/reset_password → Code: 500
+[❌] http://127.0.0.1:5000/auth/resend_confirmation → Code: 500
+[❌] http://127.0.0.1:5000/tableau/dashboard → Code: 401
+[❌] http://127.0.0.1:5000/tableau/enseignant/dashboard → Code: 401
+[❌] http://127.0.0.1:5000/tableau/eleve/dashboard → Code: 401
+[❌] http://127.0.0.1:5000/tableau/admin/dashboard → Code: 401
+[❌] http://127.0.0.1:5000/tableau/ → Code: 500
+[❌] http://127.0.0.1:5000/tableau/dashboard → Code: 401
+[❌] http://127.0.0.1:5000/connex/signup → Code: 500
+[❌] http://127.0.0.1:5000/connex/login → Code: 500
+[❌] http://127.0.0.1:5000/connex/logout → Code: 401
+[❌] http://127.0.0.1:5000/service-worker.js → Code: 500
+[❌] http://127.0.0.1:5000/routes → Code: 500
+
+🔚 Résumé des tests :
+  ✅ Réussis : 0
+  ❌ Échecs  : 64
+  🔢 Total   : 64

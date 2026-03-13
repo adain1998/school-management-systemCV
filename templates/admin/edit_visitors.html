@@ -15,9 +15,9 @@
 </div>
 {% endif %}
 {% endwith %}
-<form method="POST" action="{{url_for('admin.edit_visitor', visitor_id=visitor.id)}}">
+<form method="POST" action="{{url_for('auth.edit_visitor', visitor_id=visitor.id)}}">
     <div class="form_group">
-    <label for="name">Nom Visiteur:</label><br>
+    <label for="name">Nom Visiteur :</label><br>
         <input type="text" id="name" name="name" class="form-control" value="{{ visitor.name }}" required></div>
 <div class="form-group">
     <label for="email">Email:</label><br>
@@ -27,7 +27,7 @@
     <input type="submit"  class="btn btn-primary" value="Mettre à jour">
 </form>
 
-<a href="{{ url_for('admin.manage_visitors') }}" class="btn btn-secondary mt-4">Retour à la gestion des Visiteurs</a>
+<a href="{{ url_for('auth.manage_visitors') }}" class="btn btn-secondary mt-4">Retour à la gestion des Visiteurs</a>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

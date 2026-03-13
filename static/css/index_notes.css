@@ -1,0 +1,95 @@
+/* Styles globaux */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+}
+
+h1, h2, h3, .card-header {
+    font-weight: 600;
+}
+
+/* Carte */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: none;
+}
+
+.card-header {
+    font-size: 1.2rem;
+    background: #007bff;
+    color: white;
+    border-bottom: 2px solid #007bff;
+}
+
+/* Input de recherche */
+#search-student {
+    width: 300px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    transition: border-color 0.3s ease-in-out;
+}
+
+#search-student:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+/* Tableau */
+#studentsTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: #fff;
+}
+
+#studentsTable thead {
+    background-color: #007bff;
+    color: white;
+    font-size: 0.95rem;
+    text-align: center;
+}
+
+#studentsTable th,
+#studentsTable td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+#studentsTable tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Boutons d’export */
+.btn {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 8px 14px;
+}
+
+.btn-outline-success:hover {
+    background-color: #28a745;
+    color: white;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    #search-student {
+        width: 100%;
+        margin-bottom: 15px;
+    }
+
+    #studentsTable {
+        font-size: 0.85rem;
+    }
+}

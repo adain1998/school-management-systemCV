@@ -1,76 +1,106 @@
-/* Fichier : static/css/classe.css */
+/* sondage.css */
 
-/* Styles pour le conteneur principal */
-.container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+.poll-container {
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-/* Styles pour les titres */
-h1, h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+.card {
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
 }
 
-/* Styles pour les boutons */
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
+.card-header {
+  background: linear-gradient(to right, #007bff, #0056b3);
+  padding: 20px;
+  border-bottom: none;
 }
 
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
+.card-header h4 {
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
-.btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
+.card-body {
+  padding: 30px;
+  background-color: #f9f9f9;
 }
 
-/* Styles pour les champs de formulaire */
+.form-label {
+  font-weight: 600;
+  color: #333;
+}
+
 .form-control {
-    margin-bottom: 15px;
+  border-radius: 0.5rem;
+  box-shadow: none;
+  transition: border-color 0.3s ease;
 }
 
-/* Styles pour les groupes de choix */
-.input-group {
-    display: flex;
-    align-items: center;
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
 }
 
-.input-group .form-control {
-    flex: 1;
+.choice-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.input-group .btn {
-    margin-left: 10px;
+.choice-item .form-control {
+  flex: 1;
 }
 
-/* Styles pour le bouton "Ajouter un choix" */
-#add-choice-btn {
-    display: block;
-    width: 100%;
-    margin-top: 10px;
+.choice-item .btn {
+  padding: 6px 12px;
+  font-size: 1rem;
+  line-height: 1;
 }
 
-/* Styles pour les messages flash */
-.flash-message {
+.btn-outline-danger {
+  border-radius: 0.5rem;
+}
+
+.btn-outline-primary,
+.btn-success {
+  border-radius: 0.5rem;
+  padding: 10px 20px;
+}
+
+.btn-outline-primary:hover,
+.btn-success:hover {
+  opacity: 0.9;
+}
+
+.alert {
+  margin-top: 10px;
+  border-radius: 0.5rem;
+}
+
+#charCount {
+  font-weight: 500;
+  color: #6c757d;
+}
+
+@media (max-width: 576px) {
+  .poll-container {
     padding: 10px;
-    margin-bottom: 20px;
-    border-radius: 5px;
-}
+  }
 
-.flash-message.success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
+  .card-body {
+    padding: 20px;
+  }
 
-.flash-message.error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+  .choice-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .choice-item .btn {
+    width: 100%;
+    margin-top: 5px;
+  }
 }

@@ -1,45 +1,55 @@
-
-<!-- templates/add_payment.html -->
-
 <h1>Ajouter un Paiement</h1>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-<form method="POST" action="{{ url_for('app.add_payment') }}">
+
+<!-- CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/css/bootstrap-datepicker.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+
+<form method="POST" action="{{ url_for('paiem.add_paiement') }}" onsubmit="return validateForm();">
     {{ form.hidden_tag() }}
 
     <div class="form-group">
         {{ form.student_id.label(class='form-label') }}
-        {{ form.student_id(class='form-control') }}
+        {{ form.student_id(class='form-control', id='student_id') }}
     </div>
 
+    <!-- Nouveau select ajouté -->
     <div class="form-group">
-        {{ form.frais_id.label(class='form-label') }}
-        {{ form.frais_id(class='form-control') }}
+        <label for="frais_id" class="form-label">Type de frais</label>
+        <select class="form-control" name="frais_id" id="frais_id" onchange="updateMontant()">
+            <option value="">-- Sélectionnez un frais --</option>
+            {% for frais in frais_list %}
+                <option value="{{ frais.id }}" data-montant="{{ frais.montant }}">
+                    {{ frais.nom }} - {{ frais.montant }} €
+                </option>
+            {% endfor %}
+        </select>
     </div>
 
     <div class="form-group">
         {{ form.montant.label(class='form-label') }}
-        {{ form.montant(class='form-control') }}
+        {{ form.montant(class='form-control', id='montant', type='number') }}
         <small class="form-text text-muted">Montant en euros.</small>
     </div>
 
     <div class="form-group">
         {{ form.date.label(class='form-label') }}
-        {{ form.date(class='form-control') }}
+        {{ form.date(class='form-control', id='date') }}
+        <div id="date-error" class="text-danger small mt-1"></div>
     </div>
-    <div class="form-group">
-        {{ form.timestamp.label(class='form-label') }}
-        {{ form.timestamp(class='form-control') }}
-    </div>
+
+    <!-- Champ timestamp supprimé, car généré automatiquement -->
+
     <div class="form-group">
         {{ form.mois.label(class='form-label') }}
         {{ form.mois(class='form-control') }}
     </div>
+
     <div class="form-group">
         {{ form.annee.label(class='form-label') }}
         {{ form.annee(class='form-control') }}
     </div>
+
     <div class="form-group">
         {{ form.statut.label(class='form-label') }}
         {{ form.statut(class='form-control') }}
@@ -49,42 +59,54 @@
 </form>
 
 <a href="{{ url_for('app.manage_payments') }}" class="btn btn-secondary mt-4">Retour</a>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <script>
-        function updateMontant() {
-            var select = document.getElementById("frais-select");
-            var montantField = document.getElementById("montant");
-            var selectedMontant = select.options[select.selectedIndex].getAttribute("data-montant");
-            if (isNaN(selectedMontant) || selectedMontant <=0){alert("le montant   doit être un nombre positif merci!");
-            return; montantField.value = selectedMontant;}
-            montantField.value = selectedMontant;
+    function updateMontant() {
+        var select = document.getElementById("frais_id");
+        var selectedOption = select.options[select.selectedIndex];
+        var montantField = document.getElementById("montant");
+        var selectedMontant = selectedOption.getAttribute("data-montant");
+
+        if (isNaN(selectedMontant) || selectedMontant <= 0) {
+            alert("Le montant doit être un nombre positif. Merci !");
+            return;
         }
-    </script>
- <script>
-        function validateForm() {//... const  studentId = document.getElementById("student_id).value;
-        const fraisId = document.getElementById("fraisId").value;
-        const montant = document .getElementById("montant").value;
-        const dateInput = document.getElementById("date").value;
-        const datevalue = dateInput.value;
-        try {
-        if (!moment(datevalue, "DD/MM/YYYY").isValid()) {throw new Error("Veuillez saisir une date valide au format
-         JJ/MM/AAAA);} catch (error){dateInput.nextElementSibling;
-         errorMessage.textContent = error.message;
-        dateInput.classList.add("is-invalid");
-        return false; } //...// dateInput.classList.remove("is-invalid");
-        } // return true;
-    </script>
+        montantField.value = selectedMontant;
+    }
+
+    function validateForm() {
+        const dateInput = document.getElementById("date");
+        const dateError = document.getElementById("date-error");
+        const dateValue = dateInput.value;
+
+        if (!moment(dateValue, "YYYY-MM-DD", true).isValid()) {
+            dateError.textContent = "Veuillez saisir une date valide au format AAAA-MM-JJ.";
+            dateInput.classList.add("is-invalid");
+            return false ;
+        }
+
+        dateError.textContent = "";
+        dateInput.classList.remove("is-invalid");
+        return true;
+    }
+</script>
+
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    toastr.{{ category }}("{{ message }}");
+                    toastr["{{ category }}"]("{{ message }}");
                 {% endfor %}
             {% endif %}
         {% endwith %}
     });
-</script>
-<script>
+
     toastr.options = {
         "closeButton": true,
         "progressBar": true,
@@ -92,6 +114,7 @@
         "timeOut": "5000"
     };
 </script>
+
 {% block Scripts %}
 <script src="{{ url_for('static', filename='js/Ajouter_paiement.js') }}"></script>
 {% endblock %}

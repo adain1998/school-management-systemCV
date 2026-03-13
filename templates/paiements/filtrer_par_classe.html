@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Paiements - {{ classe.name }}{% endblock %}
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/filtre_par_classe.css') }}">
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <h2 class="fw-bold text-primary">Paiements - Classe {{ classe.name }}</h2>
+        <div>
+            <a href="{{ url_for('paiem.liste_paiements') }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Retour
+            </a>
+            <button id="exportPdfBtn" class="btn btn-outline-danger">
+                <i class="bi bi-file-earmark-pdf-fill"></i> Export PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- 🔍 Barre de recherche et filtre -->
+    <div class="row mb-3 g-2">
+        <div class="col-md-6">
+            <input id="searchInput" type="text" class="form-control" placeholder="Rechercher un étudiant...">
+        </div>
+        <div class="col-md-6">
+            <select id="filterStatus" class="form-select">
+                <option value="">Filtrer par statut</option>
+                <option value="Payé">Payé</option>
+                <option value="Partiel">Partiel</option>
+                <option value="Non payé">Non payé</option>
+            </select>
+        </div>
+    </div>
+
+    {% if students %}
+    <div class="table-responsive">
+        <table id="paiementTable" class="table table-hover table-striped table-bordered align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nom de l'étudiant</th>
+                    <th>Total payé</th>
+                    <th>Statut</th>
+                    <th>Détails</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                {% for student in students %}
+                    {% set student_payments = payments|selectattr('student_id,' 'equalto', student.id)|list %}
+                    {% set total_paye = student_payments|map(attribute='amount')|sum %}
+                    <tr class="paiement-row" data-nom="{{ student.full_name }}" data-statut="{% if total_paye >= 100 %}Payé{% elif total_paye > 0 %}Partiel{% else %}Non payé{% endif %}">
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ total_paye }} FC</td>
+                        <td>
+                            {% if total_paye >= 100 %}
+                                <span class="badge bg-success">Payé</span>
+                            {% elif total_paye > 0 %}
+                                <span class="badge bg-warning text-dark">Partiel</span>
+                            {% else %}
+                                <span class="badge bg-danger">Non payé</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#paiement-{{ student.id }}">
+                                Voir
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="collapse" id="paiement-{{ student.id }}">
+                        <td colspan="4">
+                            {% if student_payments %}
+                                <ul class="list-group text-start">
+                                    {% for p in student_payments %}
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span><strong>{{ p.date.strftime("%d/%m/%Y") }}</strong> - {{ p.description }}</span>
+                                            <span class="text-success fw-bold">{{ p.amount }} FC</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p class="text-muted m-0">Aucun paiement enregistré.</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center" id="pagination"></ul>
+    </nav>
+
+    {% else %}
+        <div class="alert alert-info">Aucun étudiant trouvé pour cette classe.</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- jsPDF (export PDF) -->
+<script src="{{ url_for('static', filename='js/filtrer_par_classe.js') }}"></script>
+{% endblock %}

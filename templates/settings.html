@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Paramètres du Paiement{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Paramètres</h2>
+  <p>Configurez les options de votre module de paiement ici.</p>
+  <!-- Exemple de formulaire de configuration -->
+  <form>
+    <div class="mb-3">
+      <label for="devise" class="form-label">Devise par défaut</label>
+      <select id="devise" class="form-select" name="devise">
+        <option value="fc">Franc Congolais (FC)</option>
+        <option value="usd">Dollar Américain (USD)</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Sauvegarder</button>
+  </form>
+</div>
+{% endblock %}

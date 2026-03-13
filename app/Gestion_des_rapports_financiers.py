@@ -17,10 +17,10 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
 
-rapport = Blueprint('rapport', __name__)
+blueprint_rapport = Blueprint('rapport', __name__)
 
 
-@rapport.route("/generate_report/<string:report_type>")
+@blueprint_rapport.route("/generate_report/<string:report_type>")
 @admin_required
 def generate_report(report_type, start_date=None):
     form = ReportForm()
@@ -57,7 +57,7 @@ def generate_report(report_type, start_date=None):
             end_date = end_date.replace(month=12, day=31)
         else:
             flash('Invalid report type!', 'danger')
-            return redirect(url_for('home'))
+            return redirect(url_for(''))
 
         total_amount = db.session.query(db.func.sum(Finance.amount)).filter(
             Finance.date.between(start_date, end_date)).scalar()
@@ -78,7 +78,7 @@ def generate_report(report_type, start_date=None):
 
 
 
-@rapport.route("/download_report/<int:report_id>")
+@blueprint_rapport.route("/download_report/<int:report_id>")
 @admin_required
 def download_report(report_id):
     report = Report.query.get_or_404(report_id)
@@ -96,7 +96,7 @@ def download_report(report_id):
 
 
 
-@rapport.route("/export_reports")
+@blueprint_rapport.route("/export_reports")
 @admin_required
 def export_reports():
     reports = Report.query.all()
@@ -116,7 +116,7 @@ def export_reports():
 
 
 
-@rapport.route("/view_report_graph/<int:report_id>")
+@blueprint_rapport.route("/view_report_graph/<int:report_id>")
 @admin_required
 def view_report_graph(report_id):
     report = Report.query.get_or_404(report_id)
@@ -134,7 +134,7 @@ def view_report_graph(report_id):
 
 
 
-@rapport.route("/view_reports", methods=['GET', 'POST'])
+@blueprint_rapport.route("/view_reports", methods=['GET', 'POST'])
 @admin_required
 def view_reports():
     form = ReportFilterForm()

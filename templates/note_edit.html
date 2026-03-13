@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Modifier une note{% endblock %}
+
+{% block styles %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/note_edit.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-sm rounded">
+    <div class="card-header bg-warning text-dark">
+      <h4 class="mb-0"><i class="fas fa-pen"></i> Modifier une note</h4>
+    </div>
+
+    <div class="card-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('resultat.edit_note', id_edit=note.id) }}">
+        <div class="mb-3">
+          <label for="student_name" class="form-label">
+            <i class="fas fa-user-edit text-secondary me-2"></i>Nom de l'étudiant
+          </label>
+          <input type="text" name="student_name" id="student_name" class="form-control" value="{{ note.student_name }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="subject" class="form-label">
+            <i class="fas fa-book text-secondary me-2"></i>Matière
+          </label>
+          <input type="text" name="subject" id="subject" class="form-control" value="{{ note.subject }}" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="score" class="form-label">
+            <i class="fas fa-pencil-alt text-secondary me-2"></i>Note
+          </label>
+          <input type="number" name="score" id="score" class="form-control" value="{{ note.score }}" step="0.01" min="0" max="100" required>
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <a href="{{ url_for('resultat.view_notes') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour
+          </a>
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-check-circle"></i> Enregistrer les modifications
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% block scripts %}
+  {{ super() }}
+<script src="{{ url_for('static', filename='js/note_edit.js') }}"></script>
+{% endblock %}

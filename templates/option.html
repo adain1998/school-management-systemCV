@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Liste des Options{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+
+            <h2 class="mb-4 text-center text-primary">Liste des Options Disponibles</h2>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card shadow rounded-4">
+                <div class="card-body">
+
+                    <div class="mb-3 d-flex justify-content-end">
+                        <a href="{{ url_for('opt.add_option') }}" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Ajouter une option
+                        </a>
+                    </div>
+
+                    {% if options %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered align-middle">
+                                <thead class="table-primary text-center">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nom de l'option</th>
+                                        <th>Date d'ajout</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for option in options %}
+                                        <tr>
+                                            <td class="text-center">{{ loop.index }}</td>
+                                            <td>{{ option.name }}</td>
+                                            <td class="text-center">{{ option.created_at.strftime('%d/%m/%Y') if option.created_at else 'N/A' }}</td>
+                                            <td class="text-center">
+                                                <form action="{{ url_for('opt.delete_option', option_id=option.id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette option ?');">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-trash"></i> Supprimer
+                                                    </button>
+                                                </form>
+                                                <form action="{{ url_for('opt.edit_option', option_id=option.id) }}" method="POST">
+                                               {{ form.hidden_tag() }}
+                                              <div class="form-group">
+                                             {{ form.name.label(class="form-label") }}
+                                             {{ form.name(class="form-control") }}
+                                             </div>
+                                          <button type="submit" class="btn btn-primary">Mettre à jour</button>
+                                          </form>
+
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center">Aucune option n’est encore disponible.</p>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

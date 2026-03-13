@@ -1,78 +1,145 @@
-from flask import Blueprint, render_template, request, redirect, flash, url_for, abort, jsonify
+from flask import (Blueprint, render_template, request, redirect, flash, Response,
+                   url_for, abort, current_app)
+from flask_paginate import Pagination, get_page_parameter
 from app.forms import NoteForm, AssignmentForm, NoteFilterForm
 from sqlalchemy.exc import SQLAlchemyError
-from app.models import db, Note, Student, Matiere, Assignment, Attendance, Classe
+from app.models import db, Note, Student, Matiere, Assignment, Classe
 from flask_login import login_required, current_user
 from sqlalchemy.orm import Query
 import statistics
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import csv
 from datetime import datetime
 from werkzeug.exceptions import HTTPException
+from sqlalchemy import func
+import logging
+from collections import Counter
+import io
+import json
+from app.services.statistiques_service import (
+    calculer_moyennes_par_matiere,
+    calculer_moyennes_generales,
+    calculer_moyenne_generale
+)
 
-resultat = Blueprint('resultat', __name__)
+
+blueprint_resultat = Blueprint('resultat', __name__)
+logger = logging.getLogger(__name__)
 
 
-@resultat.route('/note', methods=['GET', 'POST'])
+@blueprint_resultat.route('/note', methods=['GET', 'POST'])
 @login_required
 def grade():
     form = NoteForm()
     if form.validate_on_submit():
-        note = Note(student_id=form.student_id.data, assignment_id=form.Assignment_id.data, Note=form.Note.data)
+        note = Note(
+            student_id=form.student_id.data,
+            assignment_id=form.assignment_id.data,
+            note=form.note.data
+        )
         db.session.add(note)
         db.session.commit()
-        flash('Grade submitted successfully!', 'success')
-        return redirect(url_for('main.notes'))
-    point = Note.query.all()
-    return render_template('Note.html', form=form, point=point)
+        flash('Note ajoutée avec succès.', 'success')
+        return redirect(url_for('resultat.view_notes'))
+    from app.models import Student, Matiere
+
+    form.student_id.choices = [(s.id, s.full_name) for s in Student.query.all()]
+    form.matiere_id.choices = [(m.id, m.nom) for m in Matiere.query.all()]
+
+    notes_eleves = Note.query.all()
+    return render_template('note_form.html', form=form, notes_eleves=notes_eleves)
 
 
-# Routes pour Note
-@resultat.route('/notes')
+# Afficher toutes les notes
+@blueprint_resultat.route('/notes', methods=['GET'])
+@login_required
 def view_notes():
-    nots = Note.query.all()
-    return render_template('note.html', nots=nots)
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    per_page = 10
+
+    student_id = request.args.get('student_id', type=int)
+    matiere_id = request.args.get('matiere_id', type=int)
+
+    query = Note.query
+
+    if student_id:
+        query = query.filter_by(student_id=student_id)
+    if matiere_id:
+        query = query.filter_by(matiere_id=matiere_id)
+
+    total = query.count()
+    notes_paginated = query.order_by(Note.created_at.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    students = Student.query.all()
+    matieres = Matiere.query.all()
+
+    pagination = Pagination(page=page, total=total, record_name='notes', css_framework='bootstrap5')
+
+    return render_template(
+        'note_list.html',
+        notes_ensemble=notes_paginated.items,
+        students=students,
+        matieres=matieres,
+        pagination=pagination
+    )
 
 
-@resultat.route('/add_note', methods=['POST'])
+# Ajouter une note manuellement (sans formulaire WTForms)
+@blueprint_resultat.route('/add_note', methods=['POST'])
+@login_required
 def add_note():
-    student_name = request.form['student_name']
-    subject = request.form['subject']
-    score = request.form['score']
+    student_name = request.form.get('student_name')
+    subject = request.form.get('subject')
+    score = request.form.get('score')
+
+    if not student_name or not subject or not score:
+        flash("Tous les champs sont requis.", 'danger')
+        return redirect(url_for('resultat.view_notes'))
+
+    try:
+        score = float(score)
+    except ValueError:
+        flash("Le score doit être un nombre.", 'danger')
+        return redirect(url_for('resultat.view_notes'))
+
     new_note = Note(student_name=student_name, subject=subject, score=score)
     db.session.add(new_note)
     db.session.commit()
-    flash('Note added successfully!', 'success')
-    return redirect(url_for('view_notes'))
+    flash('Note ajoutée avec succès.', 'success')
+    return redirect(url_for('resultat.view_notes'))
 
 
-@resultat.route('/edit_note/<int:id>', methods=['GET', 'POST'])
-def edit_note():
-    note = Note.query.get_or_404(id)
-    if not note:
-        return 'note introuvable', 404
+# Éditer une note
+@blueprint_resultat.route('/edit_note/<int:id>', methods=['GET', 'POST'])
+@login_required
+def edit_note(id_edit):
+    note = Note.query.get_or_404(id_edit)
+
     if request.method == 'POST':
-        note.student_name = request.form['student_name']
-        note.subject = request.form['subject']
-        note.score = request.form['score']
+        student_name = request.form.get('student_name')
+        subject = request.form.get('subject')
+        score = request.form.get('score')
+
+        if not student_name or not subject or not score:
+            flash("Tous les champs sont requis.", 'danger')
+            return redirect(url_for('resultat.edit_note', id_edit=id_edit))
+
+        try:
+            note.score = float(score)
+        except ValueError:
+            flash("Le score doit être un nombre.", 'danger')
+            return redirect(url_for('resultat.edit_note', id_edit=id_edit))
+
+        note.student_name = student_name
+        note.subject = subject
         db.session.commit()
-        flash('Note updated successfully!', 'success')
-        return redirect(url_for('view_notes'))
-    if request.method == 'GET':
-        return render_template('Note.html', note=note)
-    else:
-        new_note = request.form.get('note')
-        new_date = request.form.get('date')
-        note.note = new_note
-        note.date = new_date
-        db.session.commit()
-        return redirect(url_for('liste_notes'))
+        flash('Note mise à jour avec succès.', 'success')
+        return redirect(url_for('resultat.view_notes'))
+
+    return render_template('note_edit.html', note=note)
 
 
 
-@resultat.route('/delete_note/<int:id>')
+@blueprint_resultat.route('/delete_note/<int:id>')
 def delete_note():
     note = Note.query.get_or_404(id)
     db.session.delete(note)
@@ -113,102 +180,186 @@ def filter_and_sort(model, filter_by: str, filter_value: str, order: str) -> Que
 
 
 
-@resultat.route('/notes/filter', methods=['GET', 'POST'])
+@blueprint_resultat.route('/notes/filter', methods=['GET', 'POST'])
 @login_required
 def filter_notes():
     form = NoteFilterForm()
     notes_filter = []
     filter_value = ""
+    filter_by = None
+    order = 'asc'
+    pagination = None
 
     if request.method == 'POST':
         filter_by = request.form.get('filter_by')
         filter_value = request.form.get('filter_value', '').strip()
-        allowed_filters = ["valeur", "Student_id", "note", "date", "commentaire", "subject"]
+        order = request.form.get('order', 'asc').lower()
+
+        allowed_filters = {
+            "valeur": float,           # suppose numérique
+            "Student_id": int,
+            "note": float,
+            "date": 'date',
+            "commentaire": str,
+            "subject": str,
+        }
 
         if filter_by not in allowed_filters:
             flash('Colonne de filtre invalide, merci de vérifier.', 'danger')
             return redirect(url_for('resultat.filter_notes'))
 
-        order = request.form.get('order', 'asc').lower()
         if order not in ['asc', 'desc']:
-            order = 'asc'  # Valeur par défaut
+            order = 'asc'
+
+        # Validation avancée du filter_value selon type attendu
+        filter_type = allowed_filters[filter_by]
+        filter_expr = None
 
         try:
-            notes_filter = filter_and_sort(Note.query, filter_by, filter_value, order)
+            query = Note.query
+
+            if filter_type == float:
+                filter_expr = getattr(Note, filter_by) == float(filter_value)
+            elif filter_type == int:
+                filter_expr = getattr(Note, filter_by) == int(filter_value)
+            elif filter_type == 'date':
+                # Gestion date flexible : supporte YYYY-MM-DD
+                filter_date = datetime.strptime(filter_value, '%Y-%m-%d')
+                filter_expr = getattr(Note, filter_by).date() == filter_date.date()
+            else:
+                # Recherche insensible à la casse, recherche partielle
+                filter_expr = getattr(Note, filter_by).ilike(f"%{filter_value}%")
+
+            # Appliquer le filtre
+            query = query.filter(filter_expr)
+
+            # Appliquer l’ordre
+            order_column = getattr(Note, filter_by)
+            if order == 'desc':
+                order_column = order_column.desc()
+            else:
+                order_column = order_column.asc()
+
+            query = query.order_by(order_column)
+
+            # Pagination simple (optionnel)
+            page = request.args.get('page', 1, type=int)
+            per_page = 15
+            pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+
+            notes_filter = pagination.items
+
+        except ValueError:
+            flash(f"Valeur invalide pour le filtre '{filter_by}'.", 'danger')
         except Exception as e:
-            flash(f"Erreur lors du filtrage des notes : {str(e)}", 'danger')
+            current_app.logger.error(f"Erreur filtrage notes : {e}")
+            flash(f"Erreur lors du filtrage des notes.", 'danger')
 
-    return render_template('grades.html', form=form, notes_filter=notes_filter, filter_value=filter_value)
+    return render_template(
+        'grades.jinja.html',
+        form=form,
+        notes_filter=notes_filter,
+        filter_value=filter_value,
+        filter_by=filter_by,
+        order=order,
+        pagination=pagination if 'pagination' in locals() else None,
+    )
 
 
 
-@resultat.route('/Notes/<int:student_id>', methods=['GET', 'POST'])
+@blueprint_resultat.route('/Notes/<int:student_id>', methods=['GET', 'POST'])
 @login_required
 def manage_grades(student_id):
     student = Student.query.get_or_404(student_id)
+
     if request.method == 'POST':
-        subject = request.form.get('subject')
-        score = request.form.get('score')
+        matiere_id = request.form.get('matiere_id', '').strip()
+        score_input = request.form.get('score', '').strip()
 
-        # Validation des données
-        if not subject or not score:
-            flash("Tous les champs sont requis", "danger")
-            return redirect(url_for('main.manage_grades', student_id=student.id))
+        # --- Validation des champs ---
+        if not matiere_id or not score_input:
+            flash("Tous les champs sont obligatoires.", "danger")
+            return redirect(url_for('resultat.manage_grades', student_id=student.id))
 
         try:
-            score = float(score)
-            if score < 0 or score > 100:
-                flash("Le score doit être compris entre 0 et 100", "danger")
-                return redirect(url_for('main.manage_grades', student_id=student.id))
+            score = float(score_input)
+            if not (0 <= score <= 100):
+                flash("Le score doit être compris entre 0 et 100.", "danger")
+                return redirect(url_for('resultat.manage_grades', student_id=student.id))
         except ValueError:
-            flash("Score invalide", "danger")
-            return redirect(url_for('main.manage_grades', student_id=student.id))
+            flash("Le score doit être un nombre valide.", "danger")
+            return redirect(url_for('resultat.manage_grades', student_id=student.id))
 
+        # --- Vérifie si la matière existe ---
+        matiere = Matiere.query.get(matiere_id)
+        if not matiere:
+            flash("La matière sélectionnée est introuvable.", "danger")
+            return redirect(url_for('resultat.manage_grades', student_id=student.id))
+
+        # --- Empêche les doublons de note ---
+        existing_note = Note.query.filter_by(student_id=student.id, matiere_id=matiere.id).first()
+        if existing_note:
+            flash("Une note pour cette matière existe déjà. Veuillez la modifier si besoin.", "warning")
+            return redirect(url_for('resultat.manage_grades', student_id=student.id))
+
+        # --- Enregistrement sécurisé ---
         try:
-            new_grades = Note(subject=subject, score=score, student_id=student.id)
-            db.session.add(new_grades)
+            note = Note(
+                student_id=student.id,
+                matiere_id=matiere.id,
+                score=score
+            )
+            db.session.add(note)
             db.session.commit()
-            flash("Note ajoutée avec succès", "success")
-        except Exception as e:
+            flash("Note ajoutée avec succès.", "success")
+        except SQLAlchemyError as e:
             db.session.rollback()
-            flash(f"Erreur lors de l'ajout de la note: {str(e)}", "danger")
-        return redirect(url_for('main.manage_grades', student_id=student.id))
+            flash(f"Erreur lors de l'ajout de la note : {str(e)}", "danger")
 
-    notes_ecole = Note.query.filter_by(student_id=student.id).all()
-    return render_template('gestion_notes.html', student=student, notes_ecole=notes_ecole)
+        return redirect(url_for('resultat.manage_grades', student_id=student.id))
+
+    # --- Récupération des notes et matières ---
+    recuperation = Note.query.filter_by(student_id=student.id).join(Matiere).order_by(Matiere.nom).all()
+
+    # Récupère les matières liées à la classe de l’élève
+    matieres = Matiere.query.filter_by(classe_id=student.classe_id).order_by(Matiere.nom).all()
+
+    return render_template(
+        'gestion_notes.html',
+        student=student,
+        notes_ecole=recuperation,
+        matieres=matieres
+    )
 
 
-# calcul de la moyenne de notes des élèves
-@resultat.route('/')
+
+@blueprint_resultat.route('/')
 @login_required
 def index_note():
-    return render_template('index_note.html')
-
-
-@resultat.route('/calculate', methods=['POST'])
-@login_required
-def calculate():
     try:
-        names = request.form.getlist('names')
-        grades = request.form.getlist('grades')
-        grades = [list(map(float, g.split(','))) for g in grades]
+        # Récupération des moyennes par étudiant
+        student_notes = db.session.query(
+            Student.id,
+            Student.first_name,
+            Student.last_name,
+            func.avg(Note.score).label('average_score'),
+            func.count(Note.id).label('note_count')
+        ).join(Note, Student.id == Note.student_id)\
+         .group_by(Student.id)\
+         .order_by(Student.last_name.asc())\
+         .all()
 
-        if not all(len(g) > 0 for g in grades):
-            flash('Toutes les notes doivent être fournies pour chaque étudiant.', 'error')
-            return redirect(url_for('main.index'))
+        # Si aucun résultat
+        if not student_notes:
+            flash("Aucune note trouvée dans la base de données.", "warning")
 
-        if not all(validate_grades(g) for g in grades):
-            flash('Les notes doivent être comprises entre 0 et 20.', 'error')
-            return redirect(url_for('main.index'))
+        return render_template('index_note.html', student_notes=student_notes)
 
-        individual_averages = [statistics.mean(g) for g in grades]
-        general_average = statistics.mean([point for sublist in grades for point in sublist])
-
-        return render_template('results_notes.html', names=names, individual_averages=individual_averages,
-                               general_average=general_average)
     except Exception as e:
-        flash(f'Erreur de calcul: {e}', 'error')
-        return redirect(url_for('main.index'))
+        db.session.rollback()
+        flash(f"Une erreur est survenue lors du chargement des résultats.:{e}", "danger")
+        return render_template('index_note.html', student_notes=[])
+
 
 
 def validate_grades(grades):
@@ -219,8 +370,8 @@ def validate_grades(grades):
 
 
 
-@resultat.route('/')
-def index_note():
+@blueprint_resultat.route('/')
+def index_note_stats():
     try:
         # Récupération des notes et matières
         notes_with_matieres = db.session.query(Note, Matiere).join(Matiere).all()
@@ -238,152 +389,103 @@ def index_note():
                            moyennes_generales=moyennes_generales, moyenne_generale=moyenne_generale)
 
 
-def calculer_moyennes_par_matiere(notes_with_matieres: list) -> dict:
-    """
-    Calculer les moyennes par matière en regroupant les notes par matière.
-    """
-    moyennes_par_matiere = {}
 
-    # Regrouper les notes par matière
-    for note, matiere in notes_with_matieres:
-        if matiere.nom not in moyennes_par_matiere:
-            moyennes_par_matiere[matiere.nom] = []
-        moyennes_par_matiere[matiere.nom].append(note.valeur)
-
-    return moyennes_par_matiere
-
-
-def calculer_moyennes_generales(moyennes_par_matiere: dict) -> dict:
-    """
-    Calculer la moyenne générale pour chaque matière.
-    """
-    moyennes_generales = {}
-
-    for matiere, liste_notes in moyennes_par_matiere.items():
-        moyennes_generales[matiere] = sum(liste_notes) / len(liste_notes) if liste_notes else 0
-
-    return moyennes_generales
-
-
-def calculer_moyenne_generale(moyennes_generales: dict) -> float:
-    """
-    Calculer la moyenne générale globale basée sur les moyennes des matières.
-    """
-    total_moyenne = sum(moyennes_generales.values())
-    total_matieres = len(moyennes_generales)
-
-    return total_moyenne / total_matieres if total_matieres else 0
-
-
-
-@resultat.route('/', methods=['GET', 'POST'])
-def results():
-    # Récupération des paramètres de requête avec gestion des valeurs par défaut
-    page = request.args.get('page', 1, type=int)
-    per_page = 15
-    sort_by = request.args.get('sort_by', 'nom')
-    order = request.args.get('order', 'asc')
-    filter_value = request.args.get('filter')
-
+@blueprint_resultat.route('/calculate', methods=['POST'])
+@login_required
+def calculate():
     try:
-        # Construction de la requête SQLAlchemy avec jointure pour calculer les moyennes
-        query = Matiere.query.join(Note, Matiere.id == Note.matiere_id).add_columns(
-            db.func.avg(Note.valeur).label('moyenne')).group_by(Matiere.id)
+        # 1. Récupération et nettoyage des données
+        names_raw = request.form.getlist('names')
+        grades_raw = request.form.getlist('grades')
 
-        # Application du filtre pour les moyennes supérieures ou inférieures à
-        if filter_value == 'sup':
-            query = query.having(db.func.avg(Note.valeur) >= 5)
-        elif filter_value == 'inf':
-            query = query.having(db.func.avg(Note.valeur) <= 5)
+        names = [n.strip() for n in names_raw if n.strip()]
+        grades = []
 
-        # Application du tri dynamique
-        query = apply_sorting(query, sort_by, order)
+        # 2. Vérification des erreurs
+        errors = []
 
-        # Récupération des résultats paginés
-        matieres = query.paginate(page=page, per_page=per_page)
+        # Nom vide ou en double
+        name_counts = Counter(names)
+        duplicates = [n for n, count in name_counts.items() if count > 1]
+        if len(names) != len(names_raw):
+            errors.append("Certains noms sont vides.")
+        if duplicates:
+            errors.append(f"Noms en double détectés : {', '.join(duplicates)}")
 
-        # Traitement des données avec Pandas
-        df = process_student_data("bureau_student.csv")
+        # Notes invalides
+        for i, g in enumerate(grades_raw):
+            try:
+                note_list = list(map(float, g.split(',')))
+                if not validate_grades(note_list):
+                    raise ValueError
+                grades.append(note_list)
+            except ValueError:
+                errors.append(f"Notes invalides pour {names_raw[i] if i < len(names_raw) else 'Étudiant inconnu'} (notes doivent être numériques entre 0 et 20).")
 
-        # Génération des graphiques avec Matplotlib
-        generate_charts(df)
+        if errors:
+            for err in errors:
+                flash(err, "danger")
+            return redirect(url_for('resultat.index_note'))
 
-    except SQLAlchemyError as e:
-        flash(f"Erreur de base de données : {str(e)}", "danger")
-        return render_template('error_performance.html', error="Problème avec la base de données")
-    except Exception as e:
-        flash(f"Erreur : {str(e)}", "danger")
-        return render_template('error_performance.html', error="Une erreur inconnue est survenue")
+        # 3. Calcul des moyennes
+        individual_averages = [round(statistics.mean(g), 2) for g in grades]
+        all_notes = [note for sublist in grades for note in sublist]
+        general_average = round(statistics.mean(all_notes), 2) if all_notes else 0.0
 
-    return render_template('performance_report.html', matieres=matieres, page=page, per_page=per_page,
-                           sort_by=sort_by, order=order, filter_value=filter_value)
+        # 4. Préparation des données pour exportation et visualisation
+        results_data = [
+            {"name": name, "grades": gr, "average": avg}
+            for name, gr, avg in zip(names, grades, individual_averages)
+        ]
 
-
-
-def apply_sorting(query, sort_by, order):
-    """Applique le tri dynamique à la requête"""
-    if sort_by == 'moyenne':
-        column = db.func.avg(Note.valeur)
-    else:
-        column = getattr(Matiere, sort_by)
-
-    # Tri croissant ou décroissant
-    return query.order_by(column.asc() if order == 'asc' else column.desc())
-
-
-def process_student_data(file_path):
-    """Charge les données des étudiants depuis un fichier CSV et calcule les moyennes"""
-    try:
-        # Chargement du fichier CSV dans un DataFrame pandas
-        df = pd.read_csv(file_path)
-
-        # Calcul de la moyenne par étudiant
-        df['moyenne'] = df.groupby('student_id')['Note'].transform('mean')
-
-        return df  # Retourne le DataFrame avec les moyennes calculées
+        return render_template(
+            '/results_notes.html',
+            results=results_data,
+            general_average=general_average
+        )
 
     except Exception as e:
-        # Gestion des erreurs, affichage d'un message via flash
-        flash(f"Erreur lors du traitement des données : {str(e)}", "danger")
-        raise  # Relève l'exception pour la gestion ultérieure
+        logger.exception("Erreur lors du calcul des moyennes.")
+        flash(f"Erreur inattendue. Veuillez réessayer ou contacter l'administrateur.:{e}", "danger")
+        return redirect(url_for('resultat.index_note'))
 
 
 
-def generate_charts(df):
-    """Génère et sauvegarde les graphiques pour l'affichage"""
+# Importation en PDF et CSV
+@blueprint_resultat.route('/export_csv', methods=['POST'])
+@login_required
+def export_csv():
     try:
-        # Génération des graphiques avec matplotlib
-        x = np.linspace(0, 10, 100)
-        y = np.sin(x)
+        results_json = request.form.get('results')
+        result = json.loads(results_json)
 
-        plt.figure(figsize=(8, 4))
-        plt.plot(x, y, color='red', linewidth=2, linestyle="--")
-        plt.title("Courbe Sinusoïdale")
-        plt.savefig('static/images/sinus_plot.png')
-        plt.close()
+        # Création d'un CSV en mémoire
+        si = io.StringIO()
+        cw = csv.writer(si)
+        cw.writerow(['Nom', 'Notes', 'Moyenne'])  # Entêtes
+        for item in result:
+            cw.writerow([
+                item.get('name', 'Inconnu'),
+                ', '.join(map(str, item.get('grades', []))),
+                item.get('average', 0)
+            ])
 
-        plt.figure(figsize=(8, 4))
-        plt.scatter(x, y, color='green', marker='o', s=50)
-        plt.title("Points Dispersés")
-        plt.savefig('static/images/scatter_plot.png')
-        plt.close()
-
-        plt.figure(figsize=(8, 4))
-        plt.hist(df['moyenne'], bins=10, color='blue', alpha=0.7)
-        plt.xlabel('Moyenne')
-        plt.ylabel('Nombre d\'étudiants')
-        plt.title("Distribution des Moyennes")
-        plt.savefig('static/images/moyenne_student.png')
-        plt.close()
+        output = si.getvalue()
+        return Response(
+            output,
+            mimetype='text/csv',
+            headers={"Content-Disposition": "attachment;filename=resultats.csv"}
+        )
 
     except Exception as e:
-        flash(f"Erreur lors de la génération des graphiques : {str(e)}", "danger")
-        raise
+        logger.exception("Erreur lors de l’export CSV")
+        flash(f"Échec de l’export CSV.:{e}", "danger")
+        return redirect(url_for('resultat.index_note'))
 
 
 
 # Affichage de notes qui seront visibles par les parents
-@resultat.route('/')
+@blueprint_resultat.route('/')
 @login_required
 def notes():
     if request.method == 'POST':
@@ -397,7 +499,7 @@ def notes():
             db.session.add(note)
             db.session.commit()
             flash('Note ajoutée avec succès', 'success')
-        return redirect(url_for('notes'))
+        return redirect(url_for('resultat.notes'))
 
     children_ids = current_user.children_ids.split(',')
     points = Note.query.filter(Note.student_id.in_(children_ids)).all()
@@ -405,7 +507,7 @@ def notes():
 
 
 # nouvelles routes
-@resultat.route('/report')
+@blueprint_resultat.route('/report')
 def report():
     if not report.Note:
         return render_template("performance_report.html", error_message="Aucune note disponible")
@@ -413,7 +515,7 @@ def report():
 
 
 
-@resultat.route('/assignments', methods=['GET', 'POST'])
+@blueprint_resultat.route('/assignments', methods=['GET', 'POST'])
 @login_required
 def assignments():
     form = AssignmentForm()
@@ -428,7 +530,8 @@ def assignments():
     return render_template('Devoirs.html', form=form, assignment_ecole=assignment_ecole)
 
 
-@resultat.route('/assignments/edit/<int:assignment_id>', methods=['GET', 'POST'])
+
+@blueprint_resultat.route('/assignments/edit/<int:assignment_id>', methods=['GET', 'POST'])
 @login_required
 def edit_assignment(assignment_id):
     assignment = Assignment.query.get_or_404(assignment_id)
@@ -441,7 +544,7 @@ def edit_assignment(assignment_id):
         assignment.due_date = form.due_date.data
         db.session.commit()
         flash('Assignment updated successfully!', 'success')
-        return redirect(url_for('assignments'))
+        return redirect(url_for('resultat.performance'))
     elif request.method == 'GET':
         form.title.data = assignment.title
         form.description.data = assignment.description
@@ -450,7 +553,7 @@ def edit_assignment(assignment_id):
 
 
 
-@resultat.route('/assignments/delete/<int:assignment_id>', methods=['POST'])
+@blueprint_resultat.route('/assignments/delete/<int:assignment_id>', methods=['POST'])
 @login_required
 def delete_assignment(assignment_id):
     assignment = Assignment.query.get_or_404(assignment_id)
@@ -459,65 +562,17 @@ def delete_assignment(assignment_id):
     db.session.delete(assignment)
     db.session.commit()
     flash('Assignment deleted successfully!', 'success')
-    return redirect(url_for('assignments'))
+    return redirect(url_for('resultat.assignments'))
 
 
 
-@resultat.errorhandler(HTTPException)
+@blueprint_resultat.errorhandler(HTTPException)
 def handle_exception(e):
-    return render_template('error_assignment.html', error=e), e.code
-
-
-
-@resultat.route('/performance', methods=['GET'])
-@login_required
-def performance():
-    try:
-        # Récupération des identifiants des enfants liés à l'utilisateur actuel
-        children_ids = current_user.children_ids.split(',')
-
-        # Récupération des notes des étudiants en fonction des enfants de l'utilisateur
-        notes_student = Note.query.filter(Note.student_id.in_(children_ids)).all()
-        students = Student.query.filter(Student.id.in_(children_ids)).all()
-
-        # Calcul des données de performance
-        performance_data = {
-            "students": [
-                {
-                    "student_id": student.id,
-                    "name": student.name,
-                    "avg_grade": sum(note.score for note in notes_student if note.student_id == student.id) / len([note for note in notes_student if note.student_id == student.id]),
-                    "attendance_rate": student.attendance_rate,
-                    "completed_assignments": student.completed_assignments,
-                    "total_assignments": student.total_assignments
-                }
-                for student in students
-            ]
-        }
-
-        return jsonify(performance_data)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-
-@resultat.route('/student/<int:student_id>', methods=['GET'])
-@login_required
-def student_performance(student_id):
-    student = Student.query.get_or_404(student_id)
-    notes_performance = Note.query.filter_by(student_id=student_id).all()
-    attendances = Attendance.query.filter_by(student_id=student_id).all()
-    assignments_performance = Assignment.query.filter_by(student_id=student_id).all()
-    return render_template('student_performance.html', student=student,
-                           notes_performance=notes_performance, attendances=attendances,
-                           assignments_performance=assignments_performance)
-
-
-
-@resultat.errorhandler(HTTPException)
-def handle_exception(e):
-    return render_template('error_performance.html', error=e), e.code
+    if request.path.startswith('/assignment'):
+        template = 'error_assignment.html'
+    else:
+        template = 'error_performance.html'
+    return render_template(template, error=e), e.code
 
 
 
@@ -597,9 +652,7 @@ def calcul_moyennes_par_classe(classe_id):
 
 
 
-resultat = Blueprint('resultat', __name__)
-
-@resultat.route('/moyennes/<int:classe_id>')
+@blueprint_resultat.route('/moyennes/<int:classe_id>')
 def afficher_moyennes(classe_id):
     resultats = calcul_moyennes_par_classe(classe_id)
     if resultats:

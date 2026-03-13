@@ -2,22 +2,18 @@ import uuid
 import jwt
 import pytz
 from datetime import datetime, timedelta, timezone
-from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
-from sqlalchemy import Text
 # from sqlalchemy.orm import sessionmaker, relationship
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.Argon import PasswordHasher
-
-
-db = SQLAlchemy()
+from app.extensions import db
+from flask import current_app
 
 ph = PasswordHasher
 
 
 class TokenManager:
     SECRET_KEY = 'adainkapangala1998'
-
 
 
 
@@ -29,7 +25,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     password_hash = db.Column(db.String(60), nullable=False)
-    role = db.Column(db.String(10), nullable=False)
+    role = db.Column(db.String(20), nullable=False)
     query = db.Column(db.String(255))
     last_name = db.Column(db.String(50), nullable=False)
     admin = db.Column(db.Boolean, default=False)  # Indique si un utilisateur est administrateur
@@ -114,17 +110,21 @@ class Visitor(db.Model):
 
 class Note(db.Model):
     __tablename__ = 'note'
+
     id = db.Column(db.Integer, primary_key=True)
-    valeur = db.Column(db.Float)
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
-    matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'))
-    note = db.Column(db.Float, nullable=False)
+    valeur = db.Column(db.Float, nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    matiere_id = db.Column(db.Integer, db.ForeignKey('matieres.id'), nullable=False)
     date = db.Column(db.DateTime, default=lambda: datetime.now(pytz.utc))
-    commentaire = db.Column(Text)
+    commentaire = db.Column(db.Text)
+
+    # Relations
     student = db.relationship('Student', back_populates='notes')
+    matiere = db.relationship('Matiere', back_populates='notes')
 
     def __repr__(self):
-        return f'<Note {self.id} {self.note}>'
+        return f'<Note {self.id} - Valeur: {self.valeur}>'
+
 
 
 
@@ -132,12 +132,20 @@ class Attendance(db.Model):
     __tablename__ = 'attendance'
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.now(pytz.utc))
-    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
+    date = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(pytz.utc))
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False, index=True)
     presence = db.Column(db.Boolean, nullable=False)
 
-    # Définir correctement la relation avec le modèle Student
     student = db.relationship('Student', back_populates='attendances')
+
+    __table_args__ = (
+        db.UniqueConstraint('student_id', 'date', name='unique_student_date'),
+    )
+
+    def __init__(self, student_id, presence, date=None):
+        self.student_id = student_id
+        self.presence = presence
+        self.date = date if date else datetime.now(pytz.utc)
 
 
 # Assure-toi que le modèle Student est correctement défini comme suit :
@@ -152,30 +160,28 @@ class Student(db.Model):
     registration_date = db.Column(db.DateTime, default=lambda: datetime.now(pytz.utc), nullable=False)
     fees_paid = db.Column(db.Float, default=0.0)
     numero_matricule = db.Column(db.String(20), nullable=False, unique=True)
-    class_id = db.Column(db.Integer, db.ForeignKey("classe.id"), nullable=False)  # ForeignKey to Classe
+    class_id = db.Column(db.Integer, db.ForeignKey("classe.id"), nullable=False)
     parent_id = db.Column(db.Integer, db.ForeignKey('parent.id'), nullable=True)
-
-    # Relation avec Parent
-    parent = db.relationship("Parent", back_populates="students")
-    notes = db.relationship('Note', back_populates='student', lazy=True, cascade="all, delete-orphan")
-    absences = db.relationship('Absence', back_populates='student', lazy=True, cascade="all, delete-orphan")
-    attendance = db.relationship('Attendance', back_populates='student', lazy=True, cascade="all, delete-orphan")
-    assignments = db.relationship(
-        'Assignment',
-        secondary='students_assignments',
-        backref=db.backref('students', lazy='dynamic'),
-        lazy='dynamic'
-    )
-
     debt = db.Column(db.Float, default=0.0)
     religion = db.Column(db.String(20), nullable=True)
 
-    # Relation avec Classe (un seul classe par étudiant)
-    classe = db.relationship('Classe', back_populates='students')
+    # Relations
+    parent = db.relationship("Parent", back_populates="students")
+    notes = db.relationship('Note', back_populates='student', lazy=True, cascade="all, delete-orphan")
+    absences = db.relationship('Absence', back_populates='student', lazy=True, cascade="all, delete-orphan")
+    attendances = db.relationship('Attendance', back_populates='student', lazy=True, cascade="all, delete-orphan")
 
-    # Relations many-to-many avec Sections et Options
-    sections = db.relationship('Sections', secondary='students_sections', backref='students')
-    options = db.relationship('Option', secondary='students_options', backref='students')
+    # 🔄 Nouvelle relation avec StudentAssignment
+    student_assignments = db.relationship("StudentAssignment", back_populates="student", cascade="all, delete-orphan")
+
+    # Classe (Many-to-One)
+    classe = db.relationship('Classe', back_populates='students')
+    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'))
+    section = db.relationship('Sections', back_populates='students')
+
+    # Relations Many-to-Many avec Sections et Options
+    # sections = db.relationship('Sections', secondary='students_sections', backref='students')
+    options = db.relationship('Option', secondary='students_options', back_populates='students')
 
     def __init__(self, last_name, first_name, date_naissance, numero_matricule, class_id, parent_id, fees_paid=0.0, debt=0.0, religion=None):
         self.last_name = last_name
@@ -192,47 +198,38 @@ class Student(db.Model):
     def __repr__(self):
         return f'<Student {self.first_name} {self.last_name}>'
 
+    @property
+    def name(self):
+        return f"{self.first_name} {self.last_name}"
 
-@property
-def name(self):
-    return f"{self.first_name} {self.last_name}"
-
-
-@property
-def avg_grade(self):
-    try:
+    @property
+    def avg_grade(self) -> float:
         notes = self.notes or []
-        if not notes:
-            return 0
-        return round(sum(note.note for note in notes) / len(notes), 2)
-    except AttributeError:
-        return 0
+        if isinstance(notes, list) and notes:
+            return round(sum(note.note for note in notes) / len(notes), 2)
+        return 0.0
 
+    @property
+    def attendance_rate(self) -> float:
+        absences = self.absences or []
+        presences = self.attendances or []
+        total_days = len(absences) + len(presences)
+        return round((len(presences) / total_days) * 100, 2) if total_days > 0 else 0
 
-@property
-def attendance_rate(self):
-    total_absences = len(self.absences) if self.absences else 0
-    total_presences = len(self.attendance) if self.attendance else 0
-    total_days = total_absences + total_presences
-    return round((total_presences / total_days) * 100, 2) if total_days > 0 else 0
-
-@property
-def absences_count(self):
-    try:
+    @property
+    def absences_count(self):
         return len(self.absences or [])
-    except AttributeError:
-        return 0
+
+    @property
+    def completed_assignments(self) -> int:
+        sas = self.student_assignments or []
+        return sum(1 for sa in sas if sa.completed)
 
 
-@property
-def completed_assignments():
-    # à remplacer si tu as une relation assignments
-    return 0
-
-
-@property
-def total_assignments():
-    return 0
+    @property
+    def total_assignments(self) -> int:
+        sas = self.student_assignments or []
+        return len(sas)
 
 
 class Classe(db.Model):
@@ -240,7 +237,7 @@ class Classe(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-
+    matieres = db.relationship('Matiere', back_populates='classe', lazy='dynamic', cascade="all, delete-orphan")
     # Relation avec Student
     students = db.relationship('Student', back_populates='classe')
 
@@ -255,7 +252,8 @@ class Option(db.Model):
     nom = db.Column(db.String(100), nullable=False)
 
     # Relation many-to-many avec Student via la table de liaison students_options
-    students = db.relationship('Student', secondary='students_options', backref='options')
+    students = db.relationship('Student', secondary='students_options', back_populates='options')
+    matieres = db.relationship('Matiere', back_populates='option', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Option {self.nom}>'
@@ -266,8 +264,14 @@ class Sections(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    matieres = db.relationship('Matiere', back_populates='section', lazy='dynamic', cascade="all, delete-orphan")
+    students = db.relationship('Student', back_populates='section')
+
     # Relation many-to-many avec Student via la table de liaison students_sections
-    students = db.relationship('Student', secondary='students_sections', backref='sections')
+    # students = db.relationship('Student', secondary='students_sections', backref='sections')
+
+    # students = db.relationship('Student', secondary='students_sections', backref='sections')
+
 
     def __repr__(self):
         return f'<Section {self.name}>'
@@ -296,21 +300,25 @@ class Matiere(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String(100), nullable=False, unique=True)
+
     teacher_id = db.Column(db.Integer, db.ForeignKey('teachers.id'), nullable=False)
-    classe_id = db.Column(db.Integer, db.ForeignKey('classes.id'), nullable=False)
+    classe_id = db.Column(db.Integer, db.ForeignKey('classe.id'), nullable=False)  # Assurez-vous que __tablename__ = 'classe'
     section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
-    option_id = db.Column(db.Integer, db.ForeignKey('options.id'), nullable=True)  # Optionnel
+    option_id = db.Column(db.Integer, db.ForeignKey('options.id'), nullable=True)
 
-    teacher = db.relationship('Teacher', backref=db.backref('matieres', lazy='dynamic'))
-    classe = db.relationship('Classe', backref=db.backref('matieres', lazy='dynamic'))
-    section = db.relationship('Sections', backref=db.backref('matieres', lazy='dynamic'))
-    option = db.relationship('Option', backref=db.backref('matieres', lazy='dynamic'))
+    # Relations explicites
+    teacher = db.relationship('Teacher', back_populates='matieres')
+    classe = db.relationship('Classe', back_populates='matieres')
+    section = db.relationship('Sections', back_populates='matieres')
+    option = db.relationship('Option', back_populates='matieres')
 
-    notes = db.relationship('Note', backref='matiere', lazy='dynamic', cascade="all, delete-orphan")
-    assignments = db.relationship('Assignment', backref='matiere', lazy='dynamic', cascade="all, delete-orphan")
+    notes = db.relationship('Note', back_populates='matiere', lazy='dynamic', cascade="all, delete-orphan")
+    assignments = db.relationship('Assignment', back_populates='matiere', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f"<Matiere {self.nom} - Prof: {self.teacher.nom} - Classe: {self.classe.nom}>"
+        prof = self.teacher.nom if self.teacher else "Inconnu"
+        classe_nom = self.classe.nom if self.classe else "Inconnue"
+        return f"<Matiere {self.nom} - Prof: {prof} - Classe: {classe_nom}>"
 
 
 
@@ -347,6 +355,19 @@ class Payment(db.Model):
     def __repr__(self):
         return (f'<Payment {self.id} {self.montant}{self.date}{self.timestamp}{self.frais}'
                 f'{self.frais_id}{self.student_id}{self.mois}{self.annee}{self.statut}{self.student} >')
+
+
+
+class Installment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    payment_id = db.Column(db.Integer, db.ForeignKey('payment.id'), nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    paid = db.Column(db.Boolean, default=False)
+    date_paid = db.Column(db.Date)
+    payment_method = db.Column(db.String(50))  # Ex: "Espèces", "Mobile Money", "Banque", etc
+
+    payment = db.relationship('Payment', backref=db.backref('installments', lazy=True))
 
 
 
@@ -411,7 +432,8 @@ class Message(db.Model):
 class ForumPost(db.Model):
     __tablename__ = 'ForumPost'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref='forum_posts')  # 👈 important pour afficher l’auteur
     title = db.Column(db.String(140))
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.now(pytz.utc))
@@ -419,6 +441,30 @@ class ForumPost(db.Model):
     def __repr__(self):
         return f'<ForumPost {self.id}{self.user_id}{self.title}{self.body}{self.timestamp} >'
 
+
+
+class Reaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    reaction_type = db.Column(db.String(20), nullable=False)  # like, love, haha, wow, sad, angry
+    timestamp = db.Column(db.DateTime, default=datetime.now(pytz.utc))
+    user = db.relationship('User', backref='reactions')
+    post = db.relationship('Post', backref='reactions')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'post_id', name='unique_user_post_reaction'),
+    )
+
+
+class Post(db.Model):
+    __tablename__ = 'Post'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('User_id'))
+    content = db.Column(db.String(200), nullable=False)
+
+    def __repr__(self):
+        return f'<Post {self.id}{self.user_id}{self.content} >'
 
 # ============================
 # Assignment Model
@@ -428,31 +474,37 @@ class Assignment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     teacher_id = db.Column(db.Integer, db.ForeignKey('user.id'))  # Référence à l'enseignant
-    title = db.Column(db.String(140))
-    description = db.Column(db.String(140))
-    due_date = db.Column(db.DateTime(timezone=True), default=datetime.now(pytz.utc))
+    title = db.Column(db.String(140), nullable=False)
+    description = db.Column(db.String(140), nullable=True)
+    due_date = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(pytz.utc), nullable=False)
 
-    # Relation Many-to-Many avec Student
-    students = db.relationship(
-        'Student',
-        secondary='students_assignments',  # Table de jonction
-        backref=db.backref('assignments', lazy='dynamic')
-    )
+    # Relation avec les liaisons élèves-devoirs
+    student_assignments = db.relationship("StudentAssignment", back_populates="assignment", cascade="all, delete-orphan")
 
     def __repr__(self):
-        return f'<Assignment {self.id} {self.title} {self.teacher_id} {self.due_date.isoformat()}>'
-
+        return f'<Assignment {self.id} "{self.title}" by Teacher {self.teacher_id}>'
 
 # ============================
 # Table de jonction pour Many-to-Many
+# Table de jonction enrichie
 # ============================
-students_assignments = db.Table(
-    'students_assignments',
-    db.Column('student_id', db.Integer, db.ForeignKey('student.id'), primary_key=True),
-    db.Column('assignment_id', db.Integer, db.ForeignKey('assignment.id'), primary_key=True),
-    db.Column('completed', db.Boolean, default=False),  # Statut de l'assignement
-    db.Column('submission_date', db.DateTime, nullable=True)  # Date de soumission
-)
+class StudentAssignment(db.Model):
+    __tablename__ = 'students_assignments'
+
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignment.id'), primary_key=True)
+    completed = db.Column(db.Boolean, default=False)
+    submission_date = db.Column(db.DateTime, nullable=True)
+
+    # Relations explicites pour navigation
+    student = db.relationship("Student", back_populates="student_assignments")
+    assignment = db.relationship("Assignment", back_populates="student_assignments")
+
+    def __repr__(self):
+        return (f"<StudentAssignment student_id={self.student_id} "
+                f"assignment_id={self.assignment_id} completed={self.completed} "
+                f"submission_date={self.submission_date}>")
+
 
 
 class Notification(db.Model):
@@ -485,20 +537,10 @@ class Teacher(db.Model):
     name = db.Column(db.String(100), nullable=False)
     subject = db.Column(db.String(100), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(pytz.utc))
+    matieres = db.relationship('Matiere', back_populates='teacher', lazy='dynamic', cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Teacher{self.id}{self.name}{self.subject} >'
-
-
-
-class Post(db.Model):
-    __tablename__ = 'Post'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('User_id'))
-    content = db.Column(db.String(200), nullable=False)
-
-    def __repr__(self):
-        return f'<Post {self.id}{self.user_id}{self.content} >'
 
 
 
@@ -526,35 +568,37 @@ class Parent(UserMixin, db.Model):
     __tablename__ = 'parent'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), unique=True, nullable=False)
-    password_hash = db.Column(db.String(150), nullable=False)
+    name = db.Column(db.String(150), nullable=False)  # Retire unique si pas nécessaire
     email = db.Column(db.String(120), unique=True, nullable=False)
+    password_hash = db.Column(db.String(150), nullable=False)
     is_active = db.Column(db.Boolean, default=False)
     confirmation_token = db.Column(db.String(36), nullable=True)
     token_expiration = db.Column(db.DateTime, nullable=True)
 
-    # Relationship to students
     students = db.relationship("Student", back_populates="parent")
 
-    # Method to set confirmation token and expiration
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
     def set_confirmation_token(self):
         self.confirmation_token = str(uuid.uuid4())
         self.token_expiration = datetime.now(pytz.utc) + timedelta(hours=24)
 
-    # Static method to generate a confirmation token
     @staticmethod
     def generate_confirmation_token(email):
         unique_id = str(uuid.uuid4())
         expiration = datetime.now(pytz.utc) + timedelta(days=1)
         payload = {'confirm': email, 'id': unique_id, 'exp': expiration}
-        token = jwt.encode(payload, TokenManager.SECRET_KEY, algorithm='HS256')
+        token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
         return token
 
-    # Static method to verify the confirmation token
     @staticmethod
     def verify_confirmation_token(token):
         try:
-            payload = jwt.decode(token, TokenManager.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
             return payload['confirm'], payload['id']
         except jwt.ExpiredSignatureError:
             return None, None
@@ -564,24 +608,9 @@ class Parent(UserMixin, db.Model):
     def __repr__(self):
         return f'<Parent {self.name} {self.email}>'
 
-
-# Example of querying the Parents model
+# Example of querying the Parent's model
 # Assuming you're trying to get all parents in a route or function
 # parents = Parents.query.all()
-
-class User_Parent(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(100), unique=True)
-    password_hash = db.Column(db.String(100))
-    role = db.Column(db.String(10))  # 'parent' or 'eleve'
-
-    def set_password(self, password):
-        self.password.hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-
 
 class Schedule(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -608,3 +637,54 @@ class Exam(db.Model):
 
 def create_tables():
     db.create_all()
+
+
+
+
+    """class User_Parent(UserMixin, db.Model):
+    __tablename__ = 'user_parents'
+
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password_hash = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100), nullable=True)
+    child_name_1 = db.Column(db.String(100), nullable=True)
+    child_name_2 = db.Column(db.String(100), nullable=True)
+    role = db.Column(db.String(10), default='parent')
+
+    confirmation_token = db.Column(db.String(128), nullable=True)
+    confirmed_at = db.Column(db.DateTime, nullable=True)
+
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def set_confirmation_token(self, expires_in=3600):
+        #Génère un token JWT pour confirmation d'email.
+        payload = {
+            'confirm_email': self.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=expires_in)
+        }
+        token = jwt.encode(payload, current_app.config['SECRET_KEY'], algorithm='HS256')
+        self.confirmation_token = token
+        return token
+
+    def confirm(self, token):
+        #Valide le token de confirmation.
+        try:
+            payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+            if payload.get('confirm_email') != self.id:
+                return False
+        except jwt.ExpiredSignatureError:
+            return False
+        except jwt.InvalidTokenError:
+            return False
+
+        self.confirmed_at = datetime.datetime.utcnow()
+        self.confirmation_token = None
+        return True
+
+    def __repr__(self):
+        return f"<Parent {self.email}>"""

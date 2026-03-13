@@ -1,8 +1,8 @@
-const CACHE_NAME = 'gestion-scolaire-v2';
+const CACHE_NAME = 'gestion-scolaire-v10';
 
 const urlsToCache = [
   '/',
-  '/offline', // Nouvelle page hors ligne
+  '/static/offline.html', // version générée par Flask via /generate-offline
   '/static/css/student_list.css',
   '/static/css/Student_details.css',
   '/static/dashoard_styles.css',
@@ -15,10 +15,10 @@ const urlsToCache = [
 
 // Installation du Service Worker
 self.addEventListener('install', event => {
-  console.log('[ServiceWorker] Install');
+  console.log('[ServiceWorker] 📥 Installation');
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      console.log('[ServiceWorker] Mise en cache des ressources');
+      console.log('[ServiceWorker] 📦 Mise en cache initiale');
       return cache.addAll(urlsToCache);
     })
   );
@@ -27,13 +27,13 @@ self.addEventListener('install', event => {
 
 // Activation du Service Worker
 self.addEventListener('activate', event => {
-  console.log('[ServiceWorker] Activate');
+  console.log('[ServiceWorker] ⚙️ Activation');
   event.waitUntil(
     caches.keys().then(keys =>
       Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
-            console.log('[ServiceWorker] Suppression du cache ancien:', key);
+            console.log(`[ServiceWorker] 🧹 Suppression ancien cache : ${key}`);
             return caches.delete(key);
           }
         })
@@ -53,19 +53,45 @@ self.addEventListener('fetch', event => {
         return response;
       }
 
-      return fetch(event.request).then(fetchResponse => {
-        return caches.open(CACHE_NAME).then(cache => {
-          if (event.request.url.startsWith(self.location.origin)) {
-            cache.put(event.request, fetchResponse.clone());
+      return fetch(event.request)
+        .then(fetchResponse => {
+          // Vérifie si la réponse est valide
+          if (!fetchResponse || fetchResponse.status !== 200 || fetchResponse.type !== 'basic') {
+            return fetchResponse;
           }
+
+          // Clone la réponse pour la mettre en cache
+          const responseClone = fetchResponse.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            if (event.request.url.startsWith(self.location.origin)) {
+              cache.put(event.request, responseClone);
+            }
+          });
+
           return fetchResponse;
+        })
+        .catch(() => {
+          // En cas de panne réseau ou navigation
+          if (event.request.mode === 'navigate') {
+            return caches.match('/static/offline.html');
+          }
+
+          // Autres ressources (image, css, etc.)
+          return new Response('Ressource indisponible hors ligne.', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({
+              'Content-Type': 'text/plain'
+            })
+          });
         });
-      });
-    }).catch(() => {
-      // Si c’est une navigation vers une page HTML, on montre la page hors ligne
-      if (event.request.mode === 'navigate') {
-        return caches.match('/offline');
-      }
     })
   );
+});
+
+// Permet l'activation immédiate d'un nouveau SW
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

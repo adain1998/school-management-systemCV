@@ -1,5 +1,5 @@
 
-from flask import render_template, redirect, url_for, flash, Blueprint, request, jsonify
+from flask import render_template, redirect, url_for, flash, Blueprint, request, jsonify, current_app
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
 import secrets
@@ -7,139 +7,128 @@ import hashlib
 import pytz
 from datetime import datetime, timedelta,timezone
 from werkzeug.security import generate_password_hash
-from app.__init__ import limiter
-from app.forms import SignupForm, ParentLoginForm, LoginForm, ResetPasswordRequestForm, RegistrationForm
-from app.models import db, Parent, User, Visitor, User_Parent
+from app.extensions import limiter
+from app.forms import (ParentRegistrationForm,
+                       ResetPasswordRequestForm, ParentLoginForm, ResendConfirmationForm, ResetPasswordForm)
+from app.models import db, Parent, User, Visitor, Student
 from flask_mail import Message
 from app.admin_decorateur import admin_required
 from app import mail
+import logging
+logger = logging.getLogger(__name__)
 
 
 
-auth = Blueprint('auth', __name__)
+blueprint_auth = Blueprint('auth', __name__)
 
 
-@auth.route('/signup', methods=['GET', 'POST'])
+
+@blueprint_auth.route('/signup/parent', methods=['GET', 'POST'])
 @limiter.limit('5 per minute')
-def signup():
-    form = SignupForm()
+def signup_parent():
+    form = ParentRegistrationForm()
+
     if form.validate_on_submit():
         try:
-            existing_parent = Parent.query.filter_by(email=form.email.data).first()
-            if existing_parent:
-                flash('Cet e-mail est déjà utilisé.', 'danger')
-                return redirect(url_for('auth.signup'))
-
-            # Création de l'utilisateur avec les bons arguments
+            # Création du parent
             new_parent = Parent()
-            new_parent.email = form.email.data
+            new_parent.name = form.name.data.strip()
+            new_parent.email = form.email.data.strip().lower()
             new_parent.set_password(form.password.data)
+            new_parent.set_confirmation_token()
 
             db.session.add(new_parent)
+            db.session.flush()  # obtenir l'ID pour la relation avec les enfants
+
+            # Liste structurée des enfants à ajouter
+            children_data = [
+                {
+                    'first_name': form.child1_first_name.data,
+                    'last_name': form.child1_last_name.data,
+                    'birth_date': form.child1_birth_date.data,
+                    'class_id': form.child1_class_id.data,
+                    'religion': form.child1_religion.data,
+                },
+                {
+                    'first_name': form.child2_first_name.data,
+                    'last_name': form.child2_last_name.data,
+                    'birth_date': form.child2_birth_date.data,
+                    'class_id': form.child2_class_id.data,
+                    'religion': form.child2_religion.data,
+                }
+            ]
+
+            for child in children_data:
+                if child['first_name'] and child['last_name']:
+                    student = Student(
+                        first_name=child['first_name'].strip(),
+                        last_name=child['last_name'].strip(),
+                        date_naissance=child['date_naissance'],
+                        class_id=child['class_id'],
+                        numero_matricule=['numero_matricule'],
+                        religion=child['religion'].strip() if child['religion'] else None,
+                        parent_id=new_parent.id  # associer via ID
+                    )
+                    db.session.add(student)
+
             db.session.commit()
 
             send_confirmation_email(new_parent)
-
-            flash('Un e-mail de confirmation a été envoyé.', 'success')
+            flash(f"Bienvenue {new_parent.name} ! Un e-mail de confirmation a été envoyé.", "success")
             return redirect(url_for('auth.login_parent'))
+
+        except SQLAlchemyError as db_err:
+            db.session.rollback()
+            logger.error(f"Erreur base de données lors de l'inscription parent : {db_err}")
+            flash("Une erreur est survenue lors de l'inscription. Merci de réessayer plus tard.", 'danger')
+
         except Exception as e:
             db.session.rollback()
-            flash(f"Une erreur est survenue lors de l'inscription: {e}", 'danger')
+            logger.error(f"Erreur inattendue lors de l'inscription parent : {e}")
+            flash("Une erreur inattendue est survenue. Merci de réessayer.", 'danger')
 
-    return render_template('signup.html', form=form)
+    return render_template('signup_parent.html', form=form)
 
 
 
-@auth.route('/login_parent', methods=['GET', 'POST'])
+@blueprint_auth.route('/login_parent', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 def login_parent():
     if current_user.is_authenticated:
         return redirect(url_for('tableau.dashboard'))
+
     form = ParentLoginForm()
+
     if form.validate_on_submit():
-        parent_from_db = Parent.query.filter_by(email=form.email.data).first()
-        if parent_from_db and parent_from_db.check_password(form.password.data):
-            login_user(parent_from_db, remember=form.remember.data)
-            next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('tableau.dashboard'))
-        flash('Échec de la connexion.', 'danger')
+        try:
+            user = Parent.query.filter(
+                db.func.lower(Parent.email) == form.email.data.lower()
+            ).first()
+
+            if user:
+                if user.check_password(form.password.data):
+                    if not user.is_active:
+                        flash("Votre compte est désactivé. Veuillez contacter l'administration.", "danger")
+                    else:
+                        login_user(user, remember=form.remember.data)
+                        flash(f"Bienvenue {user.name} !", "success")
+                        next_page = request.args.get('next')
+                        return redirect(next_page) if next_page else redirect(url_for('tableau.dashboard'))
+                else:
+                    flash("Mot de passe incorrect.", "danger")
+            else:
+                flash("Aucun compte parent trouvé avec cet email.", "warning")
+
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            flash("Une erreur est survenue. Veuillez réessayer plus tard.", "danger")
+            print(f"[Erreur DB] login_parent: {e}")
+
     return render_template('Login_parents.html', form=form)
 
 
 
-@auth.route('/reset_password', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
-def reset_password_request():
-    form = ResetPasswordRequestForm()
-    if form.validate_on_submit():
-        user_laod = User.query.filter_by(email=form.email.data).first()
-        if user_laod:
-            token = secrets.token_urlsafe(32)
-            hashed_token = hashlib.sha3_256(token.encode('utf-8')).hexdigest()
-            user_laod.reset_token = hashed_token
-            user_laod.reset_token_expires = datetime.now(pytz.utc) + timedelta(hours=1)
-            db.session.commit()
-            send_email(user_laod.email, token)
-            flash('Un email a été envoyé.', 'info')
-        else:
-            flash('Aucun compte trouvé.', 'warning')
-        return redirect(url_for('auth.login'))
-    return render_template('reset_password.html', form=form)
-
-
-
-@auth.route('/register', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
-def register_parent():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    form = RegistrationForm()
-
-    if form.validate_on_submit():
-        try:
-            utilisateur = User_Parent()
-            utilisateur.email = form.email.data
-            utilisateur.set_password(form.password.data)
-
-            db.session.add(utilisateur)
-            db.session.commit()
-
-            flash('Compte créé avec succès!', 'success')
-            return redirect(url_for('auth.login'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f"Une erreur est survenue lors de l'inscription: {e}", 'danger')
-
-    return render_template('register.html', form=form)
-
-
-
-@auth.route('/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
-def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        try:
-            user_from_db = User.query.filter_by(email=form.email.data).first()
-            if user_from_db:
-                if user_from_db.check_password(form.password.data):
-                    login_user(user_from_db, remember=form.remember.data)
-                    next_page = request.args.get('next')
-                    return redirect(next_page) if next_page else redirect(url_for('home'))
-                else:
-                    flash('Échec de la connexion. Veuillez vérifier votre email et mot de passe.', 'danger')
-            else:
-                flash('Échec de la connexion. Veuillez vérifier votre email et mot de passe.', 'danger')
-        except SQLAlchemyError as e:
-            flash(f'Erreur de base de données : {e}', 'danger')
-    return render_template('login.html', title='Se connecter', form=form)
-
-
-
-@auth.route('/admin/users')
+@blueprint_auth.route('/admin/users')
 @login_required
 @admin_required
 def manage_users():
@@ -148,16 +137,16 @@ def manage_users():
 
 
 
-@auth.route('/admin/visitors', methods=['GET'])
+@blueprint_auth.route('/admin/visitors', methods=['GET'])
 @login_required
 @admin_required
 def manage_visitors():
     visitors = Visitor.query.all()
-    return render_template('admin/manage_visitors.html', visitors=visitors)
+    return render_template('admin/manager_visitors.html', visitors=visitors)
 
 
 
-@auth.route('/users')
+@blueprint_auth.route('/users')
 @login_required
 @admin_required  # Ajout pour sécuriser cette route
 def user_list():
@@ -166,7 +155,7 @@ def user_list():
 
 
 
-@auth.route('/admin/user/add', methods=['GET', 'POST'])
+@blueprint_auth.route('/admin/user/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def add_user():
@@ -216,7 +205,7 @@ def add_user():
 
 
 
-@auth.route('/admin/users/json')
+@blueprint_auth.route('/admin/users/json')
 @login_required
 @admin_required
 def get_users_json():
@@ -227,7 +216,7 @@ def get_users_json():
 
 
 
-@auth.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
+@blueprint_auth.route('/admin/user/<int:user_id>/edit', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
 @admin_required
 def edit_user(user_id):
@@ -260,37 +249,185 @@ def edit_user(user_id):
 
 
 
-def send_email(user_email, token):
-    msg = Message('Réinitialisation de mot de passe', sender='your_email@example.com', recipients=[user_email])
-    link = url_for('auth.reset_with_token', token=token, _external=True)
-    msg.body = f"Cliquez ici pour réinitialiser votre mot de passe: {link}"
-    mail.send(msg)
+@blueprint_auth.route('/reset_password', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
+def reset_password_request():
+    form = ResetPasswordRequestForm()
+
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+
+        # Génération du token même si l'utilisateur n'existe pas (prévention leak)
+        token = secrets.token_urlsafe(32)
+        hashed_token = hashlib.sha3_256(token.encode('utf-8')).hexdigest()
+
+        if user:
+            try:
+                user.reset_token = hashed_token
+                user.reset_token_expires = datetime.now(pytz.utc) + timedelta(hours=1)
+                db.session.commit()
+                send_password_reset_email(user.email, token)
+                logger.info(f"Email de réinitialisation envoyé à {user.email}")
+            except Exception as e:
+                logger.exception(f"Erreur lors de la mise à jour du token de réinitialisation:{e}")
+                flash("Une erreur est survenue. Veuillez réessayer.", "danger")
+                return redirect(url_for("auth.reset_password_request"))
+
+        # Toujours afficher ce message pour des raisons de sécurité
+        flash('Si un compte existe avec cet e-mail, un lien de réinitialisation a été envoyé.', 'info')
+        return redirect(url_for('auth.login_parent'))
+
+    return render_template('reset_password.html', form=form)
+
+
+
+def send_password_reset_email(user_email, token):
+    """Envoie un e-mail de réinitialisation de mot de passe à l'utilisateur."""
+    if not user_email or not token:
+        logger.error("Email ou token manquant pour l'envoi de l'e-mail de réinitialisation.")
+        return False
+
+    try:
+        reset_link = url_for('auth.reset_with_token', token=token, _external=True)
+        body = f"Cliquez ici pour réinitialiser votre mot de passe : {reset_link}"
+
+        msg = Message(
+            subject='Réinitialisation de mot de passe',
+            sender='noreply@example.com',  # utilise MAIL_DEFAULT_SENDER de préférence
+            recipients=[user_email],
+            body=body
+        )
+        mail.send(msg)
+        logger.info(f"Email de réinitialisation envoyé à {user_email}")
+        return True
+
+    except Exception as e:
+        logger.exception(f"Erreur lors de l'envoi de l'e-mail : {e}")
+        return False
+
+
+
+@blueprint_auth.route('/reset_password/<token>', methods=['GET', 'POST'])
+def reset_with_token(token):
+    # Hash le token reçu pour comparer avec celui stocké en base
+    hashed_token = hashlib.sha3_256(token.encode('utf-8')).hexdigest()
+
+    # Cherche utilisateur avec token valide et pas expiré
+    user = User.query.filter_by(reset_token=hashed_token).first()
+
+    if not user or user.reset_token_expires < datetime.now(pytz.utc):
+        flash("Le lien de réinitialisation est invalide ou expiré.", "danger")
+        return redirect(url_for('auth.reset_password_request'))
+
+    form = ResetPasswordForm()  # Formulaire avec champ nouveau mot de passe
+
+    if form.validate_on_submit():
+        user.set_password(form.password.data)  # Méthode à définir pour hasher et enregistrer
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.session.commit()
+        flash("Votre mot de passe a été réinitialisé avec succès.", "success")
+        return redirect(url_for('auth.login_parent'))
+
+    return render_template('reset_with_token.html', form=form)
+
+
+
 
 def send_confirmation_email(parent):
-    parent.set_confirmation_token()
-    db.session.commit()
-    msg = Message("Confirmation de votre compte", recipients=[parent.email])
-    confirmation_link = url_for('auth.confirm_email', token=parent.confirmation_token, _external=True)
-    msg.body = f"Veuillez confirmer votre inscription en cliquant ici: {confirmation_link}"
-    mail.send(msg)
+    try:
+        # Génération du token
+        parent.set_confirmation_token()
+        db.session.commit()
+
+        # Construction du lien de confirmation
+        confirmation_link = url_for(
+            'auth.confirm_email',
+            token=parent.confirmation_token,
+            _external=True
+        )
+
+        # Création du message
+        msg = Message(
+            subject="Confirmation de votre compte",
+            sender=current_app.config['MAIL_EMAIL'],
+            recipients=[parent.email]
+        )
+
+        msg.body = (
+            f"Bonjour,\n\n"
+            f"Merci de vous être inscrit. Veuillez confirmer votre adresse email en cliquant sur le lien suivant :\n"
+            f"{confirmation_link}\n\n"
+            f"Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer ce message."
+        )
+
+        # Envoi de l'email
+        mail.send(msg)
+        logger.info(f"E-mail de confirmation envoyé à {parent.email}")
+
+    except Exception as e:
+        logger.exception(f"Erreur lors de l'envoi de l'e-mail de confirmation:{e}")
 
 
 
-@auth.route('/confirm/<token>')
+@blueprint_auth.route('/confirm/<token>')
 def confirm_email(token):
-    parent = Parent.query.filter_by(confirmation_token=token).first()
-    if parent and parent.token_expiration > datetime.now(pytz.utc):
+    try:
+        parent = Parent.query.filter_by(confirmation_token=token).first()
+
+        if not parent:
+            logger.warning(f"Tentative de confirmation avec un token invalide : {token}")
+            flash("Lien de confirmation invalide.", "danger")
+            return redirect(url_for('auth.signup_parent'))
+
+        if parent.token_expiration < datetime.now(pytz.utc):
+            logger.info(f"Token expiré pour l'email : {parent.email}")
+            flash("Le lien de confirmation a expiré. Veuillez en demander un nouveau.", "warning")
+            return redirect(url_for('auth.signup_parent'))
+
+        # Activation du compte
         parent.is_active = True
         parent.confirmation_token = None
+        parent.token_expiration = None  # nettoyage
         db.session.commit()
-        flash("Compte confirmé avec succès!", 'success')
+
+        logger.info(f"Compte activé avec succès : {parent.email}")
+        flash("Compte confirmé avec succès!", "success")
         return redirect(url_for('auth.login_parent'))
-    flash("Le lien est invalide ou expiré.", 'danger')
-    return redirect(url_for('auth.signup'))
+
+    except Exception as e:
+        logger.exception(f"Erreur lors de la confirmation de l'email:{e}")
+        flash("Une erreur est survenue lors de la confirmation. Veuillez réessayer.", "danger")
+        return redirect(url_for('auth.signup_parent'))
 
 
 
-@auth.route('/admin/visitor/<int:visitor_id>/edit', methods=[ 'POST'])
+@blueprint_auth.route('/resend_confirmation', methods=['GET', 'POST'])
+@limiter.limit("3 per minute")
+def resend_confirmation():
+    form = ResendConfirmationForm()
+    if form.validate_on_submit():
+        parent = Parent.query.filter_by(email=form.email.data).first()
+
+        if not parent:
+            flash("Aucun compte trouvé avec cette adresse email.", "warning")
+            return redirect(url_for('auth.resend_confirmation'))
+
+        if parent.is_active:
+            flash("Ce compte est déjà confirmé.", "info")
+            return redirect(url_for('auth.login_parent'))
+
+        parent.set_confirmation_token()
+        db.session.commit()
+        send_confirmation_email(parent)
+        flash("Un nouveau lien de confirmation a été envoyé.", "success")
+        return redirect(url_for('auth.login_parent'))
+
+    return render_template('resend_confirmation.html', form=form)
+
+
+
+@blueprint_auth.route('/admin/visitor/<int:visitor_id>/delete', methods=[ 'POST'])
 @limiter.limit("5 per minute")
 @admin_required
 def delete_visitor(visitor_id):
@@ -302,11 +439,11 @@ def delete_visitor(visitor_id):
         db.session.delete(visitor)
         db.session.commit()
         flash('Visiteur supprimé avec succès.', 'success')
-        return redirect(url_for('admin.manager_visitors'))
+        return redirect(url_for('auth.manager_visitors'))
 
 
 
-@auth.route('/admin/visitor/<int:visitor_id>/edit', methods=[ 'POST'])
+@blueprint_auth.route('/admin/visitor/<int:visitor_id>/edit', methods=[ 'POST'])
 @limiter.limit("5 per minute")
 @admin_required
 def edit_visitor(visitor_id):
@@ -318,15 +455,29 @@ def edit_visitor(visitor_id):
 
         db.session.commit()
         flash('Visiteur mis à jour avec succès.', 'success')
-        return redirect(url_for('admin.manage_visitors'))
+        return redirect(url_for('auth.manage_visitors'))
 
     return render_template('admin/edit_visitors.html', visitor=visitor)
 
 
-@auth.route('/logout', methods=['POST'])
+
+@blueprint_auth.route('/logout', methods=['POST'])
 @login_required
 def logout():
-    """Déconnecte l'utilisateur de manière sécurisée"""
+    """Déconnecte l'utilisateur (Parent ou autre User) et redirige au login adapté"""
+
+    # On stocke l'instance avant la déconnexion
+    user = current_user
+
     logout_user()
     flash("Vous avez été déconnecté avec succès.", "success")
-    return redirect(url_for('auth.login'))
+
+    # Détection du type d'utilisateur
+    from app.models import Parent  # adapte le chemin si besoin
+
+    if isinstance(user, Parent):
+        # Si c'est un parent, redirige vers login_parent
+        return redirect(url_for('auth.login_parent'))
+    else:
+        # Sinon redirige vers login_utilisateur
+        return redirect(url_for('connex.login_utilisateur'))

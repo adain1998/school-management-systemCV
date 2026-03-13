@@ -1,43 +1,86 @@
-<script>
-    // Fonction pour ajouter un nouveau choix
-    function addChoice() {
-        const choicesDiv = document.getElementById('choices');
-        const index = choicesDiv.children.length;
+document.addEventListener("DOMContentLoaded", function () {
+  const choicesContainer = document.getElementById("choicesContainer");
+  const questionInput = document.getElementById("questionInput");
+  let choiceIndex = document.querySelectorAll("#choicesContainer .choice-item").length;
 
-        // Créer un conteneur pour le nouveau choix
-        const newChoice = document.createElement('div');
-        newChoice.classList.add('input-group', 'mb-2');
-        newChoice.setAttribute('id', `choice-${index}`);
+  // Mise à jour du compteur de caractères
+  questionInput.addEventListener("input", (e) => {
+    document.getElementById("charCount").textContent = e.target.value.length;
+  });
 
-        // Créer le champ de saisie pour le choix
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.name = `choices-${index}-choice_text`;
-        input.classList.add('form-control');
-        input.placeholder = 'Entrez un choix';
+  // Ajouter un nouveau champ de choix
+  window.addChoice = function () {
+    const div = document.createElement("div");
+    div.className = "choice-item input-group mb-2";
+    div.setAttribute("data-index", choiceIndex);
 
-        // Créer le bouton de suppression
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.classList.add('btn', 'btn-danger');
-        button.textContent = 'Supprimer';
-        button.onclick = function() {
-            removeChoice(index);
-        };
+    const input = document.createElement("input");
+    input.type = "text";
+    input.name = `choices-${choiceIndex}-choice_text`;
+    input.className = "form-control";
+    input.placeholder = "Texte du choix";
 
-        // Ajouter le champ de saisie et le bouton au conteneur
-        newChoice.appendChild(input);
-        newChoice.appendChild(button);
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "btn btn-outline-danger";
+    removeBtn.innerHTML = "&times;";
+    removeBtn.onclick = () => div.remove();
 
-        // Ajouter le nouveau choix au div 'choices'
-        choicesDiv.appendChild(newChoice);
+    div.appendChild(input);
+    div.appendChild(removeBtn);
+    choicesContainer.appendChild(div);
+
+    choiceIndex++;
+  };
+
+  // Supprimer un champ de choix
+  window.removeChoice = function (btn) {
+    const parent = btn.closest(".choice-item");
+    if (parent) parent.remove();
+  };
+
+  // Validation du formulaire avant soumission
+  window.validatePollForm = function () {
+    const endDateInput = document.getElementById("endDateInput");
+    const endDate = endDateInput.value;
+    const endDateObj = new Date(endDate);
+    const now = new Date();
+
+    if (!endDate || isNaN(endDateObj.getTime())) {
+      alert("Veuillez entrer une date de fin valide.");
+      endDateInput.focus();
+      return false;
     }
 
-    // Fonction pour supprimer un choix
-    function removeChoice(index) {
-        const choice = document.getElementById(`choice-${index}`);
-        if (choice) {
-            choice.remove();
-        }
+    if (endDateObj < now) {
+      alert("La date de fin ne peut pas être dans le passé.");
+      endDateInput.focus();
+      return false;
     }
-</script>
+
+    const inputs = choicesContainer.querySelectorAll("input");
+    const values = new Set();
+
+    for (const input of inputs) {
+      const val = input.value.trim();
+      if (!val) {
+        alert("Tous les choix doivent être remplis.");
+        input.focus();
+        return false;
+      }
+      if (values.has(val)) {
+        alert(`Le choix '${val}' est dupliqué.`);
+        input.focus();
+        return false;
+      }
+      values.add(val);
+    }
+
+    if (values.size === 0) {
+      alert("Veuillez ajouter au moins un choix.");
+      return false;
+    }
+
+    return true;
+  };
+});

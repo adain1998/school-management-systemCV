@@ -1,31 +1,44 @@
-!DOCTYPE html>
+<!-- templates/Ajouter_schedules.html -->
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta charset="UTF-8">
     <title>Ajouter un Horaire</title>
-     <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap/min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<h1>Horaires</h1>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<ul class="flashes">
-    {% for category, message in messages %}
-<li class="{{ category }}">{{ message }}
-</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
-<a href="{{ url_for('add_schedules') }}">Ajouter un Horaire</a>
-<form method="post" action="{{ url_for('filter_schedules') }}">
-    <input type="number" name="class_id" placeholder="ID de la classe" required>
-    <input type="text" name="subject" placeholder="Matière" required>
-    <input type="text" name="time_slot" placeholder="Créneau horaire" required>
-    <button type="submit">Ajouter</button>
-</form>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<a href="{{ url_for('view_schedules' }}">Retourner aux Horaires</a>
+    <div class="container">
+        <h1>Ajouter un Nouvel Horaire</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="alert alert-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('schedul.add_schedule') }}">
+            <div class="form-group">
+                <label for="class_id">ID de la Classe :</label>
+                <input type="number" name="class_id" id="class_id" required value="{{ new_schedule if new_schedule else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Matière :</label>
+                <input type="text" name="subject" id="subject" required value="{{ subject if subject else '' }}">
+            </div>
+
+            <div class="form-group">
+                <label for="time_slot">Créneau Horaire :</label>
+                <input type="text" name="time_slot" id="time_slot" required value="{{ time_slot if time_slot else '' }}">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+            <a href="{{ url_for('schedul.view_schedules') }}" class="btn btn-secondary">Retour à la liste</a>
+        </form>
+    </div>
 </body>
 </html>

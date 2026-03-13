@@ -1,38 +1,57 @@
+<!-- templates/voir_schedules.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Horaires</title>
-    <link href='https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap/min.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <title>Liste des Horaires</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-<h1>Horaires</h1>
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<ul class="flashes">
-    {% for category, message in messages %}
-<li class="{{ category }}">{{ message }}
-</li>
-    {% endfor %}
-</ul>
-{% endif %}
-{% endwith %}
-<a href="{{ url_for('add_schedules') }}">Ajouter un Horaire</a>
-<form method="post" action="{{ url_for('filter_schedules') }}">
-    <input type="text" name="subject" placeholder="filtrer par matière">
-    <button type="submit">Filtrer</button>
-</form>
+    <div class="container">
+        <h1>Horaires Disponibles</h1>
 
-<ul>
-    {% for schedules in schedules %}
-<li>{{ schedule.subject }} - {{ schedule.time_slot }}
-    <form method="post" action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}">
-        <button type="submit" >Supprimer</button>
-    </form>
-</li>
-    {% endfor %}
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</ul>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul class="flash-messages">
+                    {% for category, message in messages %}
+                        <li class="alert alert-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <a href="{{ url_for('schedul.add_schedule') }}" class="btn btn-success">Ajouter un Horaire</a>
+
+        {% if schedules %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>ID Classe</th>
+                        <th>Matière</th>
+                        <th>Créneau Horaire</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sched in schedules %}
+                        <tr>
+                            <td>{{ sched.id }}</td>
+                            <td>{{ sched.class_id }}</td>
+                            <td>{{ sched.subject }}</td>
+                            <td>{{ sched.time_slot }}</td>
+                            <td>
+                                <form method="POST" action="{{ url_for('schedul.delete_schedule', schedule_id=sched.id) }}" onsubmit="return confirm('Confirmer la suppression ?')">
+                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Aucun horaire enregistré.</p>
+        {% endif %}
+    </div>
 </body>
 </html>

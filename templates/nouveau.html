@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Nouvelle Transaction{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Nouvelle Transaction</h2>
+    <a href="{{ url_for(blueprint_paiem + '.historique') }}" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left me-1"></i> Retour à l'historique
+    </a>
+  </div>
+
+  <form method="POST" action="{{ url_for(blueprint_paiem + '.paiement_nouveau') }}">
+    {{ form.hidden_tag() }}
+
+    <div class="mb-3">
+      <label for="eleve" class="form-label">Élève</label>
+      <select class="form-select" id="eleve" name="eleve" required>
+        <option value="" disabled selected>-- Sélectionner un élève --</option>
+        {% for eleve in eleves %}
+        <option value="{{ eleve.id }}">{{ eleve.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="frais" class="form-label">Frais</label>
+      <select class="form-select" id="frais" name="frais" required>
+        <option value="" disabled selected>-- Choisir un type de frais --</option>
+        {% for f in frais %}
+        <option value="{{ f.id }}">{{ f.libelle }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label for="mois" class="form-label">Mois</label>
+        <select class="form-select" id="mois" name="mois" required>
+          <option value="" disabled selected>-- Sélectionner un mois --</option>
+          {% for m in mois %}
+          <option value="{{ m }}">{{ m }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <label for="annee" class="form-label">Année</label>
+        <select class="form-select" id="annee" name="annee" required>
+          <option value="" disabled selected>-- Sélectionner une année --</option>
+          {% for an in annees %}
+          <option value="{{ an }}">{{ an }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="montant" class="form-label">Montant (en FC)</label>
+      <input type="number" class="form-control" id="montant" name="montant" required min="0" step="0.01">
+    </div>
+
+    <div class="d-grid">
+      <button type="submit" class="btn btn-success">
+        <i class="bi bi-check-circle me-1"></i> Enregistrer le paiement
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

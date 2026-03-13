@@ -1,43 +1,140 @@
-{% extends 'base_post.html' %}
-
+{% extends "base.html" %}
 {% block title %}Forum{% endblock %}
-
-{% block content %}
-<div class="container">
-    <h1>Forum</h1>
-    <form method="POST">
-        {{ form.hidden_tag() }}
-        <div class="form-group">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control", id="title") }}
-        </div>
-        <div class="form-group">
-            {{ form.body.label(class="form-label") }}
-            {{ form.body(class="form-control", id="body") }}
-        </div>
-        <button type="submit" class="btn btn-primary">Soumettre</button>
-    </form>
-    <hr>
-    <ul class="list-group">
-        {% for post in posts %}
-        <li class="list-group-item">
-            <h2>{{ post.title }}</h2>
-            <p>{{ post.body }}</p>
-            <small>{{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</small>
-            <a href="{{ url_for('edit_post', post_id=post.id) }}" class="btn btn-warning">Modifier</a>
-            <form action="{{ url_for('delete_post', post_id=post.id) }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-danger">Supprimer</button>
-            </form>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-{% endblock %}
-
-{% block styles %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/forum.css') }}">
-{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
 
-{% block scripts %}
+        <!-- FORMULAIRE DE NOUVEAU POST -->
+        <div class="col-lg-8 col-md-10 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Créer une nouvelle publication</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items() %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            {{ form.title.label(class="form-label") }}
+                            {{ form.title(class="form-control", placeholder="Titre de votre post") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.body.label(class="form-label") }}
+                            {{ form.body(class="form-control", rows="4", placeholder="Contenu de votre post") }}
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-send"></i> Publier
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZONE D'AFFICHAGE DES POSTS -->
+        <div class="col-lg-8 col-md-10">
+            {% for post in posts %}
+            <div class="card mb-3 shadow-sm" data-post-id="{{ post.id }}">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">{{ post.title }}</h5>
+                    <p class="card-text">{{ post.body | e }}</p>
+                    <div class="d-flex justify-content-between text-muted small mt-3">
+                        <span>Par <strong>{{ post.user.first_name }} {{ post.user.last_name }}</strong></span>
+                        <span>{{ post.timestamp.strftime('%d/%m/%Y %H:%M') }}</span>
+                    </div>
+
+                    <!-- 🟡 BARRE DE RÉACTIONS -->
+                    <div class="reaction-bar mt-3">
+                        <span class="reaction-btn" data-reaction="like">👍</span>
+                        <span class="reaction-btn" data-reaction="love">❤️</span>
+                        <span class="reaction-btn" data-reaction="haha">😂</span>
+                        <span class="reaction-btn" data-reaction="wow">😮</span>
+                        <span class="reaction-btn" data-reaction="sad">😢</span>
+                        <span class="reaction-btn" data-reaction="angry">😡</span>
+                    </div>
+
+                    <!-- AFFICHAGE DES STATS DE RÉACTIONS -->
+                    <div class="reaction-stats mt-2">
+                        {% set counts = {'like': 0, 'love': 0, 'haha': 0, 'wow': 0, 'sad': 0, 'angry': 0} %}
+                        {% for reaction in post.reactions %}
+                            {% set _ = counts.update({reaction.reaction_type: counts[reaction.reaction_type] + 1}) %}
+                        {% endfor %}
+
+                        {% for rtype, count in counts.items() %}
+                            {% if count > 0 %}
+                                <span class="reaction-count">{{ count }}
+                                    {% if rtype == 'like' %}👍
+                                    {% elif rtype == 'love' %}❤️
+                                    {% elif rtype == 'haha' %}😂
+                                    {% elif rtype == 'wow' %}😮
+                                    {% elif rtype == 'sad' %}😢
+                                    {% elif rtype == 'angry' %}😡
+                                    {% endif %}
+                                </span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+
+                    {% if current_user.id == post.user_id %}
+                    <div class="mt-2 text-end">
+                        <form action="{{ url_for('meeting.delete_post', post_id=post.id) }}" method="POST" onsubmit="return confirm('Supprimer ce post ?');">
+                            {{ csrf_token() }}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                🗑️ Supprimer
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">Aucun post pour le moment.</div>
+            {% endfor %}
+
+            <!-- PAGINATION -->
+            {% if pagination.pages > 1 %}
+            <nav aria-label="Pagination forum" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('meeting.forum', page=pagination.prev_num) }}">« Précédent</a>
+                    </li>
+                    {% endif %}
+
+                    {% for p in pagination.iter_pages(left_edge=1,right_edge=1,left_current=2,right_current=2)%}
+                        {% if p %}
+                        <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('meeting.forum', page=p) }}">{{ p }}</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('meeting.forum', page=pagination.next_num) }}">Suivant »</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
 <script src="{{ url_for('static', filename='js/forum.js') }}"></script>
 {% endblock %}

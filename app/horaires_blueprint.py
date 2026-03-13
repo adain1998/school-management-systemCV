@@ -1,10 +1,10 @@
 from flask import render_template, request, redirect, url_for, flash, Blueprint
 from app.models import db, Schedule
 
-schedul = Blueprint('schedul', __name__)
+blueprint_schedul = Blueprint('schedul', __name__)
 
 
-@schedul.route('/schedules')
+@blueprint_schedul.route('/schedules')
 def view_schedules():
     try:
         schedules = Schedule.query.all()
@@ -14,7 +14,8 @@ def view_schedules():
     return render_template('voir_schedules.html', schedules=schedules)
 
 
-@schedul.route('/schedules/filter', methods=['GET', 'POST'])  # route pour filtrer les matières
+
+@blueprint_schedul.route('/schedules/filter', methods=['GET', 'POST'])  # route pour filtrer les matières
 def filter_schedules():
     schedules = []
     if request.method == 'POST':
@@ -28,7 +29,8 @@ def filter_schedules():
     return render_template('voir_schedules.html', schedules=schedules)
 
 
-@schedul.route('/schedules/delete/<int:schedule_id>', methods=['POST'])
+
+@blueprint_schedul.route('/schedules/delete/<int:schedule_id>', methods=['POST'])
 def delete_schedule(schedule_id):
     try:
         schedule = Schedule.query.get(schedule_id)
@@ -41,11 +43,11 @@ def delete_schedule(schedule_id):
     except Exception as e:
         db.session.rollback()
         flash(f"Erreur lors de la suppression de l'horaire: {str(e)}", 'error')
-    return redirect(url_for('view_schedules'))
+    return redirect(url_for('schedul.view_schedules'))
 
 
 # ajout de schedules ou horaire
-@schedul.route('/schedules/add', methods=['GET', 'POST'])
+@blueprint_schedul.route('/schedules/add', methods=['GET', 'POST'])
 def add_schedule():
     if request.method == 'POST':
         class_id = request.form.get('class_id')
@@ -76,7 +78,8 @@ def add_schedule():
         return render_template('Ajouter_schedules.html')
 
 
-@schedul.route('/calendar')
+
+@blueprint_schedul.route('/calendar')
 def view_calendar(schedule=None):
     try:
         schedules = Schedule.query.all()

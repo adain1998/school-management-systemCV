@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Erreur - Gestion des étudiants{% endblock %}
+
+{% block styles %}
+<style>
+  .error-container {
+    max-width: 600px;
+    margin: 4rem auto;
+    padding: 2rem 2.5rem;
+    background-color: #fff5f5;
+    border: 1px solid #f5c2c7;
+    border-radius: 8px;
+    color: #842029;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 2px 8px rgb(184 38 54 / 0.2);
+    text-align: center;
+  }
+
+  .error-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .error-container p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .btn-back {
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background-color: #d6336c;
+    color: white;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 6px;
+    box-shadow: 0 3px 6px rgb(214 51 108 / 0.4);
+    transition: background-color 0.3s ease;
+  }
+
+  .btn-back:hover {
+    background-color: #b02a5a;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-container" role="alert" aria-live="assertive" aria-atomic="true">
+  <h1>Erreur</h1>
+  <p>{{ error or "Une erreur est survenue." }}</p>
+  <a href="{{ url_for('stud.index_students') }}" class="btn-back" aria-label="Retour à la liste des étudiants">
+    ← Retour à la liste des étudiants
+  </a>
+</div>
+{% endblock %}

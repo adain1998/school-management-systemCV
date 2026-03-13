@@ -1,0 +1,241 @@
+/* Base container */
+.container {
+  max-width: 100%;
+  padding: 1rem;
+}
+
+/* Titre principal */
+h2.fw-bold {
+  font-size: 1.8rem;
+  color: #0d6efd; /* Bootstrap primary */
+  margin-bottom: 1rem;
+}
+
+/* Boutons d'action */
+.btn-outline-secondary,
+.btn-outline-danger {
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-outline-secondary:hover,
+.btn-outline-danger:hover {
+  transform: scale(1.05);
+}
+
+/* Barre de recherche et filtre */
+#searchInput,
+#filterStatus {
+  border-radius: 0.375rem;
+  padding: 0.6rem 1rem;
+  font-size: 1rem;
+}
+
+/* Table */
+.table {
+  margin-top: 1rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+  text-align: center;
+}
+
+.table thead th {
+  background-color: #343a40;
+  color: #fff;
+}
+
+/* Statut badges */
+.badge {
+  font-size: 0.95rem;
+  padding: 0.5em 0.75em;
+  border-radius: 0.375rem;
+}
+
+.bg-success {
+  background-color: #198754 !important;
+}
+
+.bg-warning {
+  background-color: #ffc107 !important;
+}
+
+.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+/* Détails de paiement */
+.collapse td {
+  background-color: #f8f9fa;
+}
+
+.list-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.95rem;
+}
+
+/* Pagination */
+.pagination {
+  margin-top: 1.5rem;
+}
+
+.pagination .page-item .page-link {
+  color: #0d6efd;
+  transition: background-color 0.3s ease;
+}
+
+.pagination .page-item.active .page-link {
+  background-color: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+.pagination .page-item .page-link:hover {
+  background-color: #e9ecef;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .btn {
+    width: 100%;
+    margin-top: 0.5rem;
+  }
+
+  #searchInput,
+  #filterStatus {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+/* DARK MODE : à appliquer quand body (ou un parent) a la classe .dark-mode */
+.dark-mode {
+  background-color: #121212;
+  color: #e0e0e0;
+}
+
+.dark-mode h2.fw-bold {
+  color: #66aaff;
+}
+
+.dark-mode .table {
+  background-color: #1e1e1e;
+  color: #ccc;
+  border-color: #333;
+}
+
+.dark-mode .table thead th {
+  background-color: #333;
+  color: #eee;
+}
+
+.dark-mode .table tbody tr {
+  border-bottom: 1px solid #333;
+}
+
+.dark-mode .table tbody tr:hover {
+  background-color: #2a2a2a;
+}
+
+.dark-mode .badge.bg-success {
+  background-color: #2e7d32 !important;
+}
+
+.dark-mode .badge.bg-warning {
+  background-color: #ffa000 !important;
+  color: #222 !important;
+}
+
+.dark-mode .badge.bg-danger {
+  background-color: #c62828 !important;
+}
+
+.dark-mode .collapse td {
+  background-color: #222;
+}
+
+.dark-mode .list-group-item {
+  background-color: transparent;
+  border-color: #444;
+  color: #ddd;
+}
+
+.dark-mode .btn-outline-secondary,
+.dark-mode .btn-outline-danger {
+  color: #ccc;
+  border-color: #555;
+}
+
+.dark-mode .btn-outline-secondary:hover,
+.dark-mode .btn-outline-danger:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.dark-mode .pagination .page-item .page-link {
+  color: #66aaff;
+}
+
+.dark-mode .pagination .page-item.active .page-link {
+  background-color: #66aaff;
+  color: #121212;
+  border-color: #66aaff;
+}
+
+.dark-mode .pagination .page-item .page-link:hover {
+  background-color: #333;
+}
+
+/* --- IMPRESSION PDF --- */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+  }
+
+  h2.fw-bold {
+    color: black !important;
+  }
+
+  .table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  .table, .table th, .table td {
+    border: 1px solid black !important;
+    color: black !important;
+  }
+
+  .table thead {
+    background-color: #ddd !important;
+    -webkit-print-color-adjust: exact; /* Pour forcer la couleur à l'impression */
+  }
+
+  .badge {
+    color: black !important;
+    background: #ccc !important;
+  }
+
+  .btn,
+  #searchInput,
+  #filterStatus,
+  .pagination {
+    display: none !important; /* Cacher les boutons et filtres à l'impression */
+  }
+
+  .collapse {
+    display: table-row !important; /* Afficher tous les détails de paiement à l'impression */
+  }
+}

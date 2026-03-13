@@ -1,38 +1,97 @@
-// forum.js
+document.addEventListener("DOMContentLoaded", () => {
+    const reactionButtons = document.querySelectorAll(".reaction-btn");
 
-// Attendre que le DOM soit entièrement chargé
-document.addEventListener('DOMContentLoaded', function () {
-    // Sélectionner tous les boutons de suppression
-    var deleteButtons = document.querySelectorAll('.btn-danger');
+    reactionButtons.forEach(button => {
+        button.addEventListener("click", async () => {
+            const postCard = button.closest("[data-post-id]");
+            const postId = postCard?.dataset.postId;
+            const reactionType = button.dataset.reaction;
 
-    // Ajouter un écouteur d'événement sur chaque bouton de suppression
-    deleteButtons.forEach(function (button) {
-        button.addEventListener('click', function (event) {
-            // Empêcher la soumission immédiate du formulaire
-            event.preventDefault();
+            if (!postId || !reactionType) {
+                console.warn("Post ID ou type de réaction manquant.");
+                return;
+            }
 
-            // Afficher une boîte de dialogue de confirmation
-            var userConfirmed = confirm('Êtes-vous sûr de vouloir supprimer ce post ? Cette action est irréversible.');
+            try {
+                const response = await fetch(`/api/reactions/${postId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": getCSRFToken(),
+                    },
+                    body: JSON.stringify({ reaction: reactionType }),
+                });
 
-            // Si l'utilisateur confirme, soumettre le formulaire
-            if (userConfirmed) {
-                button.closest('form').submit();
+                if (!response.ok) {
+                    throw new Error(`Erreur serveur (${response.status})`);
+                }
+
+                const data = await response.json();
+                updateReactionStats(postCard, data.reactions);
+            } catch (error) {
+                console.error("Erreur lors de l'envoi de la réaction :", error);
+                alert("Une erreur est survenue lors de l’enregistrement de votre réaction.");
             }
         });
     });
 
-    // Sélectionner le formulaire de création de post
-    var postForm = document.querySelector('form');
+    /**
+     * Met à jour l'affichage des statistiques de réactions pour un post.
+     */
+    function updateReactionStats(postElement, reactions) {
+        const statsDiv = postElement.querySelector(".reaction-stats");
+        if (!statsDiv) return;
 
-    // Ajouter un écouteur d'événement sur la soumission du formulaire
-    postForm.addEventListener('submit', function (event) {
-        // Empêcher la soumission si les champs sont vides
-        var title = document.getElementById('title').value.trim();
-        var body = document.getElementById('body').value.trim();
+        // Compter les types de réactions
+        const counts = {
+            like: 0,
+            love: 0,
+            haha: 0,
+            wow: 0,
+            sad: 0,
+            angry: 0,
+        };
 
-        if (!title || !body) {
-            event.preventDefault();
-            alert('Veuillez remplir tous les champs avant de soumettre le formulaire.');
+        reactions.forEach(r => {
+            if (counts.hasOwnProperty(r.reaction_type)) {
+                counts[r.reaction_type]++;
+            }
+        });
+
+        // Réinitialiser le HTML
+        statsDiv.innerHTML = "";
+
+        for (const [type, count] of Object.entries(counts)) {
+            if (count > 0) {
+                const emoji = getEmojiForReaction(type);
+                const span = document.createElement("span");
+                span.className = "reaction-count me-2";
+                span.textContent = `${count} ${emoji}`;
+                statsDiv.appendChild(span);
+            }
         }
-    });
+    }
+
+    /**
+     * Retourne l’emoji associé à un type de réaction.
+     */
+    function getEmojiForReaction(type) {
+        switch (type) {
+            case "like": return "👍";
+            case "love": return "❤️";
+            case "haha": return "😂";
+            case "wow": return "😮";
+            case "sad": return "😢";
+            case "angry": return "😡";
+            default: return "";
+        }
+    }
+
+    /**
+     * Récupère le token CSRF depuis les cookies (Flask-WTF).
+     */
+    function getCSRFToken() {
+        const match = document.cookie.match(/csrf_token=([^;]+)/);
+        return match ? decodeURIComponent(match[1]) : "";
+    }
 });

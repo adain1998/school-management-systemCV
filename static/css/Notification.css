@@ -1,92 +1,211 @@
-/* notifications.css */
+/* custom_notifications.css */
 
-/* Style pour le conteneur principal */
+/* Reset basique */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0;
+}
+
+/* Container principal */
 .container {
-    max-width: 800px;
-    margin: auto;
-    padding: 20px;
+  max-width: 960px;
+  padding: 1rem 1.5rem;
+  margin: 0 auto;
 }
 
-/* Style pour le titre principal */
+/* Titres */
 h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #343a40;
+  font-weight: 700;
+  font-size: 2.5rem;
+  color: #0d6efd; /* Bootstrap primary blue */
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
 }
 
-/* Styles pour les labels des champs de formulaire */
+/* Messages flash */
+.alert {
+  font-size: 1rem;
+  border-radius: 0.3rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.alert-info {
+  background-color: #e7f1ff;
+  color: #084298;
+}
+.alert-warning {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+.alert-danger {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+/* Formulaire filtre */
+#filter-form {
+  background: #ffffff;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  transition: box-shadow 0.3s ease;
+}
+#filter-form:hover,
+#filter-form:focus-within {
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
 .form-label {
-    font-weight: bold;
-    color: #495057;
+  font-weight: 600;
+  color: #333;
 }
 
-/* Styles pour les champs de formulaire */
-.form-control {
-    border-radius: 0.25rem;
-    border: 1px solid #ced4da;
-    padding: 10px;
-    font-size: 1rem;
+.form-select {
+  min-width: 150px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  border: 1.5px solid #ced4da;
+  border-radius: 0.375rem;
+}
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 5px rgba(13,110,253,0.5);
+  outline: none;
 }
 
-/* Styles pour les messages de validation */
-.invalid-feedback {
-    color: #dc3545;
-    font-size: 0.875rem;
+#filter-button {
+  min-width: 140px;
+  font-weight: 600;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+#filter-button:hover,
+#filter-button:focus {
+  background-color: #084298;
+  box-shadow: 0 4px 8px rgba(8,66,152,0.5);
+  outline: none;
 }
 
-.valid-feedback {
-    color: #28a745;
-    font-size: 0.875rem;
+/* Table responsive */
+.table-responsive {
+  overflow-x: auto;
+  background-color: #ffffff;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.06);
 }
 
-/* Styles pour les boutons */
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border-radius: 0.25rem;
+table.table {
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  width: 100%;
+  min-width: 400px;
 }
 
-.btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #212529;
-    padding: 5px 10px;
-    font-size: 0.875rem;
-    border-radius: 0.2rem;
+/* En-tête table */
+thead.table-primary {
+  background-color: #0d6efd;
+  color: #fff;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+thead.table-primary th {
+  border: none;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
+  vertical-align: middle;
+  text-align: center;
 }
 
-.btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    padding: 5px 10px;
-    font-size: 0.875rem;
-    border-radius: 0.2rem;
+/* Lignes du tableau */
+tbody tr.notification-row {
+  background-color: #fefefe;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  border-radius: 0.3rem;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  outline-offset: 3px;
+}
+tbody tr.notification-row:hover,
+tbody tr.notification-row:focus {
+  background-color: #e7f1ff;
+  box-shadow: 0 4px 12px rgba(13,110,253,0.2);
+  outline: none;
 }
 
-/* Style pour la liste des notifications */
-.list-group-item {
-    margin-bottom: 15px;
-    padding: 20px;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
+/* Cellules */
+tbody tr td,
+tbody tr th {
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
 }
 
-/* Style pour les titres des notifications */
-.list-group-item h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #343a40;
+/* Texte troncé dans description */
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 400px;
+  display: inline-block;
+  vertical-align: middle;
 }
 
-/* Style pour les paragraphes des notifications */
-.list-group-item p {
-    font-size: 1rem;
-    color: #6c757d;
+/* Centrage spécifique */
+.text-center {
+  text-align: center !important;
+}
+.text-start {
+  text-align: left !important;
 }
 
-/* Style pour les formulaires imbriqués */
-.list-group-item form {
-    display: inline;
+/* Pagination bootstrap customisée */
+.pagination {
+  --bs-pagination-bg: #fff;
+  --bs-pagination-color: #0d6efd;
+  --bs-pagination-hover-color: #084298;
+  --bs-pagination-hover-bg: #e7f1ff;
+  --bs-pagination-active-bg: #0d6efd;
+  --bs-pagination-active-color: #fff;
+  --bs-pagination-border-radius: 0.5rem;
+  font-weight: 600;
+  user-select: none;
+}
+.pagination .page-link {
+  border-radius: var(--bs-pagination-border-radius);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.pagination .page-link:hover {
+  background-color: var(--bs-pagination-hover-bg);
+  color: var(--bs-pagination-hover-color);
+}
+.pagination .page-item.active .page-link {
+  background-color: var(--bs-pagination-active-bg);
+  color: var(--bs-pagination-active-color);
+  box-shadow: 0 4px 12px rgba(13,110,253,0.6);
+  cursor: default;
+}
+.pagination .page-item.disabled .page-link {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+  .form-select {
+    min-width: 120px;
+  }
+  #filter-button {
+    min-width: 100%;
+  }
+  tbody tr td.text-truncate {
+    max-width: 150px;
+  }
+  h1 {
+    font-size: 1.75rem;
+  }
 }

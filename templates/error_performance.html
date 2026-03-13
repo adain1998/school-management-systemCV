@@ -1,7 +1,15 @@
-{% extends "base_performance.html" %}
+{% extends "base.html" %}
+
+{% block title %}Erreur de performance{% endblock %}
+
 {% block content %}
-<h1>Erreur</h1>
-<div class="alert alert-danger" role="alert">
-    Une erreur s'est produite : {{ error.description }}
+<div class="container mt-5">
+  <div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">Erreur lors de la consultation des performances</h4>
+    <p>Code d’erreur : {{ error.code }}</p>
+    <hr>
+    <p>{{ error.description or "Une erreur est survenue pendant la consultation des résultats. Veuillez réessayer plus tard." }}</p>
+    <a href="{{ url_for('resultat.index_note') }}" class="btn btn-warning mt-3">Retour aux performances</a>
+  </div>
 </div>
 {% endblock %}

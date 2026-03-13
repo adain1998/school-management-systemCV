@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Échéances du paiement #{{ payment.id }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      color: #333;
+    }
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #2980b9;
+      color: white;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #f8f8f8;
+    }
+    .paid {
+      color: green;
+      font-weight: bold;
+    }
+    .pending {
+      color: orange;
+      font-weight: bold;
+    }
+    .footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #777;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Historique des échéances</h1>
+  <h2>Paiement n° {{ payment.id }}</h2>
+  <p><strong>Étudiant :</strong> {{ payment.student.name if payment.student else "N/A" }}</p>
+  <p><strong>Frais :</strong> {{ payment.frais.name if payment.frais else "N/A" }}</p>
+  <p><strong>Date de création :</strong> {{ payment.timestamp.strftime("%d/%m/%Y") }}</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Montant</th>
+        <th>Date d’échéance</th>
+        <th>Statut</th>
+        <th>Date payé</th>
+        <th>Méthode de paiement</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inst in installments %}
+      <tr>
+        <td>{{ "%.2f" | format(inst.amount) }} €</td>
+        <td>{{ inst.due_date.strftime("%d/%m/%Y") }}</td>
+        <td class="{{ 'paid' if inst.paid else 'pending' }}">{{ "Payé" if inst.paid else "En attente" }}</td>
+        <td>{{ inst.date_paid.strftime("%d/%m/%Y") if inst.date_paid else "-" }}</td>
+        <td>{{ inst.payment_method if inst.payment_method else "-" }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5">Aucune échéance trouvée pour ce paiement.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p>Document généré le {{ datetime.utcnow().strftime("%d/%m/%Y à %H:%M") }} UTC</p>
+  </div>
+</body>
+</html>

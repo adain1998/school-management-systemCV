@@ -2,11 +2,11 @@ from flask import render_template, redirect, url_for, request, Blueprint, flash
 from app.models import db, Exam
 
 
-examen = Blueprint('examen', __name__)
+blueprint_examen = Blueprint('examen', __name__)
 
 
 # ROUTE pour les examens
-@examen.route('/exams /add', methods=['GET', 'POST'])
+@blueprint_examen.route('/exams /add', methods=['GET', 'POST'])
 def add_exam():
     if request.method == 'POST':
         student_id = request.form.get('student_id')
@@ -22,7 +22,7 @@ def add_exam():
             db.session.add(new_schedule)
             db.session.commit()
             flash('Examen ajouté avec succès', 'success')
-            return redirect(url_for('view_exams'))
+            return redirect(url_for('examen.view_exams'))
         except InterruptedError:
             db.session.rollback()
             flash('Erreur: ce score existe déjà.', 'error')
@@ -35,7 +35,7 @@ def add_exam():
 
 # route vue des examens
 
-@examen.route('/schedules')
+@blueprint_examen.route('/schedules')
 def view_exam():
     try:
         exam = Exam.query.all()
@@ -45,8 +45,9 @@ def view_exam():
     return render_template('voir_exam.html', exam=exam)
 
 
+
 # route filtrage des examens
-@examen.route('/exams/filter_and_search', methods=['GET', 'POST'])  # route pour filtrer les matières
+@blueprint_examen.route('/exams/filter_and_search', methods=['GET', 'POST'])  # route pour filtrer les matières
 def filter_and_search_exams():
     exams = []
     if request.method == 'POST':
@@ -72,7 +73,7 @@ def filter_and_search_exams():
 
 
 # SUPPRIMER LES EXAMENS
-@examen.route('/exams/delete/<int:exam_id>', methods=['POST'])
+@blueprint_examen.route('/exams/delete/<int:exam_id>', methods=['POST'])
 def delete_exam(exam_id):
     try:
         exam = Exam.query.get(exam_id)

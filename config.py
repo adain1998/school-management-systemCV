@@ -62,3 +62,9 @@ class ConfigSQL:
 
     # Initialisation de Argon2
     argon2 = Argon2()  # Hachage des mots de passe pour une meilleure sécurité
+
+
+class TestingConfig(DevelopmentConfig):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    WTF_CSRF_ENABLED = False

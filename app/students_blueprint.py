@@ -1,8 +1,11 @@
 from flask import render_template, request, url_for, redirect, flash, Blueprint, jsonify
 # from sqlalchemy import desc, asc
-from flask_login import login_required
+from flask_login import login_required, current_user
 from sqlalchemy.exc import SQLAlchemyError
 import logging
+
+from sqlalchemy.orm import joinedload
+from math import ceil
 from app import db, mail
 from app.decorators import roles_required
 from app.models import Student, Classe, Sections, Option, Parent, Assignment, Message
@@ -15,21 +18,49 @@ import random
 import string
 import re
 
+blueprint_stud = Blueprint('stud', __name__)
 
 
-stud = Blueprint('stud', __name__)
 
-
-@stud.route('/')
-@stud.route('/students')
+@blueprint_stud.route('/students', methods=['GET'])
 @login_required
-def students():
-    student = Student.query.all()
-    return render_template('index.html', student=student)
+def index_students():
+    try:
+        role = current_user.role
+        students = []  # On initializing # noqa: F841
+
+        if role == 'Admin':
+            students = Student.query.all()
+
+        elif role == 'Enseignant':
+            classes = current_user.classes
+            students = Student.query.join(Classe).filter(Classe.id.in_([c.id for c in classes])).all()
+
+        elif role == 'Parent':
+            student_ids = current_user.children_ids.split(',')
+            students = Student.query.filter(Student.id.in_(student_ids)).all()
+
+        elif role == 'Élève':
+            student = Student.query.get(current_user.student_id)
+            students = [student] if student else []
+
+        else:
+            flash("Rôle non reconnu. Accès refusé.", "danger")
+            return render_template("error_students.html", error="Accès non autorisé.")
+
+        # ✅ Ici, on utilise bien la variable students
+        return render_template("index_student.html", students=students, role=role, year=datetime.now().year)
+
+    except SQLAlchemyError as e:
+        flash(f"Erreur de base de données : {str(e)}", "danger")
+        return render_template("error_students.html", error="Erreur base de données.")
+    except Exception as e:
+        flash(f"Erreur : {str(e)}", "danger")
+        return render_template("error_students.html", error="Erreur inattendue.")
 
 
 
-@stud.route('/filter_student', methods=['GET'])
+@blueprint_stud.route('/filter_student', methods=['GET'])
 def filter_student():
     filter_class_name = request.args.get('filter_class_name', '')
     filter_religion = request.args.get('filter_religion', '')
@@ -54,7 +85,7 @@ def filter_student():
         students_filtered.sort(key=lambda s: s.first_name, reverse=(order == 'desc'))
 
     return render_template(
-        'filter_students.html',
+        'Filtrer_student.html',
         students_filtered=students_filtered,
         filter_class_name=filter_class_name,
         filter_religion=filter_religion,
@@ -65,7 +96,7 @@ def filter_student():
 
 
 
-@stud.route('/edit_student/<int:id>', methods=['GET', 'POST'])
+@blueprint_stud.route('/edit_student/<int:id>', methods=['GET', 'POST'])
 @roles_required('admin','superadmin','compable')
 def edit_student():
     student = Student.query.get_or_404(id)
@@ -93,7 +124,7 @@ def edit_student():
 
         db.session.commit()
         flash('Student updated successfully!', 'success')
-        return redirect(url_for('index'))
+        return redirect(url_for('stud.index_students'))
     classe = Classe.query.all()
 
     # Récupération de tous les devoirs pour les afficher dans le formulaire
@@ -104,7 +135,7 @@ def edit_student():
 
 
 
-@stud.route('/api/students', methods=['GET'])
+@blueprint_stud.route('/api/students', methods=['GET'])
 def get_students():
     student = Student.query.all()
     return jsonify([{
@@ -119,7 +150,7 @@ def get_students():
 
 
                                                                 # recherche des étudiants
-@stud.route('/student/rechercher', methods=['GET'])
+@blueprint_stud.route('/student/rechercher', methods=['GET'])
 def rechercher_eleves():
     try:
         # Paramètres de recherche
@@ -163,7 +194,7 @@ def rechercher_eleves():
 
 
 
-@stud.route('/all_students')
+@blueprint_stud.route('/all_students')
 def all_students():
     try:
         page = request.args.get('page', 1, type=int)  # Pagination : numéro de page
@@ -181,7 +212,7 @@ def all_students():
 
 
 
-@stud.route('/student/<int:student_id>', methods=['GET', 'POST'])
+@blueprint_stud.route('/student/<int:student_id>', methods=['GET', 'POST'])
 def student_details(student_id):
     student = Student.query.get_or_404(student_id)
 
@@ -267,7 +298,7 @@ def student_details(student_id):
 
 
 
-@stud.route('/student/contact/<int:student_id>', methods=['POST'])
+@blueprint_stud.route('/student/contact/<int:student_id>', methods=['POST'])
 def contact_student(student_id):
     student = Student.query.get_or_404(student_id)
 
@@ -310,7 +341,10 @@ def validate_email(email):
     """Valide une adresse email simple avec regex."""
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(pattern, email) is not None
-@stud.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
+
+
+
+@blueprint_stud.route('/delete_student/<int:student_id>', methods=['GET', 'POST'])
 def delete_student(student_id):
     student = Student.query.get_or_404(student_id)
 
@@ -331,39 +365,7 @@ def delete_student(student_id):
 
 
 
-@stud.route('/view_student/<int:student_id>', methods=['GET'])
-def view_student(student_id):
-    student = Student.query.get_or_404(student_id)
-    return render_template('View_list.html', student=student)
-
-
-""""@stud.route('/student')
-def list_student():
-    # Récupérer la page de la requête ou par défaut la première page
-    page = request.args.get('page', 1, type=int)
-
-    # Nombre d'étudiants par page
-    per_page = 10
-
-    # Récupérer le paramètre de tri (par exemple 'nom') depuis l'URL ou par défaut 'nom'
-    sort_by = request.args.get('sort_by', 'nom')
-
-    # Appliquer le tri en fonction du paramètre
-    student = Student.query.order_by(getattr(Student, sort_by)).paginate(page, per_page, error_out=False)
-
-    # Récupérer la pagination et les étudiants pour le template
-    return render_template('student_list.html', student=student.items, pagination=student)"""
-
-
-# Liste blanche des champs triables pour éviter les abus
-VALID_SORT_FIELDS = {
-    'nom': Student.last_name,
-    'prenom': Student.first_name,
-    'matricule': Student.numero_matricule,
-    'date': Student.registration_date  # à adapter si tu as un champ de création
-}
-
-@stud.route('/student')
+@blueprint_stud.route('/student')
 def list_students():
     try:
         # Paramètres de pagination
@@ -401,6 +403,9 @@ def list_students():
         # Log l'erreur si tu as un système de logs
         flash(f"Erreur serveur : {str(e)}", "error")
         return render_template('student_list.html', students=[], pagination=None)
+
+
+
 def generate_matricule(length=8):
     """
     Génère un numéro de matricule alphanumérique de longueur 'length'.
@@ -411,7 +416,7 @@ def generate_matricule(length=8):
 
 
 
-@stud.route('/add_student', methods=['POST'])
+@blueprint_stud.route('/add_student', methods=['POST'])
 def add_student():
     try:
         # Récupération et validation des champs
@@ -429,14 +434,14 @@ def add_student():
         # Validation des champs obligatoires
         if not all([last_name, first_name, date_naissance, class_id, parent_id]):
             flash("Tous les champs obligatoires doivent être remplis!", "danger")
-            return redirect(url_for('stud.add_student'))
+            return redirect(url_for(request.url))
 
         # Conversion de la date de naissance
         try:
             date_naissance = datetime.strptime(date_naissance, "%Y-%m-%d")
         except ValueError:
             flash("Le format de la date de naissance est invalide. Utilisez le format YYYY-MM-DD.", "danger")
-            return redirect(url_for('stud.add_student'))
+            return redirect(url_for(request.url))
 
         # Vérification de l'existence du parent et de la classe
         parents = Parent.query.all()
@@ -444,10 +449,10 @@ def add_student():
 
         if not parents:
             flash("Le parent spécifié n'existe pas.", "danger")
-            return redirect(url_for('stud.add_student'))
+            return redirect(url_for(request.url))
         if not classe:
             flash("La classe spécifiée n'existe pas.", "danger")
-            return redirect(url_for('stud.add_student'))
+            return redirect(url_for(request.url))
 
         # Création du nouvel étudiant (registration_date est géré par le modèle)
         new_student = Student(
@@ -483,4 +488,55 @@ def add_student():
     except Exception as e:
         db.session.rollback()
         flash(f"Erreur lors de l'ajout de l'étudiant : {e}", "danger")
-        return redirect(url_for('stud.add_student'))
+        return redirect(url_for(request.url))
+
+
+
+# Liste blanche des champs triables pour éviter les abus
+VALID_SORT_FIELDS = {
+    'nom': Student.last_name,
+    'prenom': Student.first_name,
+    'matricule': Student.numero_matricule,
+    'date': Student.registration_date  # adapter selon ton modèle
+}
+
+@blueprint_stud.route('/', methods=['GET'])
+@login_required
+def view_students():
+    # Gestion de la page
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1:
+            raise ValueError()
+    except ValueError:
+        flash("Page invalide", "warning")
+        return redirect(url_for('stud.view_students'))
+
+    # Gestion du tri avec fallback vers last_name
+    sort_key = request.args.get('sort_by', 'nom')
+    sort_column = VALID_SORT_FIELDS.get(sort_key, Student.last_name)
+
+    per_page = 20
+
+    query = Student.query.options(
+        joinedload(Student.classe),
+        joinedload(Student.options),
+        joinedload(Student.sections),
+        joinedload(Student.absences),
+        joinedload(Student.notes)
+    ).order_by(sort_column.asc())
+
+    total_students = query.count()
+    total_pages = ceil(total_students / per_page)
+
+    if page > total_pages and total_students > 0:
+        flash("Page hors limites", "warning")
+        return redirect(url_for('stud.view_students', page=total_pages))
+
+    students = query.offset((page - 1) * per_page).limit(per_page).all()
+
+    return render_template('view_students.html',
+                           students=students,
+                           page=page,
+                           total_pages=total_pages,
+                           sort_by=sort_key)

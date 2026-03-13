@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}Moyennes par Matière{% endblock %}
-
+<link href="{{ url_for('static', filename='css/matières.css') }}" rel="stylesheet">
 {% block content %}
     <div class="container mt-4">
         <h1 class="text-center">Calcul des Moyennes</h1>
@@ -50,6 +50,5 @@
         </div>
 
     </div>
-<link href="{{ url_for('static', filename='css/matières.css') }}" rel="stylesheet">
 <script src="{{ url_for('static', filename='js/matières.js') }}"></script>
 {% endblock %}

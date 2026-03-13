@@ -4,11 +4,11 @@ from werkzeug.exceptions import NotFound, BadRequest
 from app.decorators import roles_required
 import logging
 # Initialisation du Blueprint
-niveau = Blueprint('niveau', __name__)
+blueprint_niveau = Blueprint('niveau', __name__)
 
 
 # View pour afficher toutes les classes
-@niveau.route('/classes')
+@blueprint_niveau.route('/classes')
 def view_classes():
     try:
         # Pagination des classes (ex. 10 classes par page)
@@ -26,10 +26,11 @@ def view_classes():
                                classes_page=classes.page, students_page=students.page)
     except Exception as e:
         flash(f"Une erreur s'est produite lors de la récupération des classes : {str(e)}", 'danger')
-        return redirect(url_for('index'))  # Redirection vers la page d'accueil en cas d'erreur
+        return redirect(url_for('tableau.index'))  # Redirection vers la page d'accueil en cas d'erreur
 # View pour ajouter une classe
 
-@niveau.route('/add_class', methods=['POST'])
+
+@blueprint_niveau.route('/add_class', methods=['POST'])
 def add_class():
     try:
         nom = request.form.get('nom', '').strip()
@@ -51,11 +52,11 @@ def add_class():
     except Exception as e:
         logging.exception("Erreur lors de l'ajout de la classe :")
         flash(f"❌ Une erreur s'est produite lors de l'ajout de la classe : {str(e)}", 'danger')
-        return redirect(url_for('niveau.view_classes'))
+        return redirect(url_for(request.url))
 
 
 # View pour modifier une classe existante
-@niveau.route('/edit_class/<int:id>', methods=['GET', 'POST'])
+@blueprint_niveau.route('/edit_class/<int:id>', methods=['GET', 'POST'])
 def edit_class():
     try:
         class_ = Classe.query.get_or_404(id)
@@ -71,7 +72,7 @@ def edit_class():
             flash('Classe mise à jour avec succès!', 'success')
             return redirect(url_for('niveau.view_classes'))
 
-        return render_template('edit_class.html', class_=class_)
+        return render_template('edit_classe.html', class_=class_)
 
     except NotFound:
         flash("Classe introuvable.", 'danger')
@@ -87,7 +88,7 @@ def edit_class():
 
 
 # View pour supprimer une classe
-@niveau.route('/delete_classe/<int:id>', methods=['POST'])
+@blueprint_niveau.route('/delete_classe/<int:id>', methods=['POST'])
 @roles_required('admin', 'superadmin')
 def delete_classe():
     try:
@@ -108,7 +109,7 @@ def delete_classe():
 
 
 # View pour la gestion des classes avec filtres
-@niveau.route('/gestion_classes', methods=['GET'])
+@blueprint_niveau.route('/gestion_classes', methods=['GET'])
 def gestion_classes():
     try:
         # Récupérer les paramètres de requête pour filtrer
@@ -142,7 +143,7 @@ def gestion_classes():
 
 
 
-@niveau.route('/test404')
+@blueprint_niveau.route('/test404')
 def test404():
     return render_template("404.html")
 

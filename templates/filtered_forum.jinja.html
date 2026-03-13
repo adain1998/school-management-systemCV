@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block head %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/filtered_forum.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-center">🗂️ Filtrer les publications du forum</h2>
+
+  <!-- Formulaire de filtrage -->
+  <form method="get" action="{{ url_for('blueprint_meeting.filter_forum') }}" class="row g-3 mb-4" id="filter-form">
+    <div class="col-md-3">
+      <label for="filter_column" class="form-label">Filtrer par :</label>
+      <select name="filter_column" id="filter_column" class="form-select">
+        <option value="title" {{ 'selected' if filter_column == 'title' else '' }}>Titre</option>
+        <option value="body" {{ 'selected' if filter_column == 'body' else '' }}>Contenu</option>
+        <option value="timestamp" {{ 'selected' if filter_column == 'timestamp' else '' }}>Date</option>
+        <option value="author" {{ 'selected' if filter_column == 'author' else '' }}>Auteur</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="filter_value" class="form-label">Valeur :</label>
+      <input type="text" name="filter_value" id="filter_value" value="{{ filter_value }}" class="form-control" placeholder="Entrez une valeur">
+    </div>
+    <div class="col-md-2">
+      <label for="order" class="form-label">Ordre :</label>
+      <select name="order" id="order" class="form-select">
+        <option value="asc" {{ 'selected' if order == 'asc' else '' }}>Croissant</option>
+        <option value="desc" {{ 'selected' if order == 'desc' else '' }}>Décroissant</option>
+      </select>
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary w-100" id="filter-button">🔍 Appliquer le filtre</button>
+    </div>
+  </form>
+
+  <!-- Boutons pour changer la vue -->
+  <div class="mb-4 text-center">
+    <div class="btn-group" role="group" aria-label="Vue">
+      <button type="button" class="btn btn-outline-secondary active" id="grid-view-btn" aria-pressed="true">🔲 Vue Grille</button>
+      <button type="button" class="btn btn-outline-secondary" id="list-view-btn" aria-pressed="false">📄 Vue Liste</button>
+    </div>
+  </div>
+
+  <!-- Liste des publications -->
+  {% if forumposts %}
+    <div id="posts-container" class="row g-4">
+      {% for post in forumposts %}
+        <div class="col post-item">
+          <div class="card h-100 shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title">{{ post.title }}</h5>
+              <p class="card-text">{{ post.body | truncate(250) }}</p>
+            </div>
+            <div class="card-footer text-muted">
+              <small>
+                Posté par <strong>{{ post.user.username }}</strong><br>
+                le {{ post.timestamp.strftime('%d/%m/%Y à %H:%M') }}
+              </small>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-warning mt-4" role="alert">
+      ⚠️ Aucun résultat trouvé pour ce filtre.
+    </div>
+  {% endif %}
+
+  <!-- Pagination -->
+  {% if pagination.pages > 1 %}
+    <nav aria-label="Pagination" class="mt-4">
+      <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('blueprint_meeting.filter_forum', page=pagination.prev_num, filter_column=filter_column, filter_value=filter_value, order=order) }}">« Précédent</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">« Précédent</span></li>
+        {% endif %}
+
+        {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+          {% if page_num %}
+            {% if page_num == pagination.page %}
+              <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+            {% else %}
+              <li class="page-item">
+                <a class="page-link" href="{{ url_for('blueprint_meeting.filter_forum', page=page_num, filter_column=filter_column, filter_value=filter_value, order=order) }}">{{ page_num }}</a>
+              </li>
+            {% endif %}
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+          {% endif %}
+        {% endfor %}
+
+        {% if pagination.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('blueprint_meeting.filter_forum', page=pagination.next_num, filter_column=filter_column, filter_value=filter_value, order=order) }}">Suivant »</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">Suivant »</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+</div>
+<script src="{{ url_for('static', filename='js/filtered_forum.js') }}"></script>
+{% endblock %}

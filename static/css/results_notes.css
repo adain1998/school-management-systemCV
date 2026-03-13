@@ -1,0 +1,133 @@
+/* Container principal */
+.container {
+  max-width: 900px;
+  margin: 2rem auto 4rem;
+  padding: 0 1rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+}
+
+/* Titre principal */
+h2 {
+  font-weight: 700;
+  color: #0d6efd; /* bleu bootstrap */
+  text-align: center;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Alert info */
+.alert-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+  border-radius: 0.375rem;
+  padding: 1rem 1.25rem;
+  font-size: 1.1rem;
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+/* Tableau des résultats */
+table.table {
+  width: 100%;
+  border-collapse: collapse;
+  box-shadow: 0 0 15px rgba(0,0,0,0.05);
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+table thead.table-dark {
+  background-color: #212529;
+  color: #fff;
+  font-weight: 700;
+}
+
+table th,
+table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  vertical-align: middle;
+  border-bottom: 1px solid #dee2e6;
+  font-size: 1rem;
+}
+
+table tbody tr:hover {
+  background-color: #f8f9fa;
+  cursor: default;
+}
+
+/* Boutons d'export */
+form {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+form button {
+  font-weight: 600;
+  padding: 0.5rem 1.2rem;
+  border-radius: 0.375rem;
+  border: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+form button.btn-success {
+  background-color: #198754;
+  color: #fff;
+}
+
+form button.btn-success:hover,
+form button.btn-success:focus {
+  background-color: #157347;
+  box-shadow: 0 5px 15px rgba(25,135,84,0.4);
+  outline: none;
+}
+
+form button.btn-primary {
+  background-color: #0d6efd;
+  color: #fff;
+  margin-left: 0.75rem;
+}
+
+form button.btn-primary:hover,
+form button.btn-primary:focus {
+  background-color: #0b5ed7;
+  box-shadow: 0 5px 15px rgba(13,110,253,0.4);
+  outline: none;
+}
+
+/* Espacement entre boutons */
+.ms-2 {
+  margin-left: 0.5rem !important;
+}
+
+/* Canvas Chart.js */
+#noteChart {
+  display: block;
+  max-width: 100%;
+  height: 350px;
+  margin: 2rem auto 0;
+  border-radius: 0.375rem;
+  box-shadow: 0 0 20px rgba(13, 110, 253, 0.15);
+  background-color: #fff;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+  table th, table td {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  #noteChart {
+    height: 250px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+}

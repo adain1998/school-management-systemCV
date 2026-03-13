@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Historique des paiements{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Historique des paiements</h2>
+
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="start_date" class="form-label">Date début</label>
+            <input type="date" class="form-control" name="start_date" id="start_date" value="{{ start_date or '' }}">
+        </div>
+        <div class="col-md-3">
+            <label for="end_date" class="form-label">Date fin</label>
+            <input type="date" class="form-control" name="end_date" id="end_date" value="{{ end_date or '' }}">
+        </div>
+        <div class="col-md-3 align-self-end">
+            <button type="submit" class="btn btn-primary">Filtrer</button>
+            <a href="{{ url_for('paiem.historique_paiements', export='csv', start_date=start_date, end_date=end_date) }}"
+               class="btn btn-success">Exporter CSV</a>
+        </div>
+    </form>
+
+    {% if paiements %}
+    <table class="table table-hover table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Étudiant</th>
+                <th>Frais</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for paiement in paiements %}
+            <tr>
+                <td>{{ paiement.id }}</td>
+                <td>{{ paiement.timestamp.strftime('%d/%m/%Y à %H:%M') }}</td>
+                <td>{{ paiement.amount }} FC</td>
+                <td>{{ paiement.student.full_name if paiement.student else 'N/A' }}</td>
+                <td>{{ paiement.frais.libelle if paiement.frais else 'N/A' }}</td>
+                <td>
+                    <a href="{{ url_for('paiem.show_installments', payment_id=paiement.id) }}"
+                       class="btn btn-outline-info btn-sm">Détails</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% if pagination %}
+    <nav aria-label="Pagination">
+        <ul class="pagination">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('paiem.historique_paiements', page=pagination.prev_num, start_date=start_date, end_date=end_date) }}">&laquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+
+            {% for page_num in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                        <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('paiem.historique_paiements', page=page_num, start_date=start_date, end_date=end_date) }}">{{ page_num }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('paiem.historique_paiements', page=pagination.next_num, start_date=start_date, end_date=end_date) }}">&raquo;</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="alert alert-warning">Aucun paiement trouvé.</div>
+    {% endif %}
+</div>
+{% endblock %}

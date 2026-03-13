@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Échéances du Paiement{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="bi bi-calendar-check-fill"></i> Échéances du Paiement
+                    </h4>
+                    <a href="{{ url_for('paiem.paiem_index') }}" class="btn btn-light btn-sm">
+                        <i class="bi bi-arrow-left"></i> Retour
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <h5 class="mb-3">
+                        Paiement de <strong>{{ payment.student_name }}</strong> - Montant total :
+                        <span class="text-success fw-bold">{{ "{:,.2f}".format(payment.total_amount) }} FC</span>
+                    </h5>
+
+                    <div class="mb-3 d-flex gap-2">
+                        <a href="{{ url_for('paiem.export_installments_pdf', payment_id=payment.id) }}" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-filetype-pdf"></i> Exporter en PDF
+                        </a>
+                        <a href="{{ url_for('paiem.export_installments_excel', payment_id=payment.id) }}" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-filetype-xlsx"></i> Exporter en Excel
+                        </a>
+                    </div>
+                    <div class="mt-3">
+                   <a href="{{ url_for('paiem.export_installments_excel', payment_id=payment.id) }}" class="btn btn-success" target="_blank">
+                  Exporter en Excel
+                  </a>
+
+                 <a href="{{ url_for('paiem.export_installments_pdf', payment_id=payment.id) }}" class="btn btn-danger" target="_blank">
+                Exporter en PDF
+                 </a>
+               </div>
+
+                    {% if installments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Montant</th>
+                                        <th>Date d’échéance</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i, installment in enumerate(installments, start=1) %}
+                                    <tr>
+                                        <td>{{ i }}</td>
+                                        <td>{{ "{:,.2f}".format(installment.amount) }} FC</td>
+                                        <td>{{ installment.due_date.strftime('%d/%m/%Y') }}</td>
+                                        <td>
+                                            {% if installment.paid %}
+                                                <span class="badge bg-success">Payé</span><br>
+                                                {% if installment.date_paid %}
+                                                    <small>le {{ installment.date_paid.strftime('%d/%m/%Y') }}</small><br>
+                                                {% endif %}
+                                                {% if installment.payment_method %}
+                                                    <small><em>{{ installment.payment_method }}</em></small>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning text-dark">En attente</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="d-flex flex-column flex-md-row gap-2">
+                                            <a href="{{ url_for('paiem.view_installment', installment_id=installment.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye-fill"></i> Voir
+                                            </a>
+
+                                            {% if not installment.paid %}
+                                            <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#paymentModal" data-installment="{{ installment.id }}">
+                                                <i class="bi bi-cash-coin"></i> Payer
+                                            </button>
+                                            {% else %}
+                                            <form action="{{ url_for('paiem.cancel_payment', installment_id=installment.id) }}" method="post" onsubmit="return confirm('Annuler le paiement de cette échéance ?');">
+                                                {{ csrf_token() }}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-x-circle-fill"></i> Annuler
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Aucune échéance disponible pour ce paiement.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mt-4">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+</div>
+
+<!-- Modale méthode de paiement -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="paymentMethodForm" method="post">
+        {{ csrf_token() }}
+        <div class="modal-header">
+          <h5 class="modal-title" id="paymentModalLabel">Sélectionner la méthode de paiement</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="payment_method" id="paymentMethodInput">
+          <select class="form-select" id="paymentMethodSelect" required>
+            <option value="">-- Choisir --</option>
+            <option value="Espèces">Espèces</option>
+            <option value="Mobile Money">Mobile Money</option>
+            <option value="Virement Bancaire">Virement Bancaire</option>
+          </select>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Confirmer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const paymentModal = document.getElementById('paymentModal');
+  const methodSelect = document.getElementById('paymentMethodSelect');
+  const methodInput = document.getElementById('paymentMethodInput');
+  const form = document.getElementById('paymentMethodForm');
+
+  paymentModal.addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const installmentId = button.getAttribute('data-installment');
+    form.action = `/installments/${installmentId}/pay`;
+  });
+
+  form.addEventListener('submit', function (event) {
+    methodInput.value = methodSelect.value;
+    if (!methodInput.value) {
+      event.preventDefault();
+      alert("Veuillez sélectionner une méthode de paiement.");
+    }
+  });
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const excelBtn = document.getElementById('export-excel-btn');
+  const pdfBtn = document.getElementById('export-pdf-btn');
+
+  function handleExportClick(event, type) {
+    event.preventDefault(); // Empêche le comportement par défaut (ouvrir directement)
+
+    const confirmMsg = `Voulez-vous vraiment exporter les échéances en ${type.toUpperCase()} ?`;
+    if (confirm(confirmMsg)) {
+      console.log(`Export ${type} en cours...`);
+      // Ouvre le lien dans un nouvel onglet après confirmation
+      window.open(event.currentTarget.href, '_blank');
+    }
+  }
+
+  if (excelBtn) {
+    excelBtn.addEventListener('click', (e) => handleExportClick(e, 'excel'));
+  }
+
+  if (pdfBtn) {
+    pdfBtn.addEventListener('click', (e) => handleExportClick(e, 'pdf'));
+  }
+});
+</script>
+{% endblock %}

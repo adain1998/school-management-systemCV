@@ -26,8 +26,8 @@
       <td>{{ visitor.email }}</td>
       <td>{{ visitor.visit_date.strftime('%Y-%m-%d %H:%M:%S ') }}</td>
       <td>
-        <a href="{{ url_for('admin.edit_visitor', visitor_id=visitor.id) }}" class="btn btn-warning">Modifier</a>
-        <a href="{{ url_for('admin.delete_visitor', visitor_id=visitor.id) }}"
+        <a href="{{ url_for('auth.edit_visitor', visitor_id=visitor.id) }}" class="btn btn-warning">Modifier</a>
+        <a href="{{ url_for('auth.delete_visitor', visitor_id=visitor.id) }}"
            class="btn btn-danger" onclick="return confirm('Etes-vous sûr de vouloir supprimer ce visiteur?');">Supprimer</a>
       </td>
     </tr>
@@ -36,7 +36,7 @@
 </table>
 
 <!-- Bouton de retour au tableau de bord -->
-<a href="{{ url_for('admin.admin_dashboard') }}" class="btn-back">Retour au Tableau de Bord</a>
+<a href="{{ url_for('auth.admin_dashboard') }}" class="btn-back">Retour au Tableau de Bord</a>
 
 <!-- Inclure le fichier JavaScript personnalisé -->
 <script src="{{ url_for('static', filename='js/manager_visitor.js') }}"></script>

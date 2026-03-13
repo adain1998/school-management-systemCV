@@ -1,18 +1,52 @@
-{% extends 'base.html' %}
-
-{% block title %}Vue de la Moyenne{% endblock %}
-
+{% extends "base.html" %}
 {% block content %}
-    <title>Résultats de Moyenne</title>
-{{hidden.tag}}
-<body>
-    <h1>Résultats de Moyenne</h1>
-    <ul>
-        {% for name, avg in zip(names, individual_averages) %}
-            <li>{{ name }}: {{ avg }}</li>
-        {% endfor %}
-    </ul>
-    <h2>Moyenne Générale : {{general_average}}</h2>
-    <a href="/">Retour</a>
-</body>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/results_notes.css') }}">
+<div class="container mt-4">
+  <h2 class="mb-3">Résultats des Notes</h2>
+
+  <div class="alert alert-info">
+    Moyenne générale de la classe : <strong>{{ general_average }}</strong> / 20
+  </div>
+
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Nom</th>
+        <th>Notes</th>
+        <th>Moyenne</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in results %}
+      <tr>
+        <td>{{ item.name }}</td>
+        <td>{{ item.grades | join(', ') }}</td>
+        <td>{{ item.average }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Exportation -->
+  <form method="POST" action="{{ url_for('resultat.export_csv') }}">
+    <input type="hidden" name="results" id="results">
+    <button type="submit" class="btn btn-success">Exporter en CSV</button>
+      <button id="exportPdfBtn" class="btn btn-primary ms-2">Exporter en PDF</button>
+  </form>
+
+
+  <!-- Graphique -->
+  <canvas id="noteChart" class="mt-5"></canvas>
+
+  <!-- Données encodées -->
+  <div id="results-data" data-json="{{ results | tojson | safe }}" style="display:none;"></div>
+</div>
+
+<!-- Chart.js + script personnalisé -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<!-- jsPDF + html2canvas -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="{{ url_for('static', filename='js/results_notes.js') }}"></script>
 {% endblock %}

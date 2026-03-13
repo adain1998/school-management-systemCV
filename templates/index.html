@@ -1,75 +1,19 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        section {
-            padding: 40px;
-            text-align: center;
-        }
-        .info-box {
-            background-color: white;
-            margin: 0 auto;
-            padding: 20px;
-            max-width: 600px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 0.9em;
-            color: #555;
-        }
-        a.button {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: white;
-            border-radius: 5px;
-            text-decoration: none;
-            margin-top: 20px;
-        }
-        a.button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <header>
-        <h1>Bienvenue, {{ user_name }} !</h1>
-        <p>Plateforme de Gestion Scolaire Intelligente</p>
-    </header>
+{% block title %}Accueil - Gestion Scolaire{% endblock %}
 
-    <section>
-        <div class="info-box">
+{% block content %}
+<div class="text-center">
+    <h1 class="mb-4">Bienvenue, {{ user_name }} !</h1>
+    <div class="card mx-auto shadow" style="max-width: 500px;">
+        <div class="card-body">
             <p><strong>Date :</strong> {{ current_date }}</p>
-            <p><strong>Dernière connexion :</strong> {{last_login or "Non disponible"}}</p>
-            <p><strong>Rôle :</strong> {{user_role or "Utilisateur"}}</p>
-
-            <a href="/dashboard" class="button">Accéder au tableau de bord</a>
+            <p><strong>Dernière connexion :</strong> {{ last_login or "Non disponible" }}</p>
+            <p><strong>Rôle :</strong> {{ user_role or "Utilisateur" }}</p>
+            <a href="{{ url_for('schedul.schedules') }}" class="btn btn-primary mt-3">Accéder au tableau de bord</a>
         </div>
-    </section>
-
-    <footer>
-        &copy; {{ current_year}} Complexe scolaire Les Erudits 2 | Tous droits réservés
-    </footer>
-
-</body>
-</html>
+    </div>
+</div>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+<script src="{{ url_for('static', filename='js/index.js') }}" defer></script>
+{% endblock %}

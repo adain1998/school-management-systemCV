@@ -1,17 +1,18 @@
 from flask import render_template, flash, redirect, url_for, Blueprint, request
-from flask_login import login_user, logout_user, login_required, current_user
+from flask_login import login_user, current_user
 from werkzeug.security import check_password_hash  # Import de la fonction pour le hashage du mot de passe
 from app.models import db, User, Enseignant, Eleve, Administrateur
-from app.forms import SignupForm, LoginForm
+from app.forms import SignupForm, LoginUtilisateurForm
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 import logging
 
-
-connex = Blueprint('connex', __name__)
+blueprint_connex = Blueprint('connex', __name__)
 logger = logging.getLogger(__name__)
 
-@connex.route('/signup', methods=['GET', 'POST'])
-def signup():
+
+
+@blueprint_connex.route('/signup/utilisateur', methods=['GET', 'POST'])
+def signup_utilisateur():
     form = SignupForm()
 
     if request.method == 'POST' and form.validate_on_submit():
@@ -24,14 +25,12 @@ def signup():
         niveau = form.niveau.data.strip() if form.niveau.data else None
         role_admin = form.role_admin.data.strip() if form.role_admin.data else None
 
-        new_user = None  # ✅ initialisation
-
         try:
             existing_user = User.query.filter_by(email=email).first()
             if existing_user:
                 flash("Cette adresse email est déjà utilisée.", "danger")
                 logger.warning(f"Tentative d'inscription avec email existant : {email}")
-                return redirect(url_for('connex.signup'))
+                return redirect(url_for(request.url))
 
             if role == 'enseignant':
                 new_user = Enseignant(
@@ -60,7 +59,7 @@ def signup():
             else:
                 flash("Rôle invalide.", "danger")
                 logger.error(f"Rôle inconnu : {role}")
-                return redirect(url_for('connex.signup'))
+                return redirect(url_for(request.url))
 
             # ✅ Sécurité : s'assurer que new_user n'est pas None
             if new_user:
@@ -88,17 +87,17 @@ def signup():
             flash("Une erreur inattendue est survenue. Veuillez réessayer plus tard.", "danger")
             logger.exception(f"Erreur inattendue lors de l'inscription : {e}")
 
-    return render_template('signup.html', form=form)
+    return render_template('signup_utilisateur.html', form=form)
 
 
 
-@connex.route('/login', methods=['GET', 'POST'])
-def login():
+@blueprint_connex.route('/login/utilisateur', methods=['GET', 'POST'])
+def login_utilisateur():
     if current_user.is_authenticated:
         flash("Vous êtes déjà connecté.", "info")
         return redirect(url_for('tableau.dashboard'))  # Rediriger vers un tableau de bord général
 
-    form = LoginForm()
+    form = LoginUtilisateurForm()
 
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
@@ -121,13 +120,4 @@ def login():
         else:
             flash("Email ou mot de passe incorrect.", "danger")
 
-    return render_template('login.html', form=form)
-
-
-
-@connex.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash("Vous avez été déconnecté.", "info")
-    return redirect(url_for('connex.login'))
+    return render_template('login_utilisateur.html', form=form)

@@ -1,109 +1,78 @@
-/* forum.css */
+/* static/css/forum.css */
 
-/* Style pour le conteneur principal */
-.container {
-    max-width: 900px;
-    margin: auto;
-    padding: 20px;
+body {
+    background-color: #f9f9f9;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Style pour le titre principal */
-h1 {
-    text-align: center;
-    margin-bottom: 30px;
-    color: #2c3e50;
+.card {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
 }
 
-/* Styles pour les labels des champs de formulaire */
-.form-label {
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
     font-weight: bold;
-    color: #34495e;
+    font-size: 1.2rem;
 }
 
-/* Styles pour les champs de formulaire */
 .form-control {
-    border-radius: 5px;
-    border: 1px solid #bdc3c7;
-    padding: 10px;
-    font-size: 1rem;
-    margin-bottom: 15px;
+    border-radius: 8px;
 }
 
-/* Styles pour le bouton de soumission */
-.btn-primary {
-    background-color: #2980b9;
-    border-color: #2980b9;
-    padding: 10px 20px;
-    font-size: 1rem;
-    border-radius: 5px;
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+}
+
+.reaction-bar {
+    display: flex;
+    gap: 10px;
+    padding-top: 8px;
+    border-top: 1px solid #ddd;
     cursor: pointer;
 }
 
-.btn-primary:hover {
-    background-color: #1f6391;
-    border-color: #1f6391;
+.reaction-btn {
+    font-size: 1.3rem;
+    transition: transform 0.15s ease;
 }
 
-/* Style pour la liste des posts */
-.list-group-item {
-    margin-bottom: 20px;
-    padding: 20px;
-    border: 1px solid #ecf0f1;
-    border-radius: 5px;
-    background-color: #ecf0f1;
+.reaction-btn:hover {
+    transform: scale(1.2);
 }
 
-/* Style pour les titres des posts */
-.list-group-item h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #2c3e50;
+.reaction-stats {
+    margin-top: 6px;
+    font-size: 0.95rem;
+    color: #333;
 }
 
-/* Style pour les paragraphes des posts */
-.list-group-item p {
-    font-size: 1rem;
-    color: #7f8c8d;
+.reaction-count {
+    margin-right: 10px;
+    display: inline-block;
+    background-color: #f1f1f1;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-weight: 500;
 }
 
-/* Style pour les boutons d'action */
-.btn-warning, .btn-danger {
-    padding: 5px 10px;
-    font-size: 0.875rem;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.btn-warning {
-    background-color: #f39c12;
-    border-color: #f39c12;
+.pagination .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
     color: #fff;
 }
 
-.btn-warning:hover {
-    background-color: #e67e22;
-    border-color: #e67e22;
+.pagination .page-link {
+    border-radius: 6px;
+    transition: background-color 0.2s;
 }
 
-.btn-danger {
-    background-color: #c0392b;
-    border-color: #c0392b;
-    color: #fff;
-}
-
-.btn-danger:hover {
-    background-color: #a93226;
-    border-color: #a93226;
-}
-
-/* Style pour les dates des posts */
-.list-group-item small {
-    display: block;
-    margin-bottom: 10px;
-    color: #95a5a6;
-}
-
-/* Style pour les formulaires imbriqués */
-.list-group-item form {
-    display: inline;
+.pagination .page-link:hover {
+    background-color: #e0e0e0;
 }

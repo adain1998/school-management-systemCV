@@ -1,0 +1,136 @@
+/* ========================
+   Global Styles
+========================= */
+body {
+  background-color: #f8f9fa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 16px;
+  color: #343a40;
+}
+
+h2 {
+  font-weight: 600;
+  color: #0d6efd;
+}
+
+/* ========================
+   Card Design
+========================= */
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  border: none;
+  transition: transform 0.2s ease-in-out;
+}
+.card:hover {
+  transform: scale(1.01);
+}
+
+.card-header {
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* ========================
+   Form Styles
+========================= */
+.form-label {
+  font-weight: 500;
+}
+
+.form-control,
+.form-select {
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
+}
+
+/* ========================
+   Button Styles
+========================= */
+button.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+.btn-success:hover {
+  background-color: #157347;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+/* ========================
+   Table Styles
+========================= */
+.table-responsive {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table thead.table-dark th {
+  background-color: #212529;
+  color: #fff;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+  background-color: #e9ecef;
+  cursor: pointer;
+}
+
+/* ========================
+   Search and Filter
+========================= */
+#search-matiere {
+  width: 250px;
+  display: inline-block;
+  border-radius: 8px;
+}
+
+#reset-filters,
+#exportCSV,
+#exportPDF {
+  margin-left: 5px;
+}
+
+/* ========================
+   Responsive Tuning
+========================= */
+@media (max-width: 576px) {
+  #search-matiere {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #reset-filters,
+  #exportCSV,
+  #exportPDF {
+    width: 100%;
+    margin: 5px 0;
+  }
+}

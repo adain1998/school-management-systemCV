@@ -1,0 +1,184 @@
+/* MODE PAR DÉFAUT : CLAIR */
+:root {
+    --bg-color: #f9fafe;
+    --card-bg: #ffffff;
+    --primary-color: #2a4a82;
+    --primary-hover: #1e3460;
+    --input-bg: #fff;
+    --text-color: #333;
+    --error-color: #d9534f;
+    --border-color: #ced4da;
+}
+
+/* MODE SOMBRE AUTOMATIQUE */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #121212;
+        --card-bg: #1e1e1e;
+        --primary-color: #90caf9;
+        --primary-hover: #64b5f6;
+        --input-bg: #2a2a2a;
+        --text-color: #eee;
+        --border-color: #444;
+    }
+}
+
+/* CONTENEUR GLOBAL */
+.container {
+    background: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+}
+
+/* CARTE */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.01);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+/* TITRE */
+.card-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* FORM CONTROL */
+.form-control {
+    border-radius: 0.6rem;
+    padding: 0.75rem;
+    font-size: 1rem;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.15rem rgba(42, 74, 130, 0.25);
+}
+
+/* LABEL */
+.form-label {
+    font-weight: 600;
+}
+
+/* ERREURS */
+.text-danger {
+    font-size: 0.85rem;
+    color: var(--error-color);
+}
+
+/* BOUTON */
+.btn-primary {
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background-color: var(--primary-color);
+    border: none;
+    border-radius: 0.6rem;
+    transition: background-color 0.3s ease;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+}
+
+/* LIEN DE CONNEXION */
+small a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+small a:hover {
+    text-decoration: underline;
+}
+
+/* ANIMATION */
+.card-body {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* BARRE DE SÉCURITÉ MOT DE PASSE */
+#password-strength {
+    height: 6px;
+    border-radius: 4px;
+    margin-top: 5px;
+    background-color: #e0e0e0;
+    overflow: hidden;
+}
+
+#password-strength span {
+    display: block;
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-weak {
+    width: 33%;
+    background-color: #dc3545;
+}
+
+.strength-medium {
+    width: 66%;
+    background-color: #ffc107;
+}
+
+.strength-strong {
+    width: 100%;
+    background-color: #28a745;
+}
+
+/* Champ input avec bouton œil */
+input[type="password"],
+input[type="text"] {
+    width: 100%;
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+}
+
+/* Bouton œil */
+.toggle-password {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--primary-color);
+    padding: 0;
+    user-select: none;
+    transition: color 0.3s ease;
+}
+
+.toggle-password:hover {
+    color: var(--primary-hover);
+}
+
+/* Position relative pour wrapper */
+.position-relative {
+    position: relative;
+}

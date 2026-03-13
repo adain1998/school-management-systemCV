@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription - Parent{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/signup_parent.css') }}">
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card shadow rounded-4 border-0">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4 text-primary fw-bold">
+                        <i class="bi bi-person-plus-fill me-2"></i>Créer un compte parent
+                    </h2>
+
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Informations du parent -->
+                        <h5 class="fw-semibold mb-3 mt-3 text-secondary">Informations du parent</h5>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.name.label(class="form-label") }}
+                                {{ form.name(class="form-control", placeholder="Nom complet") }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control", placeholder="Email") }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger small">{{ form.email.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control", placeholder="Mot de passe") }}
+                                {% if form.password.errors %}
+                                    <div class="text-danger small">{{ form.password.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.confirm_password.label(class="form-label") }}
+                                {{ form.confirm_password(class="form-control", placeholder="Confirmation") }}
+                                {% if form.confirm_password.errors %}
+                                    <div class="text-danger small">{{ form.confirm_password.errors[0] }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Informations sur les enfants -->
+                        <h5 class="fw-semibold mt-4 text-secondary">Enfant n°1</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                {{ form.child1_first_name.label(class="form-label") }}
+                                {{ form.child1_first_name(class="form-control", placeholder="Prénom") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.child1_last_name.label(class="form-label") }}
+                                {{ form.child1_last_name(class="form-control", placeholder="Nom") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.child1_birth_date.label(class="form-label") }}
+                                {{ form.child1_birth_date(class="form-control", placeholder="Date de naissance") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.child1_class_id.label(class="form-label") }}
+                                {{ form.child1_class_id(class="form-control") }}
+                            </div>
+                            <div class="col-md-12">
+                                {{ form.child1_religion.label(class="form-label") }}
+                                {{ form.child1_religion(class="form-control", placeholder="Religion (optionnel)") }}
+                            </div>
+                        </div>
+
+                        <h5 class="fw-semibold mt-4 text-secondary">Enfant n°2 (facultatif)</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                {{ form.child2_first_name.label(class="form-label") }}
+                                {{ form.child2_first_name(class="form-control", placeholder="Prénom") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.child2_last_name.label(class="form-label") }}
+                                {{ form.child2_last_name(class="form-control", placeholder="Nom") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.child2_birth_date.label(class="form-label") }}
+                                {{ form.child2_birth_date(class="form-control", placeholder="Date de naissance") }}
+                            </div>
+                            <div class="col-md-6">
+                                {{ form.child2_class_id.label(class="form-label") }}
+                                {{ form.child2_class_id(class="form-control") }}
+                            </div>
+                            <div class="col-md-12">
+                                {{ form.child2_religion.label(class="form-label") }}
+                                {{ form.child2_religion(class="form-control", placeholder="Religion (optionnel)") }}
+                            </div>
+                        </div>
+
+                        <!-- Soumission -->
+                        <div class="d-grid mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg") }}
+                        </div>
+                    </form>
+
+                    <div class="mt-4 text-center">
+                        <small>Vous avez déjà un compte ?
+                            <a href="{{ url_for('auth.login_parent') }}">Connectez-vous ici</a>.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/signup_parent.js') }}"></script>
+{% endblock %}

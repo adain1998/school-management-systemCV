@@ -1,0 +1,281 @@
+/* filtered_forum.css */
+
+/* === Base Cards === */
+.card {
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 0.075);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  background-color: #fff;
+}
+
+.card:hover {
+  box-shadow: 0 0.5rem 1rem rgb(0 0 0 / 0.15);
+  transform: scale(1.03);
+  z-index: 10;
+}
+
+/* === Card Body === */
+.card-body {
+  padding: 1.25rem;
+  color: #212529;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* === Card Title === */
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: #0d6efd; /* bootstrap primary blue */
+}
+
+/* === Card Text === */
+.card-text {
+  font-size: 1rem;
+  color: #495057;
+  line-height: 1.5;
+  max-height: 9em; /* env. 6 lignes */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === Card Footer === */
+.card-footer {
+  background-color: #f8f9fa;
+  font-size: 0.85rem;
+  color: #6c757d;
+  border-top: 1px solid #e9ecef;
+  padding: 0.75rem 1.25rem;
+  font-style: italic;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+/* === Container adjustments === */
+.container.py-4 {
+  max-width: 960px;
+}
+
+/* === Headings === */
+h2.mb-4 {
+  font-weight: 700;
+  color: #343a40;
+}
+
+/* === Form styling === */
+form#g-filter-form {
+  background-color: #fefefe;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 0.05);
+}
+
+.form-label {
+  font-weight: 600;
+  color: #212529;
+}
+
+.form-select, .form-control {
+  border-radius: 0.375rem;
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease;
+}
+
+.form-select:focus, .form-control:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.25rem rgb(13 110 253 / 0.25);
+  outline: none;
+}
+
+/* === Buttons === */
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover:not(.disabled), .btn-primary:focus:not(.disabled) {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+  box-shadow: 0 0 8px rgb(11 94 215 / 0.7);
+}
+
+.disabled-button {
+  pointer-events: none !important;
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* === Pagination === */
+.pagination {
+  --bs-pagination-color: #0d6efd;
+  --bs-pagination-hover-color: #0a58ca;
+}
+
+.page-link {
+  color: var(--bs-pagination-color);
+  border-radius: 0.375rem;
+  border: 1px solid #dee2e6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.page-link:hover {
+  background-color: var(--bs-pagination-color);
+  color: #fff;
+  text-decoration: none;
+}
+
+.page-item.active .page-link {
+  background-color: var(--bs-pagination-color);
+  border-color: var(--bs-pagination-color);
+  color: #fff;
+  font-weight: 700;
+}
+
+.page-item.disabled .page-link {
+  color: #6c757d;
+  pointer-events: none;
+  cursor: default;
+  background-color: #fff;
+  border-color: #dee2e6;
+}
+
+/* === Alerts === */
+.alert-warning {
+  background-color: #fff3cd;
+  color: #664d03;
+  border-color: #ffecb5;
+  border-radius: 0.5rem;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  font-style: normal;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* === Loader styles === */
+#loader {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1050;
+}
+
+.spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #0d6efd;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === Fade-in animation === */
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Posts List & Grid === */
+
+/* List mode */
+.posts-list .card {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.posts-list .card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Grid mode */
+.posts-grid .card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.posts-grid .card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgb(0 0 0 / 0.3);
+}
+
+/* === Info message styling === */
+#info-message {
+  margin-top: 1.5rem;
+  font-style: italic;
+  color: #6c757d;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* === Responsive tweaks === */
+@media (max-width: 576px) {
+  .posts-list .card {
+    flex-direction: column;
+  }
+  .posts-list .card-body {
+    padding-bottom: 1rem;
+  }
+  .card-footer {
+    font-size: 0.75rem;
+  }
+}
+
+/* === Accessibility === */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #0d6efd;
+  outline-offset: 2px;
+}
+
+/* === View toggle buttons (si tu veux styliser) === */
+#view-toggle {
+  margin-bottom: 1rem;
+  text-align: right;
+}
+
+#view-toggle button {
+  margin-left: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid #ced4da;
+  background-color: #fff;
+  color: #212529;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+#view-toggle button.active,
+#view-toggle button[aria-pressed="true"] {
+  background-color: #0d6efd;
+  color: #fff;
+  border-color: #0d6efd;
+}
+
+#view-toggle button:hover:not(.active) {
+  background-color: #e7f1ff;
+}
+
+/* === Smooth scroll behavior for page load === */
+html {
+  scroll-behavior: smooth;
+}

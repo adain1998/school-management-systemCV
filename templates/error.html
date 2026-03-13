@@ -1,10 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Erreur lors du paiement</title>
-</head>
-<body>
-<h1>Une erreur s'est produite lors du paiement</h1>
-<p>{{message}}</p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Erreur - Application{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="alert alert-danger" role="alert">
+    <h4 class="alert-heading">Une erreur est survenue</h4>
+    <p>Code d'erreur : {{ error.code }}</p>
+    <hr>
+    <p>{{ error.description or "Une erreur inattendue s'est produite. Veuillez réessayer plus tard." }}</p>
+    <a href="{{ url_for('tableau.index') }}" class="btn btn-primary mt-3">Retour à l'accueil</a>
+  </div>
+</div>
+{% endblock %}

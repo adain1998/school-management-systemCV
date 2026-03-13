@@ -1,31 +1,155 @@
 {% extends 'base.html' %}
 
-{% block title %}Vue de la Moyenne{% endblock %}
-
+{% block title %}Résultats des Élèves{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_notes.css') }}">
 {% block content %}
+<div class="container py-4">
+    <h2 class="mb-4">Moyennes Générales des Élèves</h2>
 
-    <title>Calcul de Moyenne</title>
-<body>
-    <h1>Calcul de Moyenne</h1>
-    <form action="/calculate" method="post">
-        <div>
-            <label for="names">Noms des élèves (séparés par des virgules):</label>
-            <input type="text" id="names" name="names" required>
-        </div>
-        <div>
-            <label for="grades">Notes (séparées par des virgules pour chaque élève):</label>
-            <input type="text" id="grades" name="grades" required>
-        </div>
-        <button type="submit">Calculer</button>
-    </form>
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        <ul>
         {% for category, message in messages %}
-          <li class="{{ category }}">{{ message }}</li>
+          <div class="alert alert-{{ category }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
         {% endfor %}
-        </ul>
       {% endif %}
     {% endwith %}
-</body>
+    <div class="card mb-4">
+    <div class="card-header bg-info text-white">Graphique des Moyennes</div>
+    <div class="card-body">
+        <canvas id="resultChart" height="80"></canvas>
+    </div>
+</div>
+    <div class="mb-3">
+    <input type="text" id="search-student" class="form-control" placeholder="Rechercher un élève...">
+</div>
+    <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Nom de l'Élève</th>
+                    <th>Nombre de Notes</th>
+                    <th>Moyenne</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in student_notes %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ student.last_name }} {{ student.first_name }}</td>
+                    <td>{{ student.note_count }}</td>
+                    <td>
+                        {% if student.average_score %}
+                            {{ "%.2f"|format(student.average_score) }}
+                        {% else %}
+                            Aucune note
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="mb-3 d-flex justify-content-end gap-2">
+    <button id="exportExcel" class="btn btn-outline-success">Exporter Excel</button>
+    <button id="exportPDF" class="btn btn-outline-danger">Exporter PDF</button>
+</div>
+<form action="{{ url_for('resultat.export_csv') }}" method="post">
+    <input type="hidden" name="results" value="{{ results | tojson }}">
+    <button type="submit" class="btn btn-primary">📄 Exporter en CSV</button>
+</form>
+<script>
+    const labels = [
+        {% for s in student_notes %}
+            "{{ s.last_name }} {{ s.first_name }}",
+        {% endfor %}
+    ];
+
+    const data = [
+        {% for s in student_notes %}
+            {{ "%.2f"|format(s.average_score or 0) }},
+        {% endfor %}
+    ];
+
+    const ctx = document.getElementById('resultChart').getContext('2d');
+    const resultChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Moyenne Générale',
+                data: data,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 20
+                }
+            }
+        }
+    });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+document.getElementById('exportExcel').addEventListener('click', () => {
+    const table = document.getElementById('studentsTable');
+    const wb = XLSX.utils.table_to_book(table, { sheet: "Résultats" });
+    XLSX.writeFile(wb, "resultats_eleves.xlsx");
+});
+
+document.getElementById('exportPDF').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Moyennes Générales des Élèves", 10, 10);
+    let y = 20;
+    document.querySelectorAll('#studentsTable tbody tr').forEach((row, i) => {
+        const cells = row.querySelectorAll('td');
+        doc.text(`${i + 1}. ${cells[1].textContent} — Moyenne : ${cells[3].textContent}`, 10, y);
+        y += 10;
+    });
+    doc.save("resultats_eleves.pdf");
+});
+</script>
+<!-- Résumé graphique -->
+<canvas id="chartMoyennes" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const labels = {{ results | map(attribute='name') | list | tojson }};
+    const data = {{ results | map(attribute='average') | list | tojson }};
+
+    const ctx = document.getElementById('chartMoyennes').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Moyennes individuelles',
+                data: data,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true, max: 20 } }
+        }
+    });
+</script>
+<script>
+    const results = JSON.parse('{{ results_json | tojson | safe }}');
+</script>
+<script src="{{ url_for('static', filename='js/index_notes.js') }}"></script>
 {% endblock %}

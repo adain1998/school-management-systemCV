@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Suivi des performances{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Tableau de bord des performances</h2>
+
+    {% for data in performance_data %}
+        <div class="bg-white shadow-lg rounded-xl p-6 mb-6">
+            <div class="border-b pb-4 mb-4">
+                <h3 class="text-xl font-semibold text-blue-700">{{ data.student.nom }} {{ data.student.prenom }}</h3>
+            </div>
+            <div class="space-y-6">
+                <!-- Notes -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">Notes</h4>
+                    <canvas id="notesChart-{{ loop.index }}"></canvas>
+                </div>
+
+                <!-- Examens -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">Examens</h4>
+                    <canvas id="examsChart-{{ loop.index }}"></canvas>
+                </div>
+
+                <!-- Absences -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-700">Absences</h4>
+                    <p class="text-gray-600">{{ data.absences | length }} absence(s) enregistrée(s)</p>
+                </div>
+
+                <!-- Présence -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-700">Présences</h4>
+                    <p class="text-gray-600">{{ data.attendance | length }} présence(s) enregistrée(s)</p>
+                </div>
+
+                <!-- Devoirs -->
+                <div>
+                    <h4 class="text-lg font-medium text-gray-700">Devoirs rendus</h4>
+                    <p class="text-gray-600">{{ data.assignments | length }} devoir(s)</p>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded">
+            <p>Aucune donnée de performance disponible.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        {% for data in performance_data %}
+            const notesChart{{ loop.index }} = new Chart(
+                document.getElementById('notesChart-{{ loop.index }}'),
+                {
+                    type: 'bar',
+                    data: {
+                        labels: {{ data.notes | map(attribute='subject') | list | tojson }},
+                        datasets: [{
+                            label: 'Note',
+                            data: {{ data.notes | map(attribute='score') | list | tojson }},
+                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                            borderColor: 'rgba(37, 99, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 20,
+                                ticks: {
+                                    stepSize: 5
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+
+            const examsChart{{ loop.index }} = new Chart(
+                document.getElementById('examsChart-{{ loop.index }}'),
+                {
+                    type: 'line',
+                    data: {
+                        labels: {{ data.exams | map(attribute='date') | list | tojson }},
+                        datasets: [{
+                            label: 'Résultat Examen',
+                            data: {{ data.exams | map(attribute='score') | list | tojson }},
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: 'rgba(239, 68, 68, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 20,
+                                ticks: {
+                                    stepSize: 5
+                                }
+                            }
+                        }
+                    }
+                }
+            );
+        {% endfor %}
+    </script>
+{% endblock %}

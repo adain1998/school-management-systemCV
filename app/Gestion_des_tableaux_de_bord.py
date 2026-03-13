@@ -1,4 +1,5 @@
-from flask import render_template, Blueprint, url_for, redirect, flash, request
+from flask import render_template, Blueprint, url_for, redirect, flash, request, session
+
 from app.models import (db, Student, Note, Absence, Teacher,
                         Report, Attendance, Message, Poll, ForumPost, SchoolInfo, Matiere)
 from datetime import datetime
@@ -7,11 +8,12 @@ from app.decorators import roles_required  # Assure-toi que le chemin d'importat
 from sqlalchemy import extract
 import locale
 
-tableau = Blueprint('tableau', __name__)
+
+blueprint_tableau = Blueprint('tableau', __name__)
 
 
 
-@tableau.route('/dashboard', methods=['GET'])
+@blueprint_tableau.route('/dashboard', methods=['GET'])
 @login_required
 def dashboard():
     children_ids = current_user.children_ids.split(',')
@@ -26,17 +28,17 @@ def dashboard():
 
 
 # tableau de bord enseignant
-@tableau.route('/enseignant/dashboard')
+@blueprint_tableau.route('/enseignant/dashboard')
 @login_required
 def enseignant_dashboard():
     if current_user.role != 'enseignant':
         flash("Accès non autorisé.", "danger")
-        return redirect(url_for('index'))  # Redirige vers la page d'accueil si l'utilisateur n'est pas enseignant
+        return redirect(url_for('tableau.index'))  # Redirige vers la page d'accueil si l'utilisateur n'est pas enseignant
     return render_template('dashboard_enseignants.html')  # Affiche le tableau de bord de l'enseignant
 
 #tableau de bord eleve
 
-@tableau.route('/eleve/dashboard')
+@blueprint_tableau.route('/eleve/dashboard')
 @login_required
 @roles_required('eleve')
 def eleve_dashboard():
@@ -78,12 +80,12 @@ def eleve_dashboard():
 
 #tableau de bord administrateur
 
-@tableau.route('/admin/dashboard')
+@blueprint_tableau.route('/admin/dashboard')
 @login_required
 def admin_dashboard():
     if current_user.role != 'administrateur':
         flash("Accès non autorisé.", "danger")
-        return redirect(url_for('index'))  # Redirige vers la page d'accueil
+        return redirect(url_for('tableau.index'))  # Redirige vers la page d'accueil
 
     students = Student.query.all()
 
@@ -101,26 +103,21 @@ def admin_dashboard():
     return render_template('dashboard_performance.html', students=students)
 
 
-@tableau.route('/')
+
+@blueprint_tableau.route('/')
 def index():
-    user = {
-        "name": "Kampangala François",
-        "role": "Administrateur",
-        "last_login": "08/05/2025 à 12:00"
-    }
+    # Simuler un utilisateur connecté
+    session['user_name'] = "Kampangala François"
+    session['user_role'] = "Administrateur"
+    session['last_login'] = "08/05/2025 à 12:00"
+
     return render_template(
         'index.html',
-        title="Accueil - Gestion Scolaire",
-        user_name=user["name"],
-        user_role=user["role"],
-        last_login=user["last_login"],
-        current_date=datetime.now().strftime("%d/%m/%Y"),
-        current_year=datetime.now().year
+        title="Accueil - Gestion Scolaire"
     )
 
 
-
-@tableau.route('/dashboard')
+@blueprint_tableau.route('/dashboard')
 def dashboard_generale():
     selected_month = request.args.get('month', type=int)
     selected_year = request.args.get('year', type=int)
@@ -243,4 +240,45 @@ def dashboard_generale():
         selected_month=selected_month,
         selected_year=selected_year,
         years=years
+        
+        
+        
+        @blueprint_tableau.route('/')
+def index():
+    user = {
+        "name": "Kampangala François",
+        "role": "Administrateur",
+        "last_login": "08/05/2025 à 12:00"
+    }
+    session['user_name'] = "Kampangala François"
+    session['user_role'] = "Administrateur"
+    session['last_login'] = "08/05/2025 à 12:00"
+
+    return render_template(
+        'index.html',
+        title="Accueil - Gestion Scolaire",
+        user_name=user["name"],
+        user_role=user["role"],
+        last_login=user["last_login"],
+        current_date=datetime.now().strftime("%d/%m/%Y"),
+        current_year=datetime.now().year,
+        blueprint_auth=blueprint_auth.name,
+        blueprint_connex=blueprint_connex.name,
+        blueprint_meeting=blueprint_meeting.name,          # 🔴 à ajouter
+        blueprint_paiem=blueprint_paiem.name,              # 🔴 à ajouter si utilisé dans base.html
+        blueprint_application=blueprint_application.name,  # 🔴 à ajouter si utilisé
+        blueprint_resultat=blueprint_resultat.name,        # 🔴 à ajouter
+        blueprint_mes=blueprint_mes.name,                   # 🔴 à ajouter
+        blueprint_public=blueprint_public.name
+        
+        from app.Gestion_des_forum import blueprint_meeting
+from app.Gestion_des_messages import blueprint_mes
+from app.Gestion_des_notes import blueprint_resultat
+from app.Gestion_des_paiements import blueprint_paiem
+from app.footer_routes import blueprint_public
+from app.gestion_des_performances import blueprint_application
+
+from app.authentification import blueprint_auth
+from app.Gestion_denregistrement_tous_utilisateur import blueprint_connex
+    )
     )"""

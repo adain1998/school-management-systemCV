@@ -1,69 +1,84 @@
 {% extends 'base.html' %}
 
-{% block title %}Ajouter Paiement{% endblock %}
-
+{% block title %}Gestion des Notes - {{ student.first_name }} {{ student.last_name }}{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/gestion_notes.css') }}">
 {% block content %}
-    <title>Gestion des Notes</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-<body>
-    <h1>Gestion des Notes pour {{ student.nom }} {{ student.prenom }}</h1>
+<div class="container py-4">
+    <h2 class="mb-4">Notes de {{ student.first_name }} {{ student.last_name }}</h2>
 
-    <form method="POST" action="{{ url_for('main.manage_grades', student_id=student.id) }}" onsubmit="return validateForm()">
-        <div class="form-group">
-            <label for="subject">Matière:</label>
-            <input type="text" id="subject" name="subject" class="form-control" required>
+    <!-- Formulaire d'ajout de note -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">Ajouter une note</div>
+        <div class="card-body">
+            <form id="noteForm" method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="matiere_id" class="form-label">Matière</label>
+                        <select name="matiere_id" id="matiere_id" class="form-select" required>
+                            <option value="">-- Sélectionner une matière --</option>
+                            {% for m in matieres %}
+                                <option value="{{ m.id }}">{{ m.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                   <div class="col-md-4">
+                  <label for="score" class="form-label">Score</label>
+                       <input type="number" step="0.01" name="score" id="score" class="form-control" required>
+                   </div>
+
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-success w-100">Ajouter</button>
+                    </div>
+                </div>
+            </form>
         </div>
-        <div class="form-group">
-            <label for="score">Note:</label>
-            <input type="text" id="score" name="score" class="form-control" required>
+    </div>
+
+    <!-- Filtrage dynamique -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <input type="text" id="search-matiere" class="form-control" placeholder="Filtrer par matière...">
         </div>
-        <button type="submit" class="btn btn-primary">Ajouter</button>
-    </form>
+        <div>
+            <button id="reset-filters" class="btn btn-secondary">Réinitialiser les filtres</button>
+            <button id="exportCSV" class="btn btn-outline-primary">Exporter CSV</button>
+            <button id="exportPDF" class="btn btn-outline-danger">Exporter PDF</button>
+        </div>
+    </div>
 
-    <h2>Notes</h2>
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Matière</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for note in notes %}
-            <tr>
-                <td>{{ note.subject }}</td>
-                <td>{{ note.score }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Table des notes -->
+    <div class="table-responsive">
+        <table id="notesTable" class="table table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>#</th>
+                    <th>Matière</th>
+                    <th>Score</th>
+                </tr>
+            </thead>
+            <tbody id="noteTableBody">
+                {% for note in notes_ecole %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ note.matiere.nom }}</td>
+                        <td>{{ note.score }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-    <a href="{{ url_for('main.index') }}" class="btn btn-secondary mt-4">Retour</a>
+<script>
+    window.studentFirstName = "{{ student.first_name|escapejs }}";
+    window.studentLastName = "{{ student.last_name|escapejs }}";
+</script>
+<script src="{{ url_for('static', filename='js/gestion_notes.js') }}"></script>
+{% endblock %}
 
-    <script>
-        function validateForm() {
-            const subjectInput = document.getElementById("subject");
-            const scoreInput = document.getElementById("score");
-            const scoreValue = scoreInput.value;
 
-            if (!subjectInput.value) {
-                alert("La matière est requise");
-                return false;
-            }
-
-            if (!scoreValue) {
-                alert("La note est requise");
-                return false;
-            }
-
-            const score = parseFloat(scoreValue);
-            if (isNaN(score) || score < 0 || score > 100) {
-                alert("Le score doit être un nombre compris entre 0 et 100");
-                return false;
-            }
-
-            return true;
-        }
-    </script>
-</body>
 {% endblock %}
