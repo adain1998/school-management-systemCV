@@ -1,7 +1,18 @@
 School Management System
 Projet développé intégralement par François KAMPANGALA WA SHEMA 
 dans le cadre de la digitalisation complète de la gestion scolaire.
-📚 PrésentationSchool Management System est une plateforme web complète développée en Python/Flask, conçue pour digitaliser et centraliser l'ensemble des opérations administratives, académiques et financières d'un établissement scolaire.🎯 Objectifs du ProjetAutomatiser les processus administratifs scolaires.Centraliser les données académiques et financières.Réduire les tâches manuelles et les erreurs de gestion.Faciliter le suivi des élèves et des performances scolaires.Fournir des outils d'aide à la décision grâce aux rapports et statistiques.🚀 Fonctionnalités Principales👨‍🎓 Gestion AcadémiqueGestion des élèves, des classes, des options/filières et des enseignants.Gestion complète des horaires, examens, notes et performances scolaires.Suivi quotidien des absences et des présences.💰 Gestion FinancièreGestion des frais scolaires et des paiements.Rapports financiers détaillés et suivi des soldes des élèves.📢 Communication & ReportingMessagerie interne, forum scolaire et notifications système.Génération de documents administratifs et exportation de données.Statistiques académiques et financières.🔒 Sécurité et Bonnes PratiquesAuthentification sécurisée avec Argon2 (chiffrement des mots de passe).Gestion fine des rôles et permissions (RBAC).Séparation des responsabilités via Blueprints.Architecture modulaire et maintenable.🏗️ Architecture du ProjetPlaintextschool-management-system/
+PrésentationSchool Management System est une plateforme web complète développée en Python/Flask, conçue pour digitaliser et centraliser l'ensemble des opérations administratives, académiques et financières d'un établissement scolaire.
+Objectifs du ProjetAutomatiser les processus administratifs scolaires.Centraliser les données académiques et financières.
+Réduire les tâches manuelles et les erreurs de gestion.Faciliter le suivi des élèves et des performances scolaires.
+Fournir des outils d'aide à la décision grâce aux rapports et statistiques.
+Fonctionnalités Principales
+Gestion AcadémiqueGestion des élèves, des classes, des options/filières et des enseignants.Gestion complète des horaires, examens, notes et performances scolaires.Suivi quotidien des absences et des présences.
+Gestion FinancièreGestion des frais scolaires et des paiements.Rapports financiers détaillés et suivi des soldes des élèves.
+Communication & Reporting
+Messagerie interne, forum scolaire et notifications système.Génération de documents administratifs et exportation de données.Statistiques académiques et financières.
+Sécurité et Bonnes PratiquesAuthentification sécurisée avec Argon2 (chiffrement des mots de passe).Gestion fine des rôles et permissions (RBAC).
+Séparation des responsabilités via Blueprints.Architecture modulaire et maintenable.
+Architecture du ProjetPlaintextschool-management-system/
 ├── app/
 │   ├── schemas/services/utils/
 │   ├── authentication.py, models.py, forms.py, context.py, decorators.py
@@ -15,7 +26,8 @@ dans le cadre de la digitalisation complète de la gestion scolaire.
 🛠 Technologies UtiliséesBackend : Python 3.x, Flask, Flask Blueprint, Flask-WTF, 
 Flask-Login, Flask-Migrate, SQLAlchemy.Base de Données : MySQL.Sécurité :
 Argon2, Gestion des sessions.Frontend : HTML5, CSS3, JavaScript, Bootstrap.
-⚙️ InstallationCloner le dépôt : git clone https://github.com/votre-utilisateur/school-management-system.gitCréer l'environnement virtuel :
+⚙️ InstallationCloner le dépôt : git clone https://github.com/adain1998/school-management-systemCV/edit/main/README.md
+Créer l'environnement virtuel :
 python -m venv venvActiver l'environnement : source venv/bin/activate (Linux/Mac)
 ou venv\Scripts\activate (Windows)
 Installer les dépendances : pip install -r requirements.txt
@@ -25,7 +37,8 @@ Lancer les migrations et l'application : flask db upgrade puis python run.py
  📈 Modules DisponiblesModuleDescriptionGestion des élèves
  Administration des dossiers scolaires
  Gestion des classesOrganisation académique
- Gestion des présences/absencesSuivi quotidien et contrôleGestion des notes/examens
+ Gestion des présences/absences
+ Suivi quotidien et contrôleGestion des notes/examens
  Enregistrement, calcul et évaluationGestion financièrePaiements et frais scolaires
  Forum & MessagerieCollaboration et communication interne
  AuteurFrançois KAMPANGALA WA SHEMAAnalyste de Données Opérationnelles | Développeur & Architecte Solutions IT📍 Kolwezi, RDC
